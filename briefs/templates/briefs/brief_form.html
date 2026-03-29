@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+
+{% block title %}Форма ТЗ | {{ site_brand_name }}{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 col-xl-8">
+                <div class="mb-4">
+                    <p class="section-kicker mb-2">Бриф</p>
+                    <h1 class="mb-0">Заявка на разработку сайта</h1>
+                </div>
+
+                <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate data-brief-pricing>
+                    {% csrf_token %}
+                    {{ form.estimated_price }}
+                    {{ form.color_mode }}
+                    {{ form.color_template_name }}
+                    {{ form.color_preference }}
+                    {{ form.color_accent }}
+                    {{ form.color_background }}
+                    {{ form.color_extra }}
+
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <h2 class="h5 mb-4">1. О компании</h2>
+                            {% include "partials/form_field.html" with field=form.client_type %}
+                            <div class="mb-3">
+                                <label for="{{ form.business_name.id_for_label }}" class="form-label fw-semibold">
+                                    <span id="business-name-label">Имя / наименование компании</span>
+                                    <span class="text-danger">*</span>
+                                </label>
+                                {{ form.business_name }}
+                                {% if form.business_name.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.business_name.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                            {% include "partials/form_field.html" with field=form.work_region %}
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <h2 class="h5 mb-4">2. Тип услуги</h2>
+                            <div class="mb-3">
+                                <label for="{{ form.site_type.id_for_label }}" class="form-label fw-semibold">
+                                    {{ form.site_type.label }}
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <div class="mb-2">{{ form.site_type }}</div>
+                                <a href="{% url 'site_type_guide' %}" class="small text-decoration-none" target="_blank" rel="noopener noreferrer">
+                                    Чем отличаются типы сайтов
+                                </a>
+                                {% if form.site_type.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.site_type.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <h2 class="h5 mb-4">3. Контент</h2>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    Цветовая схема
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <div class="color-selection-summary mb-3{% if form.color_mode.value != 'custom' %} d-none{% endif %}" data-color-inline-summary>
+                                    <div class="color-picker-row mb-2">
+                                        <span class="small text-secondary" data-color-source>По шаблону</span>
+                                    </div>
+                                    <div class="color-preview-strip">
+                                        <span class="color-chip color-chip-lg" data-color-preview-primary style="background-color: {{ form.color_preference.value|default:'#14344c' }};"></span>
+                                        <span class="color-chip color-chip-lg" data-color-preview-accent style="background-color: {{ form.color_accent.value|default:'#c96f3b' }};"></span>
+                                        <span class="color-chip color-chip-lg" data-color-preview-background style="background-color: {{ form.color_background.value|default:'#f4f1ea' }};"></span>
+                                        <span class="color-chip color-chip-lg" data-color-preview-extra style="background-color: {{ form.color_extra.value|default:'#2b506b' }};"></span>
+                                    </div>
+                                </div>
+
+                                <ul class="nav nav-pills color-mode-tabs mb-3" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link{% if form.color_mode.value != 'custom' %} active{% endif %}"
+                                                id="brief-colors-projects-tab"
+                                                data-bs-toggle="pill"
+                                                data-bs-target="#brief-colors-projects"
+                                                type="button"
+                                                role="tab"
+                                                aria-controls="brief-colors-projects"
+                                                aria-selected="{% if form.color_mode.value == 'custom' %}false{% else %}true{% endif %}">
+                                            По нашим работам
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link{% if form.color_mode.value == 'custom' %} active{% endif %}"
+                                                id="brief-colors-custom-tab"
+                                                data-bs-toggle="pill"
+                                                data-bs-target="#brief-colors-custom"
+                                                type="button"
+                                                role="tab"
+                                                aria-controls="brief-colors-custom"
+                                                aria-selected="{% if form.color_mode.value == 'custom' %}true{% else %}false{% endif %}">
+                                            Кастом
+                                        </button>
+                                    </li>
+                                </ul>
+
+                                <div class="tab-content">
+                                    <div class="tab-pane fade{% if form.color_mode.value != 'custom' %} show active{% endif %}" id="brief-colors-projects" role="tabpanel" aria-labelledby="brief-colors-projects-tab" tabindex="0">
+                                        {% if brief_project_examples %}
+                                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                                                <h3 class="h6 mb-0">Примеры наших работ</h3>
+                                                <a href="{% url 'portfolio_list' %}" class="small text-decoration-none" target="_blank" rel="noopener noreferrer">Все проекты</a>
+                                            </div>
+                                            <div class="row g-3">
+                                                {% for project in brief_project_examples %}
+                                                    <div class="col-md-6 col-xl-4">
+                                                        <article class="card border-0 shadow-sm h-100 project-sample-card template-project-card"
+                                                                 data-template-name="{{ project.title }}"
+                                                                 data-color-primary="{{ project.palette_colors.0 }}"
+                                                                 data-color-accent="{{ project.palette_colors.1 }}"
+                                                                 data-color-background="{{ project.palette_colors.2 }}"
+                                                                 data-color-extra="{{ project.palette_colors.3 }}">
+                                                            <div class="project-sample-card__media">
+                                                                {% if project.image_url %}
+                                                                    <img src="{{ project.image_url }}" alt="{{ project.title }}" class="img-fluid w-100 h-100 object-fit-cover">
+                                                                {% else %}
+                                                                    <div class="project-placeholder">{{ project.title|slice:":1" }}</div>
+                                                                {% endif %}
+                                                            </div>
+                                                            <div class="card-body p-3">
+                                                                <h4 class="h6 mb-1">{{ project.title }}</h4>
+                                                                <p class="small text-secondary mb-3">{{ project.short_description }}</p>
+                                                                {% if project.palette_colors %}
+                                                                    <div class="project-sample-palette">
+                                                                        {% for color in project.palette_colors %}
+                                                                            <span class="color-swatch-btn color-swatch-btn-sm palette-display-chip" title="{{ project.title }} {{ color }}">
+                                                                                <span style="background-color: {{ color }};"></span>
+                                                                            </span>
+                                                                        {% endfor %}
+                                                                    </div>
+                                                                {% endif %}
+                                                                <button type="button" class="btn btn-sm btn-outline-dark mt-3" data-template-select>
+                                                                    Выбрать шаблон
+                                                                </button>
+                                                                {% if project.url %}
+                                                                    <a href="{{ project.url }}" class="small text-decoration-none mt-3 d-inline-block" target="_blank" rel="noopener noreferrer">Открыть кейс</a>
+                                                                {% endif %}
+                                                            </div>
+                                                        </article>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="tab-pane fade{% if form.color_mode.value == 'custom' %} show active{% endif %}" id="brief-colors-custom" role="tabpanel" aria-labelledby="brief-colors-custom-tab" tabindex="0">
+                                        <div class="row g-3">
+                                            <div class="col-sm-6 col-lg-3">
+                                                <div class="mb-3">
+                                                    <label for="custom_color_preference" class="form-label fw-semibold">
+                                                        {{ form.color_preference.label }}
+                                                        <span class="text-danger">*</span>
+                                                    </label>
+                                                    <div>
+                                                        <input type="color"
+                                                               id="custom_color_preference"
+                                                               class="form-control form-control-color"
+                                                               value="{{ form.color_preference.value|default:'#14344c' }}"
+                                                               data-custom-color-input="primary">
+                                                    </div>
+                                                    <div class="d-flex align-items-center gap-2 mt-2">
+                                                        <span class="color-chip" data-custom-color-preview="primary" style="background-color: {{ form.color_preference.value|default:'#14344c' }};"></span>
+                                                        <div class="small text-secondary" data-custom-color-value="primary">{{ form.color_preference.value|default:'#14344c' }}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 col-lg-3">
+                                                <div class="mb-3">
+                                                    <label for="custom_color_accent" class="form-label fw-semibold">
+                                                        {{ form.color_accent.label }}
+                                                        <span class="text-danger">*</span>
+                                                    </label>
+                                                    <div>
+                                                        <input type="color"
+                                                               id="custom_color_accent"
+                                                               class="form-control form-control-color"
+                                                               value="{{ form.color_accent.value|default:'#c96f3b' }}"
+                                                               data-custom-color-input="accent">
+                                                    </div>
+                                                    <div class="d-flex align-items-center gap-2 mt-2">
+                                                        <span class="color-chip" data-custom-color-preview="accent" style="background-color: {{ form.color_accent.value|default:'#c96f3b' }};"></span>
+                                                        <div class="small text-secondary" data-custom-color-value="accent">{{ form.color_accent.value|default:'#c96f3b' }}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 col-lg-3">
+                                                <div class="mb-3">
+                                                    <label for="custom_color_background" class="form-label fw-semibold">
+                                                        {{ form.color_background.label }}
+                                                        <span class="text-danger">*</span>
+                                                    </label>
+                                                    <div>
+                                                        <input type="color"
+                                                               id="custom_color_background"
+                                                               class="form-control form-control-color"
+                                                               value="{{ form.color_background.value|default:'#f4f1ea' }}"
+                                                               data-custom-color-input="background">
+                                                    </div>
+                                                    <div class="d-flex align-items-center gap-2 mt-2">
+                                                        <span class="color-chip" data-custom-color-preview="background" style="background-color: {{ form.color_background.value|default:'#f4f1ea' }};"></span>
+                                                        <div class="small text-secondary" data-custom-color-value="background">{{ form.color_background.value|default:'#f4f1ea' }}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6 col-lg-3">
+                                                <div class="mb-3">
+                                                    <label for="custom_color_extra" class="form-label fw-semibold">
+                                                        {{ form.color_extra.label }}
+                                                        <span class="text-danger">*</span>
+                                                    </label>
+                                                    <div>
+                                                        <input type="color"
+                                                               id="custom_color_extra"
+                                                               class="form-control form-control-color"
+                                                               value="{{ form.color_extra.value|default:'#2b506b' }}"
+                                                               data-custom-color-input="extra">
+                                                    </div>
+                                                    <div class="d-flex align-items-center gap-2 mt-2">
+                                                        <span class="color-chip" data-custom-color-preview="extra" style="background-color: {{ form.color_extra.value|default:'#2b506b' }};"></span>
+                                                        <div class="small text-secondary" data-custom-color-value="extra">{{ form.color_extra.value|default:'#2b506b' }}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="small text-secondary mt-2">
+                                            Укажи 4 своих цвета: основной, акцентный, фоновый и дополнительный.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {% if form.non_field_errors %}
+                                    <div class="invalid-feedback d-block mt-2">{{ form.non_field_errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+
+                            {% include "partials/form_field.html" with field=form.reference_sites %}
+                            {% include "partials/form_field.html" with field=form.desired_domain %}
+                            <div class="small text-secondary mb-3">
+                                Домен — это адрес сайта, который человек вводит в браузере, например `example.ru`.
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    {% include "partials/repeatable_file_field.html" with field=form.photos_files %}
+                                </div>
+                                <div class="col-md-6">
+                                    {% include "partials/repeatable_file_field.html" with field=form.texts_files %}
+                                </div>
+                                <div class="col-md-6">{% include "partials/form_field.html" with field=form.logo %}</div>
+                                <div class="col-md-6">
+                                    {% include "partials/repeatable_file_field.html" with field=form.reviews_files %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <h2 class="h5 mb-4">4. Контактные данные</h2>
+                            <div class="row g-3">
+                                <div class="col-md-4">{% include "partials/form_field.html" with field=form.contact_phone %}</div>
+                                <div class="col-md-4">{% include "partials/form_field.html" with field=form.preferred_contact_app %}</div>
+                                <div class="col-md-4">{% include "partials/form_field.html" with field=form.contact_email %}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <h2 class="h5 mb-4">5. Комментарий</h2>
+                            {{ form.client_comment }}
+                            {% if form.client_comment.errors %}
+                                <div class="invalid-feedback d-block">{{ form.client_comment.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="form-check mb-4">
+                                {{ form.privacy_accepted }}
+                                <label class="form-check-label" for="{{ form.privacy_accepted.id_for_label }}">
+                                    Согласен на обработку персональных данных
+                                </label>
+                                {% if form.privacy_accepted.errors %}
+                                    <div class="invalid-feedback d-block">{{ form.privacy_accepted.errors|join:", " }}</div>
+                                {% endif %}
+                            </div>
+                            <button type="submit" class="btn btn-accent btn-lg">Отправить</button>
+                        </div>
+                    </div>
+
+                    <aside class="brief-price-widget card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <p class="section-kicker mb-2">Стоимость</p>
+                            <h2 class="h5 mb-3" data-summary-service>Одностраничный сайт - визитка / резюме</h2>
+
+                            <div class="brief-price-line">
+                                <span>Цена услуги</span>
+                                <strong data-summary-base>7 500 ₽</strong>
+                            </div>
+
+                            <div class="pt-3 mt-3 border-top">
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        {{ form.need_hosting }}
+                                        <label class="form-check-label" for="{{ form.need_hosting.id_for_label }}">
+                                            Хостинг 750 ₽/мес
+                                        </label>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="form-check">
+                                        {{ form.need_domain }}
+                                        <label class="form-check-label" for="{{ form.need_domain.id_for_label }}">
+                                            Домен 550 ₽
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="brief-price-total mt-3 pt-3 border-top">
+                                <span>Итого</span>
+                                <strong data-summary-total>7 500 ₽</strong>
+                            </div>
+
+                            <div class="brief-color-summary mt-3 pt-3 border-top">
+                                <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                                    <span class="small fw-semibold">Палитра</span>
+                                    <span class="small text-secondary text-end" data-color-source>По шаблону</span>
+                                </div>
+                                <div class="color-preview-strip">
+                                    <span class="color-chip color-chip-lg" data-color-preview-primary style="background-color: {{ form.color_preference.value|default:'#14344c' }};"></span>
+                                    <span class="color-chip color-chip-lg" data-color-preview-accent style="background-color: {{ form.color_accent.value|default:'#c96f3b' }};"></span>
+                                    <span class="color-chip color-chip-lg" data-color-preview-background style="background-color: {{ form.color_background.value|default:'#f4f1ea' }};"></span>
+                                    <span class="color-chip color-chip-lg" data-color-preview-extra style="background-color: {{ form.color_extra.value|default:'#2b506b' }};"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+{{ form.pricing_config|json_script:"brief-pricing-config" }}
+{% endblock %}

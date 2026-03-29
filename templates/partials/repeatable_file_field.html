@@ -1,0 +1,44 @@
+<div class="mb-3 multi-file-field"
+     data-repeatable-file-field
+     data-field-name="{{ field.html_name }}"
+     {% if field.field.required %}data-required="true"{% endif %}>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+        <label class="form-label fw-semibold mb-0" for="{{ field.id_for_label }}">
+            {{ field.label }}
+            {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+        </label>
+        <span class="badge text-bg-secondary" data-file-count>0</span>
+    </div>
+
+    <div class="multi-file-toolbar d-flex align-items-center flex-wrap gap-2 mb-2">
+        <button type="button" class="btn btn-sm btn-outline-dark" data-file-picker-trigger>
+            Выбрать файлы
+        </button>
+        <span class="small text-secondary">Можно добавлять по одному или сразу несколько.</span>
+    </div>
+
+    <input type="file"
+           id="{{ field.id_for_label }}"
+           class="file-input-hidden"
+           multiple
+           {% if accept %}accept="{{ accept }}"{% endif %}
+           data-file-picker>
+
+    <div class="hidden-inputs-container d-none" data-hidden-inputs></div>
+
+    <div class="multi-file-list" data-file-list>
+        <div class="multi-file-empty text-muted text-center py-4" data-file-empty>
+            <div class="small">Файлы не выбраны</div>
+        </div>
+    </div>
+
+    <div class="invalid-feedback d-block d-none" data-file-error>
+        Добавьте хотя бы один файл.
+    </div>
+
+    {% if field.errors %}
+        <div class="invalid-feedback d-block">
+            {{ field.errors|join:", " }}
+        </div>
+    {% endif %}
+</div>

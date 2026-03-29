@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.title }} | {{ site_brand_name }}{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row g-5">
+            <div class="col-lg-7">
+                <p class="section-kicker mb-2">Проект</p>
+                <h1 class="mb-3">{{ project.title }}</h1>
+                <p class="text-secondary mb-4">{{ project.short_description }}</p>
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    {% for technology in project.technologies.all %}
+                        <span class="badge rounded-pill text-bg-light border">{{ technology.name }}</span>
+                    {% endfor %}
+                </div>
+                <div class="project-detail-copy">
+                    <p>{{ project.description|linebreaks }}</p>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm">
+                    <div class="project-card__media project-card__media--detail">
+                        {% if project.cover_image %}
+                            <img src="{{ project.cover_image.url }}" alt="{{ project.title }}" class="img-fluid w-100 h-100 object-fit-cover">
+                        {% else %}
+                            <div class="project-placeholder">{{ project.title|slice:":1" }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="card-body p-4">
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-3"><strong>Дата:</strong> {{ project.completion_date|date:"d.m.Y" }}</li>
+                            {% if project.stack_notes %}<li class="mb-3"><strong>Стек:</strong> {{ project.stack_notes }}</li>{% endif %}
+                            {% if project.external_url %}<li><strong>Ссылка:</strong> <a href="{{ project.external_url }}" target="_blank" rel="noopener">{{ project.external_url }}</a></li>{% endif %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if project.images.all %}
+            <div class="row g-4 mt-1">
+                {% for image in project.images.all %}
+                    <div class="col-md-6 col-xl-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <img src="{{ image.image.url }}" alt="{{ image.caption|default:project.title }}" class="img-fluid rounded-top">
+                            {% if image.caption %}<div class="card-body"><p class="mb-0">{{ image.caption }}</p></div>{% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

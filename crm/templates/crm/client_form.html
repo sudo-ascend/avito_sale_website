@@ -1,0 +1,231 @@
+{% extends "dashboard/base.html" %}
+{% load core_tags %}
+
+{% block title %}Клиент | {{ site_brand_name }}{% endblock %}
+
+{% block dashboard_content %}
+{% include "partials/registry_nav.html" %}
+
+<div class="mb-4">
+    <p class="section-kicker mb-2">CRM</p>
+    <h1 class="mb-0">{{ object.company_name }}</h1>
+    <p class="text-secondary mb-0">{{ object.name }}</p>
+</div>
+
+<div class="row g-4 align-items-start">
+    <div class="col-12 col-xl">
+        <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h2 class="h5 mb-4">1. О клиенте</h2>
+                    <div class="row g-3">
+                        <div class="col-md-6">{% include "partials/form_field.html" with field=form.company_name %}</div>
+                        <div class="col-md-6">{% include "partials/form_field.html" with field=form.name %}</div>
+                        <div class="col-md-6">{% include "partials/form_field.html" with field=form.website %}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h2 class="h5 mb-4">2. Контактные данные</h2>
+                    <div class="row g-3">
+                        <div class="col-md-6">{% include "partials/form_field.html" with field=form.phone %}</div>
+                        <div class="col-md-6">{% include "partials/form_field.html" with field=form.preferred_contact_app %}</div>
+                        <div class="col-md-6">{% include "partials/form_field.html" with field=form.email %}</div>
+                        <div class="col-md-6">{% include "partials/form_field.html" with field=form.telegram %}</div>
+                    </div>
+                </div>
+            </div>
+
+            {% if has_orders %}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+                            <h2 class="h5 mb-0">3. Проекты и заказы</h2>
+                            <div class="small text-secondary">{{ client_orders|length }} шт.</div>
+                        </div>
+                        <div class="d-flex flex-column gap-3">
+                            {% for order in client_orders %}
+                                <a href="{% url 'crm_client_edit' object.pk %}?order={{ order.pk }}#order-panel"
+                                   class="material-card text-decoration-none {% if selected_order_id == order.pk %}material-card--active{% endif %}">
+                                    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                                        <div>
+                                            <div class="fw-semibold">{{ order.title }}</div>
+                                            {% if order.brief %}
+                                                <div class="small text-secondary">ТЗ: {{ order.brief.business_name }}</div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <span class="badge rounded-pill {{ order.status|order_status_badge }}">{{ order.get_status_display }}</span>
+                                            <span class="badge rounded-pill {{ order.payment_status|payment_badge_class }}">{{ order.get_payment_status_display }}</span>
+                                        </div>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if has_materials %}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+                            <h2 class="h5 mb-0">{% if has_orders %}4{% else %}3{% endif %}. Контент</h2>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <div class="small text-secondary">{{ briefs|length }} шт.</div>
+                                <a href="{% url 'crm_client_materials_download' object.pk %}" class="btn btn-sm btn-outline-dark">
+                                    Скачать все материалы
+                                </a>
+                            </div>
+                        </div>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="material-card h-100">
+                                    <h3 class="h6 mb-3">Файлы</h3>
+                                    {% if photo_materials or photo_file_materials %}
+                                        <div class="d-flex flex-column gap-2">
+                                            {% for item in photo_materials %}
+                                                <a href="{{ item.file.url }}" target="_blank" rel="noopener">{{ item.filename }}</a>
+                                            {% endfor %}
+                                            {% for item in photo_file_materials %}
+                                                <a href="{{ item.file.url }}" target="_blank" rel="noopener">{{ item.filename }}</a>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <div class="text-secondary small">Нет файлов</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="material-card h-100">
+                                    <h3 class="h6 mb-3">Тексты</h3>
+                                    {% if text_materials %}
+                                        <div class="d-flex flex-column gap-2">
+                                            {% for item in text_materials %}
+                                                <a href="{{ item.file.url }}" target="_blank" rel="noopener">{{ item.filename }}</a>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <div class="text-secondary small">Нет файлов</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="material-card h-100">
+                                    <h3 class="h6 mb-3">Отзывы</h3>
+                                    {% if review_materials %}
+                                        <div class="d-flex flex-column gap-2">
+                                            {% for item in review_materials %}
+                                                <a href="{{ item.file.url }}" target="_blank" rel="noopener">{{ item.filename }}</a>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <div class="text-secondary small">Нет файлов</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="material-card h-100">
+                                    <h3 class="h6 mb-3">Логотип</h3>
+                                    {% if logo_materials %}
+                                        <div class="d-flex flex-column gap-2">
+                                            {% for item in logo_materials %}
+                                                <a href="{{ item.file.url }}" target="_blank" rel="noopener">{{ item.filename }}</a>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <div class="text-secondary small">Нет файлов</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h2 class="h5 mb-4">
+                        {% if has_orders and has_materials %}5{% elif has_orders or has_materials %}4{% else %}3{% endif %}. Комментарий
+                    </h2>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}
+                        <div class="invalid-feedback d-block">{{ form.notes.errors|join:", " }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <button class="btn btn-accent" type="submit">Сохранить клиента</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {% if selected_order %}
+        <div class="col-12 col-xl-auto" id="order-panel">
+            <div class="brief-aside brief-aside--compact position-sticky">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+                            <div>
+                                <p class="section-kicker mb-2">Заказ</p>
+                                <h2 class="h4 mb-0">{{ selected_order.title }}</h2>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2 justify-content-end">
+                                <span class="badge rounded-pill {{ selected_order.status|order_status_badge }}">{{ selected_order.get_status_display }}</span>
+                                <span class="badge rounded-pill {{ selected_order.payment_status|payment_badge_class }}">{{ selected_order.get_payment_status_display }}</span>
+                            </div>
+                        </div>
+
+                        <div class="detail-between-list mb-4">
+                            <div class="detail-between-row">
+                                <span>Название</span>
+                                <strong>{{ selected_order.title }}</strong>
+                            </div>
+                            <div class="detail-between-row">
+                                <span>Сумма заказа</span>
+                                <strong>{{ selected_order.price }} ₽</strong>
+                            </div>
+                            <div class="detail-between-row">
+                                <span>Желаемый домен</span>
+                                <strong>
+                                    {% if selected_order.brief and selected_order.brief.desired_domain %}
+                                        {{ selected_order.brief.desired_domain }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </strong>
+                            </div>
+                        </div>
+
+                        <div class="detail-between-list">
+                            <div class="detail-between-row">
+                                <span>Пароль</span>
+                                <strong>{% if selected_order.has_server_password %}Сохранен{% else %}Не задан{% endif %}</strong>
+                            </div>
+                            <div class="detail-between-row">
+                                <span>IP</span>
+                                <strong>{{ selected_order.server_ip|default:"-" }}</strong>
+                            </div>
+                            <div class="detail-between-row">
+                                <span>Login</span>
+                                <strong>{{ selected_order.server_username|default:"-" }}</strong>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 mt-4">
+                            <a href="{% url 'crm_order_edit' selected_order.pk %}" class="btn btn-outline-dark w-100">Редактировать заказ</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

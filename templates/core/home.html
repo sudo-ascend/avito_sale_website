@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}{{ site_brand_name }} | Веб-студия{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <p class="section-kicker mb-3">Web Studio</p>
+                <h1 class="display-5 fw-bold mb-4">Делаем сайты и внутренние системы, которые помогают продавать, автоматизировать и расти.</h1>
+                <p class="lead text-secondary mb-4">Проектируем структуру, делаем современный интерфейс, настраиваем CRM-процессы, поддержку доменов, серверов и уведомлений по срокам.</p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{% url 'brief_create' %}" class="btn btn-accent btn-lg rounded-pill">Заполнить ТЗ</a>
+                    <a href="{% url 'portfolio_list' %}" class="btn btn-outline-dark btn-lg rounded-pill">Посмотреть работы</a>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="hero-panel">
+                    <div class="hero-stat">
+                        <span class="hero-stat__value">Bootstrap 5</span>
+                        <span class="hero-stat__label">Адаптивный UI для мобильных и десктопа</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat__value">Django + SQLite</span>
+                        <span class="hero-stat__label">Серверный рендеринг, CRM, Excel-выгрузка и фоновые проверки</span>
+                    </div>
+                    <div class="hero-stat">
+                        <span class="hero-stat__value">Продакшен-подход</span>
+                        <span class="hero-stat__label">Разделение по apps, шифрование серверных паролей, email-уведомления</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
+            <div>
+                <p class="section-kicker mb-2">Услуги</p>
+                <h2 class="mb-0">Чем мы можем помочь</h2>
+            </div>
+            <a href="{% url 'brief_create' %}" class="btn btn-outline-dark rounded-pill">Обсудить проект</a>
+        </div>
+        <div class="row g-4">
+            {% for service in services %}
+                <div class="col-md-6 col-xl-4">
+                    <article class="card service-card h-100 border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="service-icon"><i class="bi {{ service.icon }}"></i></div>
+                            <h3 class="h5 mt-3">{{ service.title }}</h3>
+                            <p class="text-secondary">{{ service.short_description }}</p>
+                            <p class="mb-0">{{ service.description }}</p>
+                        </div>
+                    </article>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            Услуги можно добавить через Django admin или команду с тестовыми данными.
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-light-soft">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
+            <div>
+                <p class="section-kicker mb-2">Портфолио</p>
+                <h2 class="mb-0">Избранные проекты</h2>
+            </div>
+            <a href="{% url 'portfolio_list' %}" class="btn btn-outline-dark rounded-pill">Все проекты</a>
+        </div>
+        <div class="row g-4">
+            {% for project in featured_projects %}
+                <div class="col-md-6 col-xl-4">
+                    <a href="{{ project.get_absolute_url }}" class="project-card card border-0 shadow-sm h-100 text-decoration-none">
+                        <div class="project-card__media">
+                            {% if project.cover_image %}
+                                <img src="{{ project.cover_image.url }}" alt="{{ project.title }}" class="img-fluid w-100 h-100 object-fit-cover">
+                            {% else %}
+                                <div class="project-placeholder">{{ project.title|slice:":1" }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between gap-3 mb-2">
+                                <h3 class="h5 mb-0 text-dark">{{ project.title }}</h3>
+                                <span class="text-secondary small">{{ project.completion_date|date:"d.m.Y" }}</span>
+                            </div>
+                            <p class="text-secondary mb-3">{{ project.short_description }}</p>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for tech in project.technologies.all %}
+                                    <span class="badge rounded-pill text-bg-light border">{{ tech.name }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            Портфолио пока пустое, но структура уже готова для наполнения.
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4 align-items-start">
+            <div class="col-lg-6">
+                <p class="section-kicker mb-2">Как работаем</p>
+                <h2 class="mb-4">Понятный процесс без хаоса</h2>
+                <div class="process-list">
+                    <div class="process-item"><span>01</span><div><h3>Собираем ТЗ</h3><p>Форма на сайте помогает быстро собрать вводные и не терять детали.</p></div></div>
+                    <div class="process-item"><span>02</span><div><h3>Проектируем решение</h3><p>Продумываем структуру, стек, интеграции и сценарии для бизнеса.</p></div></div>
+                    <div class="process-item"><span>03</span><div><h3>Запускаем и сопровождаем</h3><p>Следим за оплатами, сроками, DNS и внутренней CRM после релиза.</p></div></div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="cta-card card border-0 shadow-sm">
+                    <div class="card-body p-4 p-lg-5">
+                        <p class="section-kicker mb-2">Старт проекта</p>
+                        <h2 class="mb-3">Нужен сайт или внутренняя система?</h2>
+                        <p class="text-secondary mb-4">Заполни форму ТЗ, и мы сразу получим структуру проекта, сроки, бюджет и технические ожидания.</p>
+                        <a href="{% url 'brief_create' %}" class="btn btn-accent btn-lg rounded-pill">Перейти к форме ТЗ</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

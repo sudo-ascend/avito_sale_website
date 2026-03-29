@@ -1,0 +1,190 @@
+{% extends "dashboard/base.html" %}
+{% load core_tags %}
+
+{% block title %}Обзор | {{ site_brand_name }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+    <div>
+        <p class="section-kicker mb-2">Обзор</p>
+        <h1 class="h3 mb-0">Финансы и сроки</h1>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'export_clients' %}" class="btn btn-outline-dark">Клиенты .xlsx</a>
+        <a href="{% url 'export_orders' %}" class="btn btn-outline-dark">Заказы .xlsx</a>
+        <a href="{% url 'export_accounting' %}" class="btn btn-outline-dark">Бухгалтерия .xlsx</a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4"><div class="summary-card"><span>Доход</span><strong>{{ monthly_income }} ₽</strong></div></div>
+    <div class="col-md-4"><div class="summary-card"><span>Расход</span><strong>{{ monthly_expense }} ₽</strong></div></div>
+    <div class="col-md-4"><div class="summary-card"><span>Итого</span><strong>{{ monthly_profit }} ₽</strong></div></div>
+</div>
+
+{{ chart_labels|json_script:"chart-labels" }}
+{{ income_chart_data|json_script:"chart-income-data" }}
+{{ expense_chart_data|json_script:"chart-expense-data" }}
+{{ profit_chart_data|json_script:"chart-profit-data" }}
+
+<div class="row g-4 mb-4">
+    <div class="col-xl-9">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+                    <h2 class="h5 mb-0">График</h2>
+                    <div class="chart-legend">
+                        <span><i class="bi bi-square-fill text-success"></i> Доход</span>
+                        <span><i class="bi bi-square-fill text-danger"></i> Расход</span>
+                        <span><i class="bi bi-square-fill text-primary"></i> Итого</span>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="financeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3">
+        <div class="card border-0 shadow-sm h-100 compact-stats-card">
+            <div class="card-body p-4">
+                <h2 class="h6 text-uppercase text-secondary mb-3">Обработанные</h2>
+                <div class="mini-stat">
+                    <span>Месяц</span>
+                    <strong>{{ processed_orders_month }}</strong>
+                </div>
+                <div class="mini-stat">
+                    <span>Всего</span>
+                    <strong>{{ processed_orders_total }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-7">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h5 mb-0">Ближайшие истечения</h2>
+                    <a href="{% url 'crm_payment_check' %}" class="small text-decoration-none">Проверка оплат</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Проект</th>
+                                <th>Клиент</th>
+                                <th>Сроки</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in upcoming_expirations %}
+                                <tr>
+                                    <td><a href="{{ order.get_absolute_url }}">{{ order.title }}</a></td>
+                                    <td>{{ order.client.company_name }}</td>
+                                    <td class="small">
+                                        {% if order.subscription_end_date %}<span class="badge rounded-pill {{ order.subscription_end_date|expiry_badge_class }}">Подписка {{ order.subscription_end_date|date:"d.m.Y" }}</span>{% endif %}
+                                        {% if order.domain_expiration_date %}<span class="badge rounded-pill {{ order.domain_expiration_date|expiry_badge_class }}">Домен {{ order.domain_expiration_date|date:"d.m.Y" }}</span>{% endif %}
+                                        {% if order.server_expiration_date %}<span class="badge rounded-pill {{ order.server_expiration_date|expiry_badge_class }}">Сервер {{ order.server_expiration_date|date:"d.m.Y" }}</span>{% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr><td colspan="3" class="text-secondary">Пусто.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-5">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body p-4">
+                <h2 class="h5 mb-3">Последние заказы</h2>
+                <ul class="list-group list-group-flush">
+                    {% for order in recent_orders %}
+                        <li class="list-group-item px-0 d-flex justify-content-between gap-3">
+                            <div>
+                                <a href="{{ order.get_absolute_url }}" class="fw-semibold text-decoration-none">{{ order.title }}</a>
+                                <div class="small text-secondary">{{ order.client.company_name }}</div>
+                            </div>
+                            <span class="small text-secondary">{{ order.updated_at|date:"d.m.Y" }}</span>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item px-0 text-secondary">Пусто.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+    const chartLabels = JSON.parse(document.getElementById("chart-labels").textContent);
+    const chartIncomeData = JSON.parse(document.getElementById("chart-income-data").textContent);
+    const chartExpenseData = JSON.parse(document.getElementById("chart-expense-data").textContent);
+    const chartProfitData = JSON.parse(document.getElementById("chart-profit-data").textContent);
+    const chartElement = document.getElementById("financeChart");
+
+    if (chartElement) {
+        new Chart(chartElement, {
+            type: "bar",
+            data: {
+                labels: chartLabels,
+                datasets: [
+                    {
+                        label: "Доход",
+                        data: chartIncomeData,
+                        backgroundColor: "rgba(45, 106, 79, 0.8)",
+                        borderRadius: 10,
+                    },
+                    {
+                        label: "Расход",
+                        data: chartExpenseData,
+                        backgroundColor: "rgba(201, 111, 59, 0.75)",
+                        borderRadius: 10,
+                    },
+                    {
+                        label: "Итого",
+                        data: chartProfitData,
+                        type: "line",
+                        borderColor: "#14344c",
+                        backgroundColor: "#14344c",
+                        borderWidth: 3,
+                        tension: 0.3,
+                        pointRadius: 4,
+                        pointHoverRadius: 5,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: (value) => `${value} ₽`
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}ТЗ отправлено | {{ site_brand_name }}{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm text-center">
+                    <div class="card-body p-5">
+                        <p class="section-kicker mb-2">Спасибо</p>
+                        <h1 class="mb-3">Техническое задание отправлено</h1>
+                        <p class="text-secondary mb-4">Мы сохранили заявку в базе и скоро свяжемся с тобой для уточнения деталей и подготовки предложения.</p>
+                        <div class="d-flex justify-content-center flex-wrap gap-3">
+                            <a href="{% url 'home' %}" class="btn btn-outline-dark">На главную</a>
+                            <a href="{% url 'portfolio_list' %}" class="btn btn-accent">Посмотреть портфолио</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

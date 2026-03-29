@@ -1,0 +1,49 @@
+{% extends "dashboard/base.html" %}
+
+{% block title %}Заказ | {{ site_brand_name }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="row justify-content-center">
+    <div class="col-xl-10">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4 p-lg-5">
+                <h1 class="h3 mb-4">{% if object %}Редактирование заказа{% else %}Новый заказ{% endif %}</h1>
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">{% include "partials/form_field.html" with field=form.client %}</div>
+                        <div class="col-md-6">{% include "partials/form_field.html" with field=form.brief %}</div>
+                        <div class="col-md-8">{% include "partials/form_field.html" with field=form.title %}</div>
+                        <div class="col-md-4">{% include "partials/form_field.html" with field=form.status %}</div>
+                    </div>
+                    {% include "partials/form_field.html" with field=form.description %}
+                    <div class="row g-3">
+                        <div class="col-md-4">{% include "partials/form_field.html" with field=form.start_date %}</div>
+                        <div class="col-md-4">{% include "partials/form_field.html" with field=form.end_date %}</div>
+                        <div class="col-md-4">{% include "partials/form_field.html" with field=form.subscription_term_months %}</div>
+                        <div class="col-md-4">{% include "partials/form_field.html" with field=form.subscription_end_date %}</div>
+                        <div class="col-md-4">{% include "partials/form_field.html" with field=form.domain_expiration_date %}</div>
+                        <div class="col-md-4">{% include "partials/form_field.html" with field=form.server_expiration_date %}</div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">{% include "partials/form_field.html" with field=form.domain %}</div>
+                        <div class="col-md-3">{% include "partials/form_field.html" with field=form.server_ip %}</div>
+                        <div class="col-md-3">{% include "partials/form_field.html" with field=form.server_username %}</div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-4">{% include "partials/form_field.html" with field=form.server_password %}</div>
+                        <div class="col-md-4">{% include "partials/form_field.html" with field=form.payment_status %}</div>
+                        <div class="col-md-4">{% include "partials/form_field.html" with field=form.next_payment_date %}</div>
+                        <div class="col-md-4">{% include "partials/form_field.html" with field=form.price %}</div>
+                    </div>
+                    {% if object and object.has_server_password %}
+                        <div class="alert alert-info">Пароль сервера уже сохранен в зашифрованном виде. Оставь поле пустым, если менять его не нужно.</div>
+                    {% endif %}
+                    {% include "partials/form_field.html" with field=form.comments %}
+                    <button class="btn btn-accent" type="submit">Сохранить заказ</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

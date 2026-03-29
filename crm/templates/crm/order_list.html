@@ -1,0 +1,79 @@
+{% extends "dashboard/base.html" %}
+{% load core_tags %}
+
+{% block title %}CRM | {{ site_brand_name }}{% endblock %}
+
+{% block dashboard_content %}
+{% include "partials/registry_nav.html" with search_url=request.path %}
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+        <p class="section-kicker mb-2">CRM</p>
+        <h1 class="h3 mb-0">Клиенты и заказы</h1>
+    </div>
+    <a href="{% url 'crm_order_create' %}" class="btn btn-accent">Добавить заказ</a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Клиент</th>
+                    <th>Проект</th>
+                    <th>Статус заказа</th>
+                    <th>Оплата и стоимость</th>
+                    <th>Инфраструктура</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                    <tr class="table-row-link {% if order.next_payment_date and order.next_payment_date|days_until < 0 %}table-danger{% elif order.subscription_end_date and order.subscription_end_date|days_until <= 7 %}table-warning{% endif %}"
+                        tabindex="0"
+                        role="link"
+                        aria-label="Открыть заказ {{ order.title }}"
+                        onclick="window.location.href='{{ order.get_absolute_url }}'"
+                        onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();window.location.href='{{ order.get_absolute_url }}';}">
+                        <td class="small">
+                            <div class="fw-semibold">{{ order.client.company_name }}</div>
+                            <div>{{ order.client.name }}</div>
+                            {% if order.client.email %}<div class="text-secondary">{{ order.client.email }}</div>{% endif %}
+                            {% if order.client.phone %}<div class="text-secondary">{{ order.client.phone }}</div>{% endif %}
+                        </td>
+                        <td>
+                            <div class="fw-semibold">{{ order.title }}</div>
+                            {% if order.comments %}<div class="small text-secondary">{{ order.comments|truncatechars:80 }}</div>{% endif %}
+                        </td>
+                        <td onclick="event.stopPropagation()" onkeydown="event.stopPropagation()">
+                            <div class="d-flex flex-column gap-2">
+                                <span class="badge rounded-pill {{ order.status|order_status_badge }} w-fit">{{ order.get_status_display }}</span>
+                                <form method="post" action="{% url 'crm_order_status_update' order.pk %}" onclick="event.stopPropagation()" onkeydown="event.stopPropagation()">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                    <select name="status" class="form-select form-select-sm" onchange="this.form.submit()" onclick="event.stopPropagation()" onkeydown="event.stopPropagation()">
+                                        {% for value, label in status_choices %}
+                                            <option value="{{ value }}" {% if order.status == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </form>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge rounded-pill {{ order.payment_status|payment_badge_class }}">{{ order.get_payment_status_display }}</span>
+                            <div class="small mt-1">{{ order.price }} ₽</div>
+                            {% if order.next_payment_date %}<div class="small text-secondary mt-1">{{ order.next_payment_date|date:"d.m.Y" }}</div>{% endif %}
+                        </td>
+                        <td class="small">
+                            <div>Старт: {{ order.start_date|date:"d.m.Y" }}</div>
+                            {% if order.domain %}<div>{{ order.domain }}</div>{% endif %}
+                            {% if order.server_ip %}<div class="text-secondary">{{ order.server_ip }}</div>{% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5" class="text-center text-secondary py-4">Заказы пока не добавлены.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

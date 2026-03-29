@@ -1,0 +1,86 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{{ site_brand_name }}{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="{% static 'css/site.css' %}?v=20260328-brief-hidden-palette" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <nav class="navbar navbar-expand-lg navbar-light site-navbar sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{% url 'home' %}">{{ site_brand_name }}</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Переключить навигацию">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Главная</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'portfolio_list' %}">Портфолио</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'brief_create' %}">Создать ТЗ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'contact' %}">Контакты</a></li>
+                    {% if user.is_authenticated and user.is_staff %}
+                        <li class="nav-item"><a class="btn btn-outline-dark rounded-pill px-3" href="{% url 'dashboard' %}">CRM</a></li>
+                        <li class="nav-item"><a class="btn btn-accent rounded-pill px-3" href="{% url 'logout' %}">Выйти</a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="btn btn-accent rounded-pill px-3" href="{% url 'login' %}">Вход</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    {% include "partials/messages.html" %}
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    {% block footer %}
+        <footer class="site-footer mt-5">
+            <div class="container py-5">
+                <div class="row g-4 align-items-start">
+                    <div class="col-lg-4">
+                        <p class="footer-kicker">Web Studio</p>
+                        <h2 class="h4 mb-3">{{ site_brand_name }}</h2>
+                        <p class="mb-0 text-secondary">Разрабатываем сайты, личные кабинеты и внутренние системы с понятной архитектурой и поддержкой после запуска.</p>
+                    </div>
+                    <div class="col-sm-6 col-lg-4">
+                        <h3 class="h6 text-uppercase text-secondary mb-3">Навигация</h3>
+                        <ul class="list-unstyled footer-links mb-0">
+                            <li><a href="{% url 'home' %}">Главная</a></li>
+                            <li><a href="{% url 'portfolio_list' %}">Портфолио</a></li>
+                            <li><a href="{% url 'brief_create' %}">Форма ТЗ</a></li>
+                            <li><a href="{% url 'contact' %}">Контакты</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-sm-6 col-lg-4">
+                        <h3 class="h6 text-uppercase text-secondary mb-3">Контакты</h3>
+                        {% if primary_contact %}
+                            <ul class="list-unstyled footer-links mb-0">
+                                <li><a href="mailto:{{ primary_contact.email }}">{{ primary_contact.email }}</a></li>
+                                <li><a href="tel:{{ primary_contact.phone }}">{{ primary_contact.phone }}</a></li>
+                                {% if primary_contact.telegram %}<li>{{ primary_contact.telegram }}</li>{% endif %}
+                                {% if primary_contact.address %}<li>{{ primary_contact.address }}</li>{% endif %}
+                            </ul>
+                        {% else %}
+                            <p class="text-secondary mb-0">Контакты можно заполнить в админке Django.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </footer>
+    {% endblock %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="{% static 'js/site.js' %}?v=20260328-brief-form-ui-refresh"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

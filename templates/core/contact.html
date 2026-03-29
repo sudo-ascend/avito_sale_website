@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Контакты | {{ site_brand_name }}{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <p class="section-kicker mb-2">Контакты</p>
+                <h1 class="mb-4">Свяжись с нами удобным способом</h1>
+                {% if contact_info %}
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <h2 class="h4">{{ contact_info.company_name }}</h2>
+                            {% if contact_info.tagline %}<p class="text-secondary">{{ contact_info.tagline }}</p>{% endif %}
+                            <ul class="list-unstyled contact-list mb-0">
+                                <li><strong>Email:</strong> <a href="mailto:{{ contact_info.email }}">{{ contact_info.email }}</a></li>
+                                <li><strong>Телефон:</strong> <a href="tel:{{ contact_info.phone }}">{{ contact_info.phone }}</a></li>
+                                {% if contact_info.telegram %}<li><strong>Telegram:</strong> {{ contact_info.telegram }}</li>{% endif %}
+                                {% if contact_info.whatsapp %}<li><strong>WhatsApp:</strong> {{ contact_info.whatsapp }}</li>{% endif %}
+                                {% if contact_info.address %}<li><strong>Адрес:</strong> {{ contact_info.address }}</li>{% endif %}
+                                {% if contact_info.working_hours %}<li><strong>Время работы:</strong> {{ contact_info.working_hours }}</li>{% endif %}
+                            </ul>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">Контактные данные пока не заполнены.</div>
+                {% endif %}
+            </div>
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body p-4 p-lg-5">
+                        <p class="section-kicker mb-2">Новый проект</p>
+                        <h2 class="mb-3">Сразу перейти к структуре задачи</h2>
+                        <p class="text-secondary mb-4">Чтобы не терять детали на старте, мы просим клиентов заполнять бриф. Так проект быстрее переходит в оценку и разработку.</p>
+                        <a href="{% url 'brief_create' %}" class="btn btn-accent rounded-pill px-4">Заполнить форму ТЗ</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
