@@ -6,7 +6,7 @@
 {% include "partials/registry_nav.html" %}
 
 <div class="row justify-content-center">
-    <div class="col-xl-8">
+    <div class="col-xl-9">
         <div class="card border-0 shadow-sm">
             <div class="card-body p-4 p-lg-5">
                 <h1 class="h3 mb-2">Редактирование заказа</h1>
@@ -14,15 +14,41 @@
 
                 <form method="post" class="needs-validation" novalidate>
                     {% csrf_token %}
+
+                    <h2 class="h5 mb-3">Проект</h2>
                     <div class="row g-3">
                         <div class="col-md-6">{% include "partials/form_field.html" with field=form.display_name %}</div>
                         <div class="col-md-6">{% include "partials/form_field.html" with field=form.client_type %}</div>
-                        <div class="col-md-6">{% include "partials/form_field.html" with field=form.status %}</div>
-                        <div class="col-md-6">{% include "partials/form_field.html" with field=form.payment_status %}</div>
+                        <div class="col-md-4">{% include "partials/form_field.html" with field=form.status %}</div>
+                        <div class="col-md-4">{% include "partials/form_field.html" with field=form.payment_status %}</div>
+                        <div class="col-md-4">{% include "partials/form_field.html" with field=form.price %}</div>
                         <div class="col-md-4">{% include "partials/form_field.html" with field=form.start_date %}</div>
                         <div class="col-md-4">{% include "partials/form_field.html" with field=form.subscription_term_days %}</div>
                         <div class="col-md-4">{% include "partials/form_field.html" with field=form.end_date %}</div>
                     </div>
+
+                    <hr class="my-4">
+
+                    <h2 class="h5 mb-3">Хостинг</h2>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="form-check mt-1">
+                                {{ form.has_hosting_subscription }}
+                                <label class="form-check-label" for="{{ form.has_hosting_subscription.id_for_label }}">
+                                    {{ form.has_hosting_subscription.label }}
+                                </label>
+                            </div>
+                            {% if form.has_hosting_subscription.errors %}
+                                <div class="invalid-feedback d-block">{{ form.has_hosting_subscription.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">{% include "partials/form_field.html" with field=form.hosting_monthly_amount %}</div>
+                        <div class="col-md-4">{% include "partials/form_field.html" with field=form.hosting_start_date %}</div>
+                        <div class="col-md-4">{% include "partials/form_field.html" with field=form.hosting_next_income_date %}</div>
+                        <div class="col-md-6">{% include "partials/form_field.html" with field=form.hosting_end_date %}</div>
+                        <div class="col-md-6">{% include "partials/form_field.html" with field=form.hosting_comment %}</div>
+                    </div>
+
                     <button class="btn btn-accent mt-4" type="submit">Сохранить заказ</button>
                 </form>
             </div>

@@ -1,56 +1,353 @@
 {% extends "base.html" %}
 
 {% block title %}{{ project.title }} | {{ site_brand_name }}{% endblock %}
+{% block body_class %}portfolio-demo-page{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .demo-page {
+        padding: 1.25rem 0 2rem;
+        background:
+            radial-gradient(circle at top left, rgba(201, 111, 59, 0.18), transparent 28rem),
+            linear-gradient(180deg, #f7f1e7 0%, #f2f5f8 100%);
+        min-height: calc(100vh - 76px);
+    }
+
+    .demo-toolbar-shell {
+        position: relative;
+        z-index: 2;
+        margin-bottom: 1rem;
+    }
+
+    .demo-toolbar {
+        background: rgba(20, 52, 76, 0.96);
+        color: #fff;
+        border-radius: 1.5rem;
+        box-shadow: 0 20px 50px rgba(20, 52, 76, 0.18);
+        overflow: hidden;
+    }
+
+    .demo-toolbar__panel {
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: max-height 0.35s ease, opacity 0.25s ease, padding 0.25s ease;
+        padding: 0 1.5rem;
+    }
+
+    .demo-toolbar.is-open .demo-toolbar__panel {
+        max-height: 34rem;
+        opacity: 1;
+        padding: 1.5rem;
+    }
+
+    .demo-toolbar__meta {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .demo-toolbar__badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.45rem 0.8rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .demo-toolbar__link {
+        color: #fff;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .demo-toolbar__link:hover {
+        color: #f7d8c4;
+    }
+
+    .demo-toolbar__grid {
+        display: grid;
+        gap: 1.5rem;
+        grid-template-columns: minmax(0, 2fr) minmax(18rem, 1fr);
+    }
+
+    .demo-toolbar__title {
+        margin: 0 0 0.75rem;
+        font-family: "Manrope", sans-serif;
+        font-weight: 800;
+    }
+
+    .demo-toolbar__copy {
+        color: rgba(255, 255, 255, 0.82);
+        margin-bottom: 0;
+    }
+
+    .demo-toolbar__facts {
+        display: grid;
+        gap: 0.85rem;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .demo-toolbar__fact {
+        padding: 0.9rem 1rem;
+        border-radius: 1rem;
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .demo-toolbar__fact span {
+        display: block;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: rgba(255, 255, 255, 0.68);
+        margin-bottom: 0.35rem;
+    }
+
+    .demo-toolbar__fact strong {
+        display: block;
+        color: #fff;
+    }
+
+    .demo-toolbar__tech {
+        display: flex;
+        gap: 0.55rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+
+    .demo-toolbar__tech span {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.45rem 0.8rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.09);
+        font-size: 0.92rem;
+    }
+
+    .demo-toolbar__toggle {
+        width: 100%;
+        border: 0;
+        background: transparent;
+        color: #14344c;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        padding: 0;
+        cursor: pointer;
+        margin-top: 0.2rem;
+    }
+
+    .demo-toolbar__toggle-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.55rem 1rem;
+        border-radius: 999px;
+        background: #fff;
+        border: 1px solid rgba(20, 52, 76, 0.12);
+        box-shadow: 0 12px 32px rgba(20, 52, 76, 0.12);
+        font-weight: 700;
+    }
+
+    .demo-toolbar__toggle-icon {
+        transition: transform 0.25s ease;
+    }
+
+    .demo-toolbar.is-open .demo-toolbar__toggle-icon {
+        transform: rotate(180deg);
+    }
+
+    .demo-stage {
+        position: relative;
+        z-index: 1;
+    }
+
+    .demo-stage__frame {
+        width: 100%;
+        min-height: calc(100vh - 180px);
+        border: 0;
+        border-radius: 1.5rem;
+        background: #fff;
+        box-shadow: 0 22px 60px rgba(20, 52, 76, 0.12);
+    }
+
+    .demo-stage__fallback {
+        background: rgba(255, 255, 255, 0.92);
+        border-radius: 1.5rem;
+        box-shadow: 0 22px 60px rgba(20, 52, 76, 0.12);
+    }
+
+    .demo-stage__cover {
+        min-height: 15rem;
+        background: linear-gradient(135deg, #14344c 0%, #2b506b 100%);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-family: "Manrope", sans-serif;
+        font-size: 4rem;
+        font-weight: 800;
+        border-radius: 1.5rem 1.5rem 0 0;
+    }
+
+    @media (max-width: 991.98px) {
+        .demo-page {
+            padding-top: 1rem;
+        }
+
+        .demo-toolbar__grid {
+            grid-template-columns: 1fr;
+        }
+
+        .demo-stage__frame {
+            min-height: calc(100vh - 200px);
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .demo-toolbar__facts {
+            grid-template-columns: 1fr;
+        }
+
+        .demo-toolbar__panel {
+            padding: 0 1rem;
+        }
+
+        .demo-toolbar.is-open .demo-toolbar__panel {
+            padding: 1.25rem 1rem;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<section class="py-5">
+<section class="demo-page">
     <div class="container">
-        <div class="row g-5">
-            <div class="col-lg-7">
-                <p class="section-kicker mb-2">Проект</p>
-                <h1 class="mb-3">{{ project.title }}</h1>
-                <p class="text-secondary mb-4">{{ project.short_description }}</p>
-                <div class="d-flex flex-wrap gap-2 mb-4">
-                    {% for technology in project.technologies.all %}
-                        <span class="badge rounded-pill text-bg-light border">{{ technology.name }}</span>
-                    {% endfor %}
-                </div>
-                <div class="project-detail-copy">
-                    <p>{{ project.description|linebreaks }}</p>
-                </div>
-            </div>
-            <div class="col-lg-5">
-                <div class="card border-0 shadow-sm">
-                    <div class="project-card__media project-card__media--detail">
-                        {% if project.cover_image %}
-                            <img src="{{ project.cover_image.url }}" alt="{{ project.title }}" class="img-fluid w-100 h-100 object-fit-cover">
-                        {% else %}
-                            <div class="project-placeholder">{{ project.title|slice:":1" }}</div>
+        <div class="demo-toolbar-shell">
+            <div class="demo-toolbar" data-demo-toolbar>
+                <div class="demo-toolbar__panel">
+                    <div class="demo-toolbar__meta">
+                        <span class="demo-toolbar__badge"><i class="bi bi-stars"></i> ДЕМО режим</span>
+                        {% if project.external_url %}
+                            <a href="{{ project.external_url }}" target="_blank" rel="noopener" class="demo-toolbar__link">
+                                <i class="bi bi-box-arrow-up-right"></i> Перейти на сайт
+                            </a>
+                        {% endif %}
+                        {% if project.has_demo_site %}
+                            <a href="{{ project.demo_url }}" target="_blank" rel="noopener" class="demo-toolbar__link">
+                                <i class="bi bi-window-fullscreen"></i> Открыть demo отдельно
+                            </a>
                         {% endif %}
                     </div>
-                    <div class="card-body p-4">
-                        <ul class="list-unstyled mb-0">
-                            <li class="mb-3"><strong>Дата:</strong> {{ project.completion_date|date:"d.m.Y" }}</li>
-                            {% if project.stack_notes %}<li class="mb-3"><strong>Стек:</strong> {{ project.stack_notes }}</li>{% endif %}
-                            {% if project.external_url %}<li><strong>Ссылка:</strong> <a href="{{ project.external_url }}" target="_blank" rel="noopener">{{ project.external_url }}</a></li>{% endif %}
-                        </ul>
+
+                    <div class="demo-toolbar__grid">
+                        <div>
+                            <p class="section-kicker mb-2 text-white-50">Портфолио</p>
+                            <h1 class="demo-toolbar__title">{{ project.title }}</h1>
+                            <p class="demo-toolbar__copy">{{ project.short_description }}</p>
+                            {% if project.technologies.all %}
+                                <div class="demo-toolbar__tech">
+                                    {% for technology in project.technologies.all %}
+                                        <span>{{ technology.name }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="demo-toolbar__facts">
+                            <div class="demo-toolbar__fact">
+                                <span>Дата</span>
+                                <strong>{{ project.completion_date|date:"d.m.Y" }}</strong>
+                            </div>
+                            <div class="demo-toolbar__fact">
+                                <span>Стек</span>
+                                <strong>{{ project.stack_notes|default:"Не указан" }}</strong>
+                            </div>
+                            <div class="demo-toolbar__fact">
+                                <span>Описание</span>
+                                <strong>{{ project.description|truncatechars:120 }}</strong>
+                            </div>
+                            <div class="demo-toolbar__fact">
+                                <span>Режим</span>
+                                <strong>{% if project.has_demo_site %}Встроенный demo{% else %}Карточка проекта{% endif %}</strong>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <button type="button" class="demo-toolbar__toggle" data-demo-toggle aria-expanded="false">
+                <span class="demo-toolbar__toggle-pill">
+                    <span data-demo-toggle-label>Развернуть хедер проекта</span>
+                    <i class="bi bi-chevron-down demo-toolbar__toggle-icon"></i>
+                </span>
+            </button>
         </div>
 
-        {% if project.images.all %}
-            <div class="row g-4 mt-1">
-                {% for image in project.images.all %}
-                    <div class="col-md-6 col-xl-4">
-                        <div class="card border-0 shadow-sm h-100">
-                            <img src="{{ image.image.url }}" alt="{{ image.caption|default:project.title }}" class="img-fluid rounded-top">
-                            {% if image.caption %}<div class="card-body"><p class="mb-0">{{ image.caption }}</p></div>{% endif %}
+        <div class="demo-stage">
+            {% if project.has_demo_site %}
+                <iframe
+                    src="{{ project.demo_url }}"
+                    title="Демо проекта {{ project.title }}"
+                    class="demo-stage__frame"
+                    loading="lazy"></iframe>
+            {% else %}
+                <div class="demo-stage__fallback overflow-hidden">
+                    {% if project.cover_image %}
+                        <img src="{{ project.cover_image.url }}" alt="{{ project.title }}" class="img-fluid w-100">
+                    {% else %}
+                        <div class="demo-stage__cover">{{ project.title|slice:":1" }}</div>
+                    {% endif %}
+                    <div class="p-4 p-lg-5">
+                        <p class="section-kicker mb-2">Проект</p>
+                        <h2 class="h3 mb-3">{{ project.title }}</h2>
+                        <p class="text-secondary mb-4">{{ project.short_description }}</p>
+                        <div class="project-detail-copy">
+                            <p>{{ project.description|linebreaks }}</p>
                         </div>
+                        {% if project.external_url %}
+                            <a href="{{ project.external_url }}" target="_blank" rel="noopener" class="btn btn-accent rounded-pill mt-3">
+                                Перейти на сайт
+                            </a>
+                        {% endif %}
                     </div>
-                {% endfor %}
-            </div>
-        {% endif %}
+                </div>
+            {% endif %}
+        </div>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function () {
+        const toolbar = document.querySelector("[data-demo-toolbar]");
+        const toggle = document.querySelector("[data-demo-toggle]");
+        const label = document.querySelector("[data-demo-toggle-label]");
+
+        if (!toolbar || !toggle || !label) {
+            return;
+        }
+
+        const syncState = () => {
+            const isOpen = toolbar.classList.contains("is-open");
+            toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+            label.textContent = isOpen ? "Свернуть хедер проекта" : "Развернуть хедер проекта";
+        };
+
+        toggle.addEventListener("click", () => {
+            toolbar.classList.toggle("is-open");
+            syncState();
+        });
+
+        syncState();
+    })();
+</script>
 {% endblock %}

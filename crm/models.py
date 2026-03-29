@@ -136,7 +136,8 @@ class Order(TimeStampedModel):
         if self.start_date and self.subscription_term_days:
             calculated_end_date = self.start_date + timedelta(days=self.subscription_term_days - 1)
             self.end_date = calculated_end_date
-            self.subscription_end_date = calculated_end_date
+            if not self.next_payment_date:
+                self.subscription_end_date = calculated_end_date
         if not self.slug:
             base_slug = slugify(self.title)
             slug = base_slug
@@ -146,6 +147,9 @@ class Order(TimeStampedModel):
                 slug = f"{base_slug}-{counter}"
             self.slug = slug
         super().save(*args, **kwargs)
+        from .services import sync_order_project_income
+
+        sync_order_project_income(self)
 
     @property
     def has_server_password(self) -> bool:
@@ -161,3 +165,30 @@ class Order(TimeStampedModel):
     @property
     def is_closed(self) -> bool:
         return self.status == self.Status.COMPLETED
+
+
+class HostingSubscription(TimeStampedModel):
+    order = models.OneToOneField(
+        Order,
+        verbose_name="Заказ",
+        related_name="hosting_subscription",
+        on_delete=models.CASCADE,
+    )
+    monthly_amount = models.DecimalField("Ежемесячный платеж", max_digits=10, decimal_places=2)
+    start_date = models.DateField("Дата старта подписки")
+    next_income_date = models.DateField("Дата следующего поступления")
+    end_date = models.DateField("Дата окончания подписки", blank=True, null=True)
+    is_active = models.BooleanField("Подписка активна", default=True)
+    comment = models.TextField("Комментарий", blank=True)
+
+    class Meta:
+        ordering = ("next_income_date", "pk")
+        verbose_name = "Хостинг-подписка"
+        verbose_name_plural = "Хостинг-подписки"
+
+    def __str__(self) -> str:
+        return f"Хостинг - {self.order.title}"
+
+    @property
+    def client(self):
+        return self.order.client

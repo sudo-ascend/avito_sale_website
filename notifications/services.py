@@ -2,7 +2,9 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
 
-from crm.models import Order
+from accounting.models import AccountingEntry
+from crm.models import HostingSubscription, Order
+from crm.services import add_months
 
 from .models import NotificationLog, ReminderRule
 
@@ -15,9 +17,7 @@ ACTIVE_ORDER_STATUSES = [
 
 
 def active_thresholds() -> list[int]:
-    days = list(
-        ReminderRule.objects.filter(is_active=True).values_list("days_before", flat=True)
-    )
+    days = list(ReminderRule.objects.filter(is_active=True).values_list("days_before", flat=True))
     return sorted(days or [30, 14, 7, 3, 1], reverse=True)
 
 
@@ -131,4 +131,70 @@ def send_expiry_notifications() -> dict:
                 summary["errors"] += 1
             else:
                 summary["skipped"] += 1
+    return summary
+
+
+def send_hosting_income_notifications() -> dict:
+    today = timezone.localdate()
+    summary = {"sent": 0, "errors": 0, "skipped": 0}
+    subscriptions = HostingSubscription.objects.filter(
+        is_active=True,
+        next_income_date__isnull=False,
+    ).select_related("order__client")
+
+    for subscription in subscriptions:
+        next_income_date = subscription.next_income_date
+        while next_income_date and next_income_date <= today:
+            if subscription.end_date and next_income_date > subscription.end_date:
+                subscription.is_active = False
+                subscription.save(update_fields=["is_active", "updated_at"])
+                break
+
+            reference_key = f"hosting-income:{subscription.pk}:{next_income_date.isoformat()}"
+            AccountingEntry.objects.update_or_create(
+                reference_key=reference_key,
+                defaults={
+                    "date": next_income_date,
+                    "operation_type": AccountingEntry.OperationType.INCOME,
+                    "source": AccountingEntry.Source.HOSTING_SUBSCRIPTION,
+                    "category": "Подписка на хостинг",
+                    "amount": subscription.monthly_amount,
+                    "comment": f"Ежемесячное поступление по хостингу для проекта «{subscription.order.title}».",
+                    "client": subscription.client,
+                    "order": subscription.order,
+                },
+            )
+
+            result = _send_notification(
+                reference_key=reference_key,
+                event_type=NotificationLog.EventType.HOSTING_INCOME,
+                recipient_email=settings.NOTIFICATION_EMAIL,
+                subject=f"Поступление по хостингу: {subscription.order.title}",
+                message=(
+                    f"Клиент: {subscription.client.company_name}\n"
+                    f"Проект: {subscription.order.title}\n"
+                    f"Услуга: хостинг\n"
+                    f"Сумма: {subscription.monthly_amount} ₽\n"
+                    f"Дата поступления: {next_income_date:%d.%m.%Y}"
+                ),
+                order=subscription.order,
+                target_date=next_income_date,
+            )
+            if result == "sent":
+                summary["sent"] += 1
+            elif result == "error":
+                summary["errors"] += 1
+            else:
+                summary["skipped"] += 1
+
+            next_income_date = add_months(next_income_date, 1)
+
+        if subscription.next_income_date != next_income_date:
+            subscription.next_income_date = next_income_date
+            update_fields = ["next_income_date", "updated_at"]
+            if subscription.end_date and next_income_date and next_income_date > subscription.end_date:
+                subscription.is_active = False
+                update_fields.append("is_active")
+            subscription.save(update_fields=update_fields)
+
     return summary

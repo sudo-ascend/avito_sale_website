@@ -8,7 +8,7 @@ from core.mixins import StaffRequiredMixin
 
 from .forms import ReminderRuleForm
 from .models import NotificationLog, ReminderRule
-from .services import send_expiry_notifications
+from .services import send_expiry_notifications, send_hosting_income_notifications
 
 
 class ReminderRuleListView(StaffRequiredMixin, ListView):
@@ -59,4 +59,9 @@ class RunNotificationAPIView(APIView):
     permission_classes = [InternalApiTokenPermission]
 
     def post(self, request):
-        return Response(send_expiry_notifications())
+        return Response(
+            {
+                "expiry": send_expiry_notifications(),
+                "hosting_income": send_hosting_income_notifications(),
+            }
+        )

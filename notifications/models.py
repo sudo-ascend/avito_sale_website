@@ -31,6 +31,7 @@ class NotificationLog(TimeStampedModel):
         DOMAIN = "domain", "Домен"
         SERVER = "server", "Сервер"
         DNS_UPDATED = "dns_updated", "DNS обновился"
+        HOSTING_INCOME = "hosting_income", "Доход по хостингу"
 
     class Status(models.TextChoices):
         SENT = "sent", "Отправлено"

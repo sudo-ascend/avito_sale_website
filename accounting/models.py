@@ -9,8 +9,14 @@ class AccountingEntry(TimeStampedModel):
         INCOME = "income", "Доход"
         EXPENSE = "expense", "Расход"
 
+    class Source(models.TextChoices):
+        MANUAL = "manual", "Ручная"
+        PROJECT_PAYMENT = "project_payment", "Оплата проекта"
+        HOSTING_SUBSCRIPTION = "hosting_subscription", "Подписка на хостинг"
+
     date = models.DateField("Дата")
     operation_type = models.CharField("Тип операции", max_length=20, choices=OperationType.choices)
+    source = models.CharField("Источник", max_length=30, choices=Source.choices, default=Source.MANUAL)
     category = models.CharField("Категория", max_length=150)
     amount = models.DecimalField(
         "Сумма",
@@ -18,6 +24,7 @@ class AccountingEntry(TimeStampedModel):
         decimal_places=2,
         validators=[MinValueValidator(0.01)],
     )
+    reference_key = models.CharField("Служебный ключ", max_length=255, blank=True, unique=True, null=True)
     comment = models.TextField("Комментарий", blank=True)
     client = models.ForeignKey(
         "crm.Client",

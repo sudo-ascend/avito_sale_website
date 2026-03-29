@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .forms import OrderForm
-from .models import Client, Order
+from .models import Client, HostingSubscription, Order
 
 
 @admin.register(Client)
@@ -18,3 +18,10 @@ class OrderAdmin(admin.ModelAdmin):
     list_filter = ("status", "payment_status")
     search_fields = ("title", "client__company_name", "domain")
     readonly_fields = ("created_at", "updated_at", "server_password_encrypted")
+
+
+@admin.register(HostingSubscription)
+class HostingSubscriptionAdmin(admin.ModelAdmin):
+    list_display = ("order", "monthly_amount", "start_date", "next_income_date", "end_date", "is_active")
+    list_filter = ("is_active",)
+    search_fields = ("order__title", "order__client__company_name", "order__domain")

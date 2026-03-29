@@ -1,3 +1,6 @@
+from pathlib import Path
+
+from django.conf import settings
 from django.db import models
 from django.template.defaultfilters import slugify
 from django.urls import reverse
@@ -64,6 +67,18 @@ class Project(TimeStampedModel):
 
     def get_absolute_url(self):
         return reverse("portfolio_detail", kwargs={"slug": self.slug})
+
+    @property
+    def demo_site_path(self) -> Path:
+        return Path(settings.MEDIA_ROOT) / "portfolio" / "sites" / self.slug / "index.html"
+
+    @property
+    def has_demo_site(self) -> bool:
+        return self.demo_site_path.exists()
+
+    @property
+    def demo_url(self) -> str:
+        return reverse("portfolio_site", kwargs={"slug": self.slug})
 
     @property
     def palette_colors(self) -> list[str]:

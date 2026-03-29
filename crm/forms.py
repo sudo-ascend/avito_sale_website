@@ -1,10 +1,14 @@
 from datetime import timedelta
+from decimal import Decimal
 
 from django import forms
+from django.core.exceptions import ObjectDoesNotExist
+from django.utils import timezone
 
 from core.forms import BaseStyledModelForm
 
 from .models import Client, Order
+from .services import sync_hosting_subscription
 
 
 class ClientForm(BaseStyledModelForm):
@@ -117,14 +121,49 @@ class OrderForm(BaseStyledModelForm):
 
 
 class OrderEditForm(BaseStyledModelForm):
+    DEFAULT_HOSTING_AMOUNT = Decimal("750.00")
+
     display_name = forms.CharField(label="Имя или наименование", max_length=150)
     client_type = forms.ChoiceField(label="Тип лица", choices=Client.ClientType.choices)
+    has_hosting_subscription = forms.BooleanField(
+        label="Подключить подписку на хостинг",
+        required=False,
+    )
+    hosting_monthly_amount = forms.DecimalField(
+        label="Платеж за хостинг, ₽",
+        required=False,
+        min_value=Decimal("0.01"),
+        max_digits=10,
+        decimal_places=2,
+        initial=DEFAULT_HOSTING_AMOUNT,
+    )
+    hosting_start_date = forms.DateField(
+        label="Старт подписки",
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    hosting_next_income_date = forms.DateField(
+        label="Следующее поступление",
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    hosting_end_date = forms.DateField(
+        label="Окончание подписки",
+        required=False,
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    hosting_comment = forms.CharField(
+        label="Комментарий по хостингу",
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 2}),
+    )
 
     class Meta:
         model = Order
         fields = (
             "status",
             "payment_status",
+            "price",
             "start_date",
             "subscription_term_days",
             "end_date",
@@ -132,9 +171,10 @@ class OrderEditForm(BaseStyledModelForm):
         labels = {
             "status": "Статус заказа",
             "payment_status": "Статус оплаты",
-            "start_date": "Дата начала подписки",
+            "price": "Сумма проекта",
+            "start_date": "Дата начала проекта",
             "subscription_term_days": "Количество дней",
-            "end_date": "Дата окончания",
+            "end_date": "Дата окончания проекта",
         }
         widgets = {
             "start_date": forms.DateInput(attrs={"type": "date"}),
@@ -174,6 +214,24 @@ class OrderEditForm(BaseStyledModelForm):
         if order and order.pk and not self.initial.get("subscription_term_days"):
             self.initial["subscription_term_days"] = order.subscription_term_days or order.subscription_term_months
 
+        try:
+            subscription = order.hosting_subscription
+        except ObjectDoesNotExist:
+            subscription = None
+        suggested_start = order.end_date or order.start_date or timezone.localdate()
+        if subscription:
+            self.initial.setdefault("has_hosting_subscription", subscription.is_active)
+            self.initial.setdefault("hosting_monthly_amount", subscription.monthly_amount)
+            self.initial.setdefault("hosting_start_date", subscription.start_date)
+            self.initial.setdefault("hosting_next_income_date", subscription.next_income_date)
+            self.initial.setdefault("hosting_end_date", subscription.end_date)
+            self.initial.setdefault("hosting_comment", subscription.comment)
+        elif order.brief_id and order.brief and order.brief.need_hosting:
+            self.initial.setdefault("has_hosting_subscription", True)
+            self.initial.setdefault("hosting_monthly_amount", self.DEFAULT_HOSTING_AMOUNT)
+            self.initial.setdefault("hosting_start_date", suggested_start)
+            self.initial.setdefault("hosting_next_income_date", suggested_start)
+
     def clean(self):
         cleaned_data = super().clean()
         start_date = cleaned_data.get("start_date")
@@ -181,6 +239,30 @@ class OrderEditForm(BaseStyledModelForm):
 
         if start_date and subscription_term_days:
             cleaned_data["end_date"] = start_date + timedelta(days=subscription_term_days - 1)
+
+        if cleaned_data.get("price") is not None and cleaned_data["price"] < 0:
+            self.add_error("price", "Сумма проекта не может быть отрицательной.")
+
+        has_hosting = cleaned_data.get("has_hosting_subscription")
+        hosting_start_date = cleaned_data.get("hosting_start_date")
+        hosting_next_income_date = cleaned_data.get("hosting_next_income_date")
+        hosting_end_date = cleaned_data.get("hosting_end_date")
+        hosting_monthly_amount = cleaned_data.get("hosting_monthly_amount")
+
+        if has_hosting:
+            if not hosting_monthly_amount:
+                self.add_error("hosting_monthly_amount", "Укажите ежемесячную сумму по хостингу.")
+            if not hosting_start_date:
+                self.add_error("hosting_start_date", "Укажите дату старта подписки.")
+            if not hosting_next_income_date:
+                self.add_error("hosting_next_income_date", "Укажите дату следующего поступления.")
+            if hosting_start_date and hosting_end_date and hosting_end_date < hosting_start_date:
+                self.add_error("hosting_end_date", "Дата окончания не может быть раньше даты старта.")
+            if hosting_start_date and hosting_next_income_date and hosting_next_income_date < hosting_start_date:
+                self.add_error(
+                    "hosting_next_income_date",
+                    "Следующее поступление не может быть раньше даты старта подписки.",
+                )
 
         return cleaned_data
 
@@ -197,7 +279,11 @@ class OrderEditForm(BaseStyledModelForm):
                 previous_display_name = self.instance.client.company_name or self.instance.client.name
 
         order.end_date = self.cleaned_data.get("end_date")
-        order.subscription_end_date = order.end_date
+        has_hosting = self.cleaned_data.get("has_hosting_subscription")
+        hosting_end_date = self.cleaned_data.get("hosting_end_date")
+        hosting_next_income_date = self.cleaned_data.get("hosting_next_income_date")
+        order.subscription_end_date = hosting_end_date if has_hosting and hosting_end_date else order.end_date
+        order.next_payment_date = hosting_next_income_date if has_hosting else None
 
         client = order.client
         old_client_values = {client.company_name, client.name}
@@ -219,4 +305,13 @@ class OrderEditForm(BaseStyledModelForm):
                 order.brief.save(update_fields=["business_name", "client_type"])
             order.save()
             self.save_m2m()
+            sync_hosting_subscription(
+                order,
+                enabled=has_hosting,
+                monthly_amount=self.cleaned_data.get("hosting_monthly_amount"),
+                start_date=self.cleaned_data.get("hosting_start_date"),
+                next_income_date=hosting_next_income_date,
+                end_date=hosting_end_date,
+                comment=self.cleaned_data.get("hosting_comment", ""),
+            )
         return order

@@ -1,3 +1,4 @@
+from datetime import timedelta
 import tempfile
 import zipfile
 from decimal import Decimal
@@ -9,9 +10,10 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
+from accounting.models import AccountingEntry
 from briefs.models import BriefAttachment, BriefRequest
 
-from .models import Client, Order
+from .models import Client, HostingSubscription, Order
 
 
 SMALL_GIF = (
@@ -285,3 +287,89 @@ class ClientMaterialsTests(CRMTestCase):
         self.assertIn(f"brief-{self.brief.pk}/texts/text-1.txt", archive_names)
         self.assertIn(f"brief-{self.brief.pk}/reviews/review-1.txt", archive_names)
         self.assertIn(f"brief-{self.brief.pk}/logo/logo.gif", archive_names)
+
+
+class OrderAccountingFlowTests(CRMTestCase):
+    def test_paid_order_creates_project_income_entry(self):
+        crm_client = Client.objects.create(
+            name="Иван Иванов",
+            company_name="Ромашка",
+            email="ivan@example.com",
+            phone="+79991234567",
+        )
+        order = Order.objects.create(
+            client=crm_client,
+            title="Лендинг для Ромашки",
+            start_date=timezone.localdate(),
+            price=Decimal("10000.00"),
+            payment_status=Order.PaymentStatus.UNPAID,
+        )
+
+        response = self.client.post(
+            reverse("crm_order_edit", args=[order.pk]),
+            {
+                "display_name": "Ромашка",
+                "client_type": Client.ClientType.INDIVIDUAL,
+                "status": Order.Status.COMPLETED,
+                "payment_status": Order.PaymentStatus.PAID,
+                "price": "10000.00",
+                "start_date": timezone.localdate().isoformat(),
+                "subscription_term_days": "14",
+                "end_date": "",
+            },
+        )
+
+        order.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(order.payment_status, Order.PaymentStatus.PAID)
+        entry = AccountingEntry.objects.get(reference_key=f"project-payment:{order.pk}")
+        self.assertEqual(entry.source, AccountingEntry.Source.PROJECT_PAYMENT)
+        self.assertEqual(entry.amount, Decimal("10000.00"))
+        self.assertEqual(entry.order_id, order.pk)
+
+    def test_hosting_subscription_is_saved_from_order_edit_form(self):
+        crm_client = Client.objects.create(
+            name="Иван Иванов",
+            company_name="Ромашка",
+            email="ivan@example.com",
+            phone="+79991234567",
+        )
+        order = Order.objects.create(
+            client=crm_client,
+            title="Лендинг для Ромашки",
+            start_date=timezone.localdate(),
+            price=Decimal("10000.00"),
+        )
+        next_income_date = timezone.localdate()
+        end_date = timezone.localdate() + timedelta(days=90)
+
+        response = self.client.post(
+            reverse("crm_order_edit", args=[order.pk]),
+            {
+                "display_name": "Ромашка",
+                "client_type": Client.ClientType.INDIVIDUAL,
+                "status": Order.Status.COMPLETED,
+                "payment_status": Order.PaymentStatus.PAID,
+                "price": "10000.00",
+                "start_date": timezone.localdate().isoformat(),
+                "subscription_term_days": "14",
+                "end_date": "",
+                "has_hosting_subscription": "on",
+                "hosting_monthly_amount": "750.00",
+                "hosting_start_date": timezone.localdate().isoformat(),
+                "hosting_next_income_date": next_income_date.isoformat(),
+                "hosting_end_date": end_date.isoformat(),
+                "hosting_comment": "Ежемесячный хостинг",
+            },
+        )
+
+        order.refresh_from_db()
+        subscription = HostingSubscription.objects.get(order=order)
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(subscription.monthly_amount, Decimal("750.00"))
+        self.assertEqual(subscription.next_income_date, next_income_date)
+        self.assertEqual(subscription.end_date, end_date)
+        self.assertTrue(subscription.is_active)
+        self.assertEqual(order.next_payment_date, next_income_date)
+        self.assertEqual(order.subscription_end_date, end_date)

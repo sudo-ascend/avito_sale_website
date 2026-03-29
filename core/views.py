@@ -12,7 +12,7 @@ from django.views.generic import CreateView, TemplateView
 from openpyxl import Workbook
 
 from accounting.models import AccountingEntry
-from crm.models import Client, Order
+from crm.models import Client, HostingSubscription, Order
 from portfolio.models import Project
 
 from .excel import autosize_columns, style_header, workbook_response
@@ -66,7 +66,10 @@ class DashboardView(StaffRequiredMixin, TemplateView):
         today = timezone.localdate()
         month_start = today.replace(day=1)
         chart_start = (month_start - timedelta(days=150)).replace(day=1)
-        active_orders = Order.objects.exclude(status=Order.Status.COMPLETED)
+        active_orders = Order.objects.filter(
+            Q(status__in=[Order.Status.NEW, Order.Status.IN_PROGRESS, Order.Status.DNS_PENDING])
+            | Q(hosting_subscription__is_active=True)
+        ).distinct()
         accounting = AccountingEntry.objects.all()
         monthly_income = (
             accounting.filter(
@@ -86,6 +89,16 @@ class DashboardView(StaffRequiredMixin, TemplateView):
             .get("total")
             or Decimal("0")
         )
+        monthly_subscription_income = (
+            accounting.filter(
+                operation_type=AccountingEntry.OperationType.INCOME,
+                source=AccountingEntry.Source.HOSTING_SUBSCRIPTION,
+                date__gte=month_start,
+            )
+            .aggregate(total=Sum("amount"))
+            .get("total")
+            or Decimal("0")
+        )
         date_limit = today + timedelta(days=14)
         upcoming_expirations = active_orders.filter(
             Q(subscription_end_date__lte=date_limit, subscription_end_date__isnull=False)
@@ -95,7 +108,7 @@ class DashboardView(StaffRequiredMixin, TemplateView):
         monthly_totals = (
             accounting.filter(date__gte=chart_start)
             .annotate(month=TruncMonth("date"))
-            .values("month", "operation_type")
+            .values("month", "operation_type", "source")
             .annotate(total=Sum("amount"))
             .order_by("month")
         )
@@ -104,24 +117,36 @@ class DashboardView(StaffRequiredMixin, TemplateView):
             month_value = item["month"]
             if hasattr(month_value, "date"):
                 month_value = month_value.date()
-            monthly_total_map[(month_value, item["operation_type"])] = item["total"]
+            monthly_total_map[(month_value, item["operation_type"], item["source"])] = item["total"]
         chart_labels = []
         income_chart_data = []
         expense_chart_data = []
+        subscription_income_chart_data = []
         profit_chart_data = []
         current_month = chart_start
         while current_month <= month_start:
-            income_value = monthly_total_map.get(
-                (current_month, AccountingEntry.OperationType.INCOME),
-                Decimal("0"),
+            income_value = sum(
+                value
+                for (month_value, operation_type, _source), value in monthly_total_map.items()
+                if month_value == current_month and operation_type == AccountingEntry.OperationType.INCOME
             )
-            expense_value = monthly_total_map.get(
-                (current_month, AccountingEntry.OperationType.EXPENSE),
+            expense_value = sum(
+                value
+                for (month_value, operation_type, _source), value in monthly_total_map.items()
+                if month_value == current_month and operation_type == AccountingEntry.OperationType.EXPENSE
+            )
+            subscription_income_value = monthly_total_map.get(
+                (
+                    current_month,
+                    AccountingEntry.OperationType.INCOME,
+                    AccountingEntry.Source.HOSTING_SUBSCRIPTION,
+                ),
                 Decimal("0"),
             )
             chart_labels.append(current_month.strftime("%b %Y"))
             income_chart_data.append(float(income_value))
             expense_chart_data.append(float(expense_value))
+            subscription_income_chart_data.append(float(subscription_income_value))
             profit_chart_data.append(float(income_value - expense_value))
             next_month_seed = current_month.replace(day=28) + timedelta(days=4)
             current_month = next_month_seed.replace(day=1)
@@ -137,12 +162,14 @@ class DashboardView(StaffRequiredMixin, TemplateView):
             {
                 "monthly_income": monthly_income,
                 "monthly_expense": monthly_expense,
+                "monthly_subscription_income": monthly_subscription_income,
                 "monthly_profit": monthly_income - monthly_expense,
                 "recent_orders": Order.objects.select_related("client").order_by("-updated_at")[:5],
                 "upcoming_expirations": upcoming_expirations,
                 "chart_labels": chart_labels,
                 "income_chart_data": income_chart_data,
                 "expense_chart_data": expense_chart_data,
+                "subscription_income_chart_data": subscription_income_chart_data,
                 "profit_chart_data": profit_chart_data,
                 "processed_orders_month": processed_orders_month,
                 "processed_orders_total": processed_orders_total,
@@ -274,30 +301,28 @@ def export_subscriptions_xlsx(request):
             "ID заказа",
             "Клиент",
             "Проект",
-            "Срок подписки (мес.)",
-            "Дата окончания подписки",
-            "Дата окончания домена",
-            "Дата окончания сервера",
-            "Следующая оплата",
-            "Статус оплаты",
+            "Сумма в месяц",
+            "Старт подписки",
+            "Следующее поступление",
+            "Окончание подписки",
+            "Активна",
             "Домен",
         ]
     )
-    for order in Order.objects.select_related("client").order_by(
-        "subscription_end_date", "domain_expiration_date"
+    for subscription in HostingSubscription.objects.select_related("order__client").order_by(
+        "next_income_date", "end_date"
     ):
         sheet.append(
             [
-                order.pk,
-                order.client.company_name,
-                order.title,
-                order.subscription_term_months,
-                order.subscription_end_date.isoformat() if order.subscription_end_date else "",
-                order.domain_expiration_date.isoformat() if order.domain_expiration_date else "",
-                order.server_expiration_date.isoformat() if order.server_expiration_date else "",
-                order.next_payment_date.isoformat() if order.next_payment_date else "",
-                order.get_payment_status_display(),
-                order.domain,
+                subscription.order.pk,
+                subscription.order.client.company_name,
+                subscription.order.title,
+                float(subscription.monthly_amount),
+                subscription.start_date.isoformat() if subscription.start_date else "",
+                subscription.next_income_date.isoformat() if subscription.next_income_date else "",
+                subscription.end_date.isoformat() if subscription.end_date else "",
+                "Да" if subscription.is_active else "Нет",
+                subscription.order.domain,
             ]
         )
     style_header(sheet)

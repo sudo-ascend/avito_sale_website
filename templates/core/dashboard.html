@@ -17,14 +17,16 @@
 </div>
 
 <div class="row g-4 mb-4">
-    <div class="col-md-4"><div class="summary-card"><span>Доход</span><strong>{{ monthly_income }} ₽</strong></div></div>
-    <div class="col-md-4"><div class="summary-card"><span>Расход</span><strong>{{ monthly_expense }} ₽</strong></div></div>
-    <div class="col-md-4"><div class="summary-card"><span>Итого</span><strong>{{ monthly_profit }} ₽</strong></div></div>
+    <div class="col-md-3"><div class="summary-card"><span>Доход</span><strong>{{ monthly_income }} ₽</strong></div></div>
+    <div class="col-md-3"><div class="summary-card"><span>Подписки</span><strong>{{ monthly_subscription_income }} ₽</strong></div></div>
+    <div class="col-md-3"><div class="summary-card"><span>Расход</span><strong>{{ monthly_expense }} ₽</strong></div></div>
+    <div class="col-md-3"><div class="summary-card"><span>Итого</span><strong>{{ monthly_profit }} ₽</strong></div></div>
 </div>
 
 {{ chart_labels|json_script:"chart-labels" }}
 {{ income_chart_data|json_script:"chart-income-data" }}
 {{ expense_chart_data|json_script:"chart-expense-data" }}
+{{ subscription_income_chart_data|json_script:"chart-subscription-income-data" }}
 {{ profit_chart_data|json_script:"chart-profit-data" }}
 
 <div class="row g-4 mb-4">
@@ -35,6 +37,7 @@
                     <h2 class="h5 mb-0">График</h2>
                     <div class="chart-legend">
                         <span><i class="bi bi-square-fill text-success"></i> Доход</span>
+                        <span><i class="bi bi-square-fill text-info"></i> Подписки</span>
                         <span><i class="bi bi-square-fill text-danger"></i> Расход</span>
                         <span><i class="bi bi-square-fill text-primary"></i> Итого</span>
                     </div>
@@ -128,6 +131,7 @@
     const chartLabels = JSON.parse(document.getElementById("chart-labels").textContent);
     const chartIncomeData = JSON.parse(document.getElementById("chart-income-data").textContent);
     const chartExpenseData = JSON.parse(document.getElementById("chart-expense-data").textContent);
+    const chartSubscriptionIncomeData = JSON.parse(document.getElementById("chart-subscription-income-data").textContent);
     const chartProfitData = JSON.parse(document.getElementById("chart-profit-data").textContent);
     const chartElement = document.getElementById("financeChart");
 
@@ -147,6 +151,12 @@
                         label: "Расход",
                         data: chartExpenseData,
                         backgroundColor: "rgba(201, 111, 59, 0.75)",
+                        borderRadius: 10,
+                    },
+                    {
+                        label: "Подписки",
+                        data: chartSubscriptionIncomeData,
+                        backgroundColor: "rgba(28, 126, 214, 0.8)",
                         borderRadius: 10,
                     },
                     {

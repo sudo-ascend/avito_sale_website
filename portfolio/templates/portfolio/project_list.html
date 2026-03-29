@@ -57,7 +57,7 @@
                                 {% endfor %}
                             </div>
                             <div class="mt-auto d-flex gap-2">
-                                <a href="{{ project.get_absolute_url }}" class="btn btn-outline-dark">Подробнее</a>
+                                <a href="{{ project.get_absolute_url }}" class="btn btn-outline-dark">{% if project.has_demo_site %}Демо{% else %}Подробнее{% endif %}</a>
                                 {% if project.external_url %}
                                     <a href="{{ project.external_url }}" target="_blank" rel="noopener" class="btn btn-light border">Сайт</a>
                                 {% endif %}
