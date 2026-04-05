@@ -1,19 +1,14 @@
-from datetime import timedelta
-from decimal import Decimal
-
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Q, Sum
-from django.db.models.functions import TruncMonth
+from django.db.models import Count
 from django.shortcuts import redirect
-from django.utils import timezone
-from django.views.generic import CreateView, TemplateView
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, RedirectView, TemplateView
 from openpyxl import Workbook
 
-from accounting.models import AccountingEntry
-from crm.models import Client, HostingSubscription, Order
-from portfolio.models import Project
+from crm.models import Client, Order
+from portfolio.models import Project, Technology
 
 from .excel import autosize_columns, style_header, workbook_response
 from .forms import ManagerUserCreationForm
@@ -35,11 +30,26 @@ class HomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["services"] = Service.objects.filter(is_active=True)
-        context["featured_projects"] = Project.objects.filter(is_published=True, is_featured=True)[:3]
+        featured_projects = list(
+            Project.objects.filter(is_published=True)
+            .prefetch_related("technologies", "images")
+            .order_by("-is_featured", "-completion_date", "-created_at")[:9]
+        )
+        context["featured_projects"] = featured_projects
+        context["hero_project"] = featured_projects[0] if featured_projects else None
+        context["popular_projects"] = featured_projects[:4]
+        context["suggested_projects"] = featured_projects[4:7] or featured_projects[:3]
+        context["catalog_projects"] = featured_projects[:4]
         context["contact_info"] = (
             ContactInfo.objects.filter(is_primary=True).first() or ContactInfo.objects.first()
         )
+        context["services"] = Service.objects.filter(is_active=True)
+        context["project_metrics"] = {
+            "project_count": Project.objects.filter(is_published=True).count(),
+            "technology_count": Technology.objects.annotate(project_total=Count("projects"))
+            .filter(project_total__gt=0)
+            .count(),
+        }
         return context
 
 
@@ -58,130 +68,15 @@ class SiteTypeGuideView(TemplateView):
     template_name = "core/site_type_guide.html"
 
 
-class DashboardView(StaffRequiredMixin, TemplateView):
-    template_name = "core/dashboard.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        today = timezone.localdate()
-        month_start = today.replace(day=1)
-        chart_start = (month_start - timedelta(days=150)).replace(day=1)
-        active_orders = Order.objects.filter(
-            Q(status__in=[Order.Status.NEW, Order.Status.IN_PROGRESS, Order.Status.DNS_PENDING])
-            | Q(hosting_subscription__is_active=True)
-        ).distinct()
-        accounting = AccountingEntry.objects.all()
-        monthly_income = (
-            accounting.filter(
-                operation_type=AccountingEntry.OperationType.INCOME,
-                date__gte=month_start,
-            )
-            .aggregate(total=Sum("amount"))
-            .get("total")
-            or Decimal("0")
-        )
-        monthly_expense = (
-            accounting.filter(
-                operation_type=AccountingEntry.OperationType.EXPENSE,
-                date__gte=month_start,
-            )
-            .aggregate(total=Sum("amount"))
-            .get("total")
-            or Decimal("0")
-        )
-        monthly_subscription_income = (
-            accounting.filter(
-                operation_type=AccountingEntry.OperationType.INCOME,
-                source=AccountingEntry.Source.HOSTING_SUBSCRIPTION,
-                date__gte=month_start,
-            )
-            .aggregate(total=Sum("amount"))
-            .get("total")
-            or Decimal("0")
-        )
-        date_limit = today + timedelta(days=14)
-        upcoming_expirations = active_orders.filter(
-            Q(subscription_end_date__lte=date_limit, subscription_end_date__isnull=False)
-            | Q(domain_expiration_date__lte=date_limit, domain_expiration_date__isnull=False)
-            | Q(server_expiration_date__lte=date_limit, server_expiration_date__isnull=False)
-        ).select_related("client")[:6]
-        monthly_totals = (
-            accounting.filter(date__gte=chart_start)
-            .annotate(month=TruncMonth("date"))
-            .values("month", "operation_type", "source")
-            .annotate(total=Sum("amount"))
-            .order_by("month")
-        )
-        monthly_total_map = {}
-        for item in monthly_totals:
-            month_value = item["month"]
-            if hasattr(month_value, "date"):
-                month_value = month_value.date()
-            monthly_total_map[(month_value, item["operation_type"], item["source"])] = item["total"]
-        chart_labels = []
-        income_chart_data = []
-        expense_chart_data = []
-        subscription_income_chart_data = []
-        profit_chart_data = []
-        current_month = chart_start
-        while current_month <= month_start:
-            income_value = sum(
-                value
-                for (month_value, operation_type, _source), value in monthly_total_map.items()
-                if month_value == current_month and operation_type == AccountingEntry.OperationType.INCOME
-            )
-            expense_value = sum(
-                value
-                for (month_value, operation_type, _source), value in monthly_total_map.items()
-                if month_value == current_month and operation_type == AccountingEntry.OperationType.EXPENSE
-            )
-            subscription_income_value = monthly_total_map.get(
-                (
-                    current_month,
-                    AccountingEntry.OperationType.INCOME,
-                    AccountingEntry.Source.HOSTING_SUBSCRIPTION,
-                ),
-                Decimal("0"),
-            )
-            chart_labels.append(current_month.strftime("%b %Y"))
-            income_chart_data.append(float(income_value))
-            expense_chart_data.append(float(expense_value))
-            subscription_income_chart_data.append(float(subscription_income_value))
-            profit_chart_data.append(float(income_value - expense_value))
-            next_month_seed = current_month.replace(day=28) + timedelta(days=4)
-            current_month = next_month_seed.replace(day=1)
-
-        processed_orders_month = Order.objects.filter(
-            status=Order.Status.COMPLETED,
-            end_date__gte=month_start,
-            end_date__lte=today,
-        ).count()
-        processed_orders_total = Order.objects.filter(status=Order.Status.COMPLETED).count()
-
-        context.update(
-            {
-                "monthly_income": monthly_income,
-                "monthly_expense": monthly_expense,
-                "monthly_subscription_income": monthly_subscription_income,
-                "monthly_profit": monthly_income - monthly_expense,
-                "recent_orders": Order.objects.select_related("client").order_by("-updated_at")[:5],
-                "upcoming_expirations": upcoming_expirations,
-                "chart_labels": chart_labels,
-                "income_chart_data": income_chart_data,
-                "expense_chart_data": expense_chart_data,
-                "subscription_income_chart_data": subscription_income_chart_data,
-                "profit_chart_data": profit_chart_data,
-                "processed_orders_month": processed_orders_month,
-                "processed_orders_total": processed_orders_total,
-            }
-        )
-        return context
+class DashboardView(StaffRequiredMixin, RedirectView):
+    permanent = False
+    pattern_name = "crm_order_list"
 
 
 class ManagerUserCreateView(SuperuserRequiredMixin, CreateView):
     form_class = ManagerUserCreationForm
     template_name = "core/user_form.html"
-    success_url = "/dashboard/"
+    success_url = reverse_lazy("crm_order_list")
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -261,70 +156,3 @@ def export_orders_xlsx(request):
     style_header(sheet)
     autosize_columns(sheet)
     return workbook_response(workbook, "orders.xlsx")
-
-
-@login_required
-@user_passes_test(_is_staff)
-def export_accounting_xlsx(request):
-    workbook = Workbook()
-    sheet = workbook.active
-    sheet.title = "Бухгалтерия"
-    sheet.append(["ID", "Дата", "Тип", "Категория", "Сумма", "Клиент", "Заказ", "Комментарий"])
-    for entry in AccountingEntry.objects.select_related("client", "order").order_by(
-        "-date", "-created_at"
-    ):
-        sheet.append(
-            [
-                entry.pk,
-                entry.date.isoformat(),
-                entry.get_operation_type_display(),
-                entry.category,
-                float(entry.amount),
-                entry.client.company_name if entry.client else "",
-                entry.order.title if entry.order else "",
-                entry.comment,
-            ]
-        )
-    style_header(sheet)
-    autosize_columns(sheet)
-    return workbook_response(workbook, "accounting.xlsx")
-
-
-@login_required
-@user_passes_test(_is_staff)
-def export_subscriptions_xlsx(request):
-    workbook = Workbook()
-    sheet = workbook.active
-    sheet.title = "Подписки и оплаты"
-    sheet.append(
-        [
-            "ID заказа",
-            "Клиент",
-            "Проект",
-            "Сумма в месяц",
-            "Старт подписки",
-            "Следующее поступление",
-            "Окончание подписки",
-            "Активна",
-            "Домен",
-        ]
-    )
-    for subscription in HostingSubscription.objects.select_related("order__client").order_by(
-        "next_income_date", "end_date"
-    ):
-        sheet.append(
-            [
-                subscription.order.pk,
-                subscription.order.client.company_name,
-                subscription.order.title,
-                float(subscription.monthly_amount),
-                subscription.start_date.isoformat() if subscription.start_date else "",
-                subscription.next_income_date.isoformat() if subscription.next_income_date else "",
-                subscription.end_date.isoformat() if subscription.end_date else "",
-                "Да" if subscription.is_active else "Нет",
-                subscription.order.domain,
-            ]
-        )
-    style_header(sheet)
-    autosize_columns(sheet)
-    return workbook_response(workbook, "subscriptions_payments.xlsx")

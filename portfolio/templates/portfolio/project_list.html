@@ -33,44 +33,7 @@
             </div>
         </div>
 
-        <div class="row g-4">
-            {% for project in projects %}
-                <div class="col-md-6 col-xl-4">
-                    <article class="card project-card h-100 border-0 shadow-sm">
-                        <div class="project-card__media">
-                            {% if project.cover_image %}
-                                <img src="{{ project.cover_image.url }}" alt="{{ project.title }}" class="img-fluid w-100 h-100 object-fit-cover">
-                            {% else %}
-                                <div class="project-placeholder">{{ project.title|slice:":1" }}</div>
-                            {% endif %}
-                        </div>
-                        <div class="card-body p-4 d-flex flex-column">
-                            <div class="d-flex justify-content-between gap-2 mb-2">
-                                <h2 class="h5 mb-0">{{ project.title }}</h2>
-                                <span class="small text-secondary">{{ project.completion_date|date:"m.Y" }}</span>
-                            </div>
-                            <p class="text-secondary">{{ project.short_description }}</p>
-                            <p class="mb-4">{{ project.stack_notes }}</p>
-                            <div class="d-flex flex-wrap gap-2 mb-4">
-                                {% for technology in project.technologies.all %}
-                                    <span class="badge rounded-pill text-bg-light border">{{ technology.name }}</span>
-                                {% endfor %}
-                            </div>
-                            <div class="mt-auto d-flex gap-2">
-                                <a href="{{ project.get_absolute_url }}" class="btn btn-outline-dark">{% if project.has_demo_site %}Демо{% else %}Подробнее{% endif %}</a>
-                                {% if project.external_url %}
-                                    <a href="{{ project.external_url }}" target="_blank" rel="noopener" class="btn btn-light border">Сайт</a>
-                                {% endif %}
-                            </div>
-                        </div>
-                    </article>
-                </div>
-            {% empty %}
-                <div class="col-12">
-                    <div class="alert alert-info">Проекты пока не добавлены.</div>
-                </div>
-            {% endfor %}
-        </div>
+        {% include "portfolio/includes/project_card_grid.html" with projects=projects empty_title="Проекты пока не добавлены." empty_copy="Опубликованные проекты появятся здесь автоматически." %}
     </div>
 </section>
 {% endblock %}

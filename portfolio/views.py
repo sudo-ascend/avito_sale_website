@@ -16,7 +16,7 @@ class ProjectListView(ListView):
     def get_queryset(self):
         queryset = (
             Project.objects.filter(is_published=True)
-            .prefetch_related("technologies")
+            .prefetch_related("technologies", "images")
             .order_by("-completion_date")
         )
         technology_slug = self.request.GET.get("technology")

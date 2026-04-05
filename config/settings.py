@@ -105,7 +105,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "dashboard"
+LOGIN_REDIRECT_URL = "crm_order_list"
 LOGOUT_REDIRECT_URL = "home"
 
 SITE_BRAND_NAME = os.getenv("SITE_BRAND_NAME", "Grachev Studio")

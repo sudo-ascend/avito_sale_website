@@ -517,6 +517,57 @@ document.addEventListener("DOMContentLoaded", () => {
         media.addEventListener("pointerleave", resetZoomOrigin);
     });
 
+    const projectSliders = document.querySelectorAll("[data-project-slider]");
+    projectSliders.forEach((slider) => {
+        const track = slider.querySelector("[data-slider-track]");
+        const slides = slider.querySelectorAll("[data-slider-slide]");
+        const prevButton = slider.querySelector("[data-slider-prev]");
+        const nextButton = slider.querySelector("[data-slider-next]");
+        const currentLabel = slider.querySelector("[data-slider-current]");
+        const totalLabel = slider.querySelector("[data-slider-total]");
+
+        if (!track || !slides.length) {
+            return;
+        }
+
+        const slideCount = slides.length;
+        let activeIndex = 0;
+
+        const syncSlider = () => {
+            track.style.transform = `translateX(-${activeIndex * 100}%)`;
+            slider.dataset.sliderStatic = String(slideCount <= 1);
+            if (currentLabel) {
+                currentLabel.textContent = String(activeIndex + 1);
+            }
+            if (totalLabel) {
+                totalLabel.textContent = String(slideCount);
+            }
+        };
+
+        const stepSlider = (step) => {
+            if (slideCount <= 1) {
+                return;
+            }
+            activeIndex = (activeIndex + step + slideCount) % slideCount;
+            syncSlider();
+        };
+
+        prevButton?.addEventListener("click", () => stepSlider(-1));
+        nextButton?.addEventListener("click", () => stepSlider(1));
+        slider.addEventListener("keydown", (event) => {
+            if (event.key === "ArrowLeft") {
+                event.preventDefault();
+                stepSlider(-1);
+            }
+            if (event.key === "ArrowRight") {
+                event.preventDefault();
+                stepSlider(1);
+            }
+        });
+
+        syncSlider();
+    });
+
     const customColorInputs = customPaletteInputs.filter(Boolean);
     customColorInputs.forEach((input) => {
         input.addEventListener("input", () => {

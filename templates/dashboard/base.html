@@ -15,21 +15,21 @@
             <aside class="col-12 col-lg-3 col-xl-2">
                 <div class="dashboard-sidebar card shadow-sm border-0 sticky-lg-top">
                     <div class="card-body">
-                        <p class="text-uppercase small text-secondary mb-2">CRM</p>
+                        <p class="text-uppercase small text-secondary mb-2">Приложения</p>
                         <h2 class="h5 mb-4">{{ site_brand_name }}</h2>
                         <div class="nav nav-pills flex-column gap-2">
-                            <a class="nav-link {% if request.path == '/dashboard/' %}active{% endif %}" href="{% url 'dashboard' %}">Обзор</a>
+                            <a class="nav-link" href="{% url 'client' %}">Client</a>
                             <a class="nav-link {% if '/dashboard/crm/' in request.path %}active{% endif %}" href="{% url 'crm_order_list' %}">CRM</a>
-                            <a class="nav-link {% if '/dashboard/accounting/' in request.path %}active{% endif %}" href="{% url 'accounting_entry_list' %}">Бухгалтерия</a>
-                            <a class="nav-link {% if '/dashboard/crm/payments/' in request.path %}active{% endif %}" href="{% url 'crm_payment_check' %}">Проверка оплат</a>
-                            <a class="nav-link {% if '/dashboard/dns/' in request.path %}active{% endif %}" href="{% url 'dns_target_list' %}">Проверка DNS</a>
-                            <a class="nav-link {% if '/dashboard/notifications/logs/' in request.path %}active{% endif %}" href="{% url 'notification_log_list' %}">Логи уведомлений</a>
-                            <a class="nav-link {% if '/dashboard/notifications/rules/' in request.path %}active{% endif %}" href="{% url 'notification_rule_list' %}">Правила</a>
-                            {% if user.is_superuser %}
-                                <a class="nav-link {% if '/dashboard/users/create/' in request.path %}active{% endif %}" href="{% url 'user_create' %}">Новый менеджер</a>
-                            {% endif %}
-                            <a class="nav-link" href="/admin/" target="_blank" rel="noopener">Django admin</a>
                         </div>
+                        {% if user.is_staff %}
+                            <hr class="my-4">
+                            <div class="nav nav-pills flex-column gap-2">
+                                {% if user.is_superuser %}
+                                    <a class="nav-link {% if '/dashboard/users/create/' in request.path %}active{% endif %}" href="{% url 'user_create' %}">Новый менеджер</a>
+                                {% endif %}
+                                <a class="nav-link" href="/admin/" target="_blank" rel="noopener">Django admin</a>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </aside>

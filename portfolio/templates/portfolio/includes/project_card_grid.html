@@ -1,0 +1,85 @@
+<div class="portfolio-project-surface">
+    <div class="row g-4 portfolio-project-grid">
+        {% for project in projects %}
+            <div class="col-md-6">
+                <article class="card project-card project-card--portfolio h-100 border-0 shadow-sm">
+                    <div class="project-card__media project-card__media--slider" data-project-slider tabindex="0" aria-label="Галерея проекта {{ project.title }}">
+                        <div class="project-card__slider-track" data-slider-track>
+                            {% if project.cover_image %}
+                                <div class="project-card__slide" data-slider-slide>
+                                    <img src="{{ project.cover_image.url }}" alt="{{ project.title }}" class="img-fluid w-100 h-100 object-fit-cover">
+                                </div>
+                            {% endif %}
+                            {% for image in project.images.all %}
+                                <div class="project-card__slide" data-slider-slide>
+                                    <img src="{{ image.image.url }}" alt="{{ image.caption|default:project.title }}" class="img-fluid w-100 h-100 object-fit-cover">
+                                </div>
+                            {% empty %}
+                                {% if not project.cover_image %}
+                                    <div class="project-card__slide" data-slider-slide>
+                                        <div class="project-placeholder">{{ project.title|slice:":1" }}</div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="project-card__slider-control project-card__slider-control--prev" data-slider-prev aria-label="Предыдущее изображение проекта {{ project.title }}">
+                            <span class="project-card__slider-icon project-card__slider-icon--prev" aria-hidden="true"></span>
+                        </button>
+                        <button type="button" class="project-card__slider-control project-card__slider-control--next" data-slider-next aria-label="Следующее изображение проекта {{ project.title }}">
+                            <span class="project-card__slider-icon project-card__slider-icon--next" aria-hidden="true"></span>
+                        </button>
+                        <div class="project-card__slider-counter" data-slider-counter>
+                            <span data-slider-current>1</span>/<span data-slider-total>1</span>
+                        </div>
+                    </div>
+                    <div class="card-body p-3 d-flex flex-column project-card__body">
+                        <div class="d-flex justify-content-between align-items-start gap-3">
+                            <div>
+                                <h2 class="h5 mb-1 project-card__title">
+                                    {% if project.external_url %}
+                                        <a href="{{ project.external_url }}" target="_blank" rel="noopener" class="project-card__title-link">{{ project.title }}</a>
+                                    {% elif project.has_demo_site %}
+                                        <a href="{{ project.demo_url }}" target="_blank" rel="noopener" class="project-card__title-link">{{ project.title }}</a>
+                                    {% else %}
+                                        <a href="{{ project.get_absolute_url }}" class="project-card__title-link">{{ project.title }}</a>
+                                    {% endif %}
+                                </h2>
+                                <p class="small text-secondary mb-0">{{ project.completion_date|date:"m.Y" }}</p>
+                            </div>
+                        </div>
+                        {% with palette=project.palette_colors %}
+                            <div class="project-card__palette">
+                                <p class="project-card__palette-label mb-2">Цветовая гамма</p>
+                                {% if palette %}
+                                    <div class="project-sample-palette mb-2">
+                                        {% for color in palette %}
+                                            <span class="color-swatch-btn color-swatch-btn-sm palette-display-chip" title="{{ project.title }} {{ color }}">
+                                                <span style="background-color: {{ color }};"></span>
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="project-card__palette-codes">
+                                        {% for color in palette %}
+                                            <span class="project-card__palette-code">{{ color }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <p class="small text-secondary mb-0">Палитра подбирается под фирменный стиль проекта.</p>
+                                {% endif %}
+                            </div>
+                        {% endwith %}
+                    </div>
+                </article>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h3 class="h5">{{ empty_title|default:"Проекты пока не добавлены." }}</h3>
+                        <p class="mb-0 text-secondary">{{ empty_copy|default:"Добавьте опубликованные проекты, и они появятся в этом блоке." }}</p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
