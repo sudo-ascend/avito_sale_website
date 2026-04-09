@@ -13,6 +13,17 @@ from .services import sync_brief_to_crm
 
 
 class BriefCreateView(CreateView):
+    BOOLEAN_QUERY_FIELDS = (
+        "need_hosting",
+        "need_domain",
+        "need_logo_design",
+        "need_basic_seo",
+        "need_photo_selection",
+        "need_email_form",
+        "need_reviews_section",
+    )
+    SERVICE_QUERY_FIELDS = ("site_type", "extra_pages", "hosting_plan", *BOOLEAN_QUERY_FIELDS)
+    TRUTHY_QUERY_VALUES = {"1", "true", "True", "on", "yes"}
     DEFAULT_PROJECT_EXAMPLES = [
         {
             "title": "AutoParts Catalog",
@@ -42,6 +53,41 @@ class BriefCreateView(CreateView):
     template_name = "briefs/brief_form.html"
     success_url = reverse_lazy("brief_success")
 
+    def should_reset_service_defaults(self):
+        return not any(self.request.GET.get(field_name) for field_name in self.SERVICE_QUERY_FIELDS)
+
+    def get_initial(self):
+        initial = super().get_initial()
+        query = self.request.GET
+
+        if self.should_reset_service_defaults():
+            initial.setdefault("site_type", BriefRequest.SiteType.SINGLE_PAGE)
+            initial.setdefault("extra_pages", 0)
+            initial.setdefault("hosting_plan", BriefRequest.HostingPlan.MONTHLY)
+            for field_name in self.BOOLEAN_QUERY_FIELDS:
+                initial.setdefault(field_name, False)
+
+        site_type = query.get("site_type")
+        if site_type in {choice[0] for choice in BriefRequest.SiteType.choices}:
+            initial["site_type"] = site_type
+
+        hosting_plan = query.get("hosting_plan")
+        if hosting_plan in {choice[0] for choice in BriefRequest.HostingPlan.choices}:
+            initial["hosting_plan"] = hosting_plan
+
+        try:
+            extra_pages = max(0, int(query.get("extra_pages", 0)))
+        except (TypeError, ValueError):
+            extra_pages = 0
+        if extra_pages:
+            initial["extra_pages"] = extra_pages
+
+        for field_name in self.BOOLEAN_QUERY_FIELDS:
+            if query.get(field_name) in self.TRUTHY_QUERY_VALUES:
+                initial[field_name] = True
+
+        return initial
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         projects = list(
@@ -64,6 +110,9 @@ class BriefCreateView(CreateView):
             context["brief_project_examples"] = self.DEFAULT_PROJECT_EXAMPLES
 
         form = context.get("form")
+        context["reset_service_defaults"] = bool(
+            form and not form.is_bound and self.should_reset_service_defaults()
+        )
         examples = context["brief_project_examples"]
         if form and not form.is_bound and examples:
             first_example = examples[0]
@@ -83,11 +132,7 @@ class BriefCreateView(CreateView):
             response = super().form_valid(form)
             order = sync_brief_to_crm(self.object)
         messages.success(self.request, "ТЗ успешно отправлено. Мы свяжемся с вами в ближайшее время.")
-        extras = []
-        if self.object.need_hosting:
-            extras.append("Хостинг")
-        if self.object.need_domain:
-            extras.append("Домен")
+        extras = self.object.selected_extra_services
         color_source = (
             f"Шаблон: {self.object.color_template_name}"
             if self.object.color_mode == self.object.ColorMode.TEMPLATE and self.object.color_template_name
@@ -100,6 +145,7 @@ class BriefCreateView(CreateView):
                     f"Название: {self.object.business_name}\n"
                     f"Тип клиента: {self.object.get_client_type_display()}\n"
                     f"Тип сайта: {self.object.get_site_type_display()}\n"
+                    f"Доп. страниц: {self.object.extra_pages}\n"
                     f"Email: {self.object.contact_email}\n"
                     f"Телефон: {self.object.contact_phone}\n"
                     f"Предпочитаемая связь: {self.object.get_preferred_contact_app_display()}\n"

@@ -14,6 +14,7 @@ def build_order_description(brief) -> str:
     parts = []
     parts.append(f"Тип клиента:\n{brief.get_client_type_display()}")
     parts.append(f"Тип сайта:\n{brief.get_site_type_display()}")
+    parts.append(f"Доп. страниц:\n{brief.extra_pages}")
     parts.append(f"Адрес / регион:\n{brief.work_region}")
     if brief.color_mode == brief.ColorMode.TEMPLATE and brief.color_template_name:
         parts.append(f"Цветовая схема:\nШаблон {brief.color_template_name}")
@@ -26,11 +27,7 @@ def build_order_description(brief) -> str:
         parts.append(f"Желаемый домен:\n{brief.desired_domain}")
     if brief.client_comment:
         parts.append(f"Комментарий клиента:\n{brief.client_comment}")
-    extras = []
-    if brief.need_hosting:
-        extras.append("Хостинг 750 ₽/мес")
-    if brief.need_domain:
-        extras.append("Домен 550 ₽")
+    extras = brief.selected_extra_services
     if extras:
         parts.append(f"Доп. услуги:\n{', '.join(extras)}")
     return "\n\n".join(parts)

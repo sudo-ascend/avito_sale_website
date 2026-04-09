@@ -7,6 +7,14 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, RedirectView, TemplateView
 from openpyxl import Workbook
 
+from briefs.pricing import (
+    EXTRA_PAGE_PRICE,
+    HOME_COMMON_BUNDLE_KEYS,
+    HOME_SERVICE_BUNDLES,
+    HOSTING_PLAN_PRICES,
+    OPTIONAL_SERVICE_PRICES,
+    SITE_TYPE_PRICES,
+)
 from crm.models import Client, Order
 from portfolio.models import Project, Technology
 
@@ -44,6 +52,18 @@ class HomeView(TemplateView):
             ContactInfo.objects.filter(is_primary=True).first() or ContactInfo.objects.first()
         )
         context["services"] = Service.objects.filter(is_active=True)
+        context["bundle_services"] = [
+            service for service in HOME_SERVICE_BUNDLES if service["key"] in HOME_COMMON_BUNDLE_KEYS
+        ]
+        context["extra_bundle_services"] = [
+            service for service in HOME_SERVICE_BUNDLES if service["key"] not in HOME_COMMON_BUNDLE_KEYS
+        ]
+        context["home_service_config"] = {
+            "site_type_prices": {key: float(value) for key, value in SITE_TYPE_PRICES.items()},
+            "extra_page_price": float(EXTRA_PAGE_PRICE),
+            "hosting_plan_prices": {key: float(value) for key, value in HOSTING_PLAN_PRICES.items()},
+            "addon_prices": {key: float(value) for key, value in OPTIONAL_SERVICE_PRICES.items()},
+        }
         context["project_metrics"] = {
             "project_count": Project.objects.filter(is_published=True).count(),
             "technology_count": Technology.objects.annotate(project_total=Count("projects"))

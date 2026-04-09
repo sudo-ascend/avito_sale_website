@@ -5,6 +5,7 @@ from django.db import models
 from django.utils.functional import cached_property
 
 from core.models import TimeStampedModel
+from .pricing import get_selected_extra_services
 
 
 def brief_attachment_upload_to(instance, filename):
@@ -33,6 +34,10 @@ class BriefRequest(TimeStampedModel):
         WHATSAPP = "whatsapp", "WhatsApp"
         TELEGRAM = "telegram", "Telegram"
         EMAIL = "email", "Email"
+
+    class HostingPlan(models.TextChoices):
+        MONTHLY = "monthly", "1 месяц"
+        QUARTERLY = "quarterly", "3 месяца (-25%)"
 
     class ColorMode(models.TextChoices):
         TEMPLATE = "template", "По шаблону"
@@ -112,8 +117,20 @@ class BriefRequest(TimeStampedModel):
     )
     reference_sites = models.TextField("Примеры сайтов", blank=True)
     desired_domain = models.CharField("Желаемый домен", max_length=255, blank=True)
+    extra_pages = models.PositiveIntegerField("Количество доп. страниц", default=0)
     need_hosting = models.BooleanField("Добавить хостинг", default=False)
+    hosting_plan = models.CharField(
+        "Период оплаты хостинга",
+        max_length=20,
+        choices=HostingPlan.choices,
+        default=HostingPlan.MONTHLY,
+    )
     need_domain = models.BooleanField("Добавить домен", default=False)
+    need_logo_design = models.BooleanField("Создание логотипа", default=False)
+    need_basic_seo = models.BooleanField("Базовое SEO продвижение", default=False)
+    need_photo_selection = models.BooleanField("Подбор фото и картинок", default=False)
+    need_email_form = models.BooleanField("Форма с отправкой писем на почту", default=False)
+    need_reviews_section = models.BooleanField("Секция с отзывами", default=False)
     client_comment = models.TextField("Комментарий клиента", blank=True, default="")
     estimated_price = models.DecimalField("Ориентировочная стоимость", max_digits=10, decimal_places=2, default=0)
     privacy_accepted = models.BooleanField("Согласие на обработку данных", default=False)
@@ -143,6 +160,25 @@ class BriefRequest(TimeStampedModel):
     @property
     def palette_summary(self) -> str:
         return ", ".join(self.palette_colors)
+
+    @property
+    def selected_extra_services(self) -> list[str]:
+        return get_selected_extra_services(
+            extra_pages=self.extra_pages,
+            need_hosting=self.need_hosting,
+            hosting_plan=self.hosting_plan,
+            need_domain=self.need_domain,
+            need_logo_design=self.need_logo_design,
+            need_basic_seo=self.need_basic_seo,
+            need_photo_selection=self.need_photo_selection,
+            need_email_form=self.need_email_form,
+            need_reviews_section=self.need_reviews_section,
+        )
+
+    @property
+    def selected_extra_services_summary(self) -> str:
+        extras = self.selected_extra_services
+        return ", ".join(extras) if extras else "-"
 
     @cached_property
     def attachments_by_category(self):

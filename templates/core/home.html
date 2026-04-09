@@ -7,7 +7,7 @@
 
 {% block content %}
 <section class="terra-shell">
-    <section class="terra-hero"{% if hero_project and hero_project.cover_image %} style="--terra-hero-image: url('{{ hero_project.cover_image.url }}');"{% endif %}>
+    <section class="terra-hero" id="hero"{% if hero_project and hero_project.cover_image %} style="--terra-hero-image: url('{{ hero_project.cover_image.url }}');"{% endif %}>
         <div class="container py-3 py-lg-4">
             <div class="row justify-content-center">
                 <div class="col-lg-9">
@@ -18,7 +18,7 @@
                                     <span class="terra-brand__mark">{{ site_brand_name|slice:":1" }}</span>
                                     <div class="terra-brand__copy">
                                         <strong>{{ site_brand_name }}</strong>
-                                        <span>{% if contact_info and contact_info.tagline %}{{ contact_info.tagline }}{% else %}Web Studio{% endif %}</span>
+                                        <span>Веб студия</span>
                                     </div>
                                 </div>
                                 <div class="d-flex flex-wrap gap-2">
@@ -33,7 +33,7 @@
                         <div class="row g-4 g-xl-5 align-items-end">
                             <div class="col-lg-8">
                                 <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-                                    <span class="badge rounded-pill text-bg-light px-3 py-2">Web Studio</span>
+                                    <span class="badge rounded-pill text-bg-light px-3 py-2">Веб студия</span>
                                     <span class="badge rounded-pill terra-badge-soft px-3 py-2">Самописные сайты</span>
                                 </div>
                                 <h1 class="display-5 fw-bold text-white mb-3 terra-display-title">Делаем сайты и внутренние системы, которые помогают продавать, автоматизировать и расти.</h1>
@@ -120,7 +120,7 @@
             <div class="row justify-content-center">
                 <div class="col-lg-9">
                     <div class="d-grid gap-4 gap-lg-5">
-                        <section>
+                        <section id="portfolio">
                             <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
                                 <div>
                                     <p class="terra-section__kicker mb-2">Портфолио</p>
@@ -132,7 +132,7 @@
                             {% include "portfolio/includes/project_card_grid.html" with projects=popular_projects empty_title="Портфолио пока пустое" empty_copy="Структура уже готова, осталось только наполнить её опубликованными проектами." %}
                         </section>
 
-                        <section>
+                        <section id="advantages">
                             <div class="mb-4">
                                 <p class="terra-section__kicker mb-2">Преимущества</p>
                                 <h2 class="mb-0">Почему выбирают наши самописные сайты</h2>
@@ -195,41 +195,173 @@
                             </div>
                         </section>
 
-                        <section>
+                        <section id="services">
                             <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
                                 <div>
                                     <p class="terra-section__kicker mb-2">Услуги</p>
-                                    <h2 class="mb-0">Чем мы можем помочь</h2>
+                                    <h2 class="mb-0">Обычно берут вместе</h2>
                                 </div>
                                 <a href="{% url 'brief_create' %}" class="btn terra-btn-solid rounded-pill px-4">Обсудить проект</a>
                             </div>
-                            <div class="row g-3">
-                                {% for service in services %}
-                                    <div class="col-md-6">
-                                        <article class="card border-0 h-100 terra-content-card">
-                                            <div class="card-body p-4">
-                                                <div class="terra-service-icon mb-3">
-                                                    <i class="bi {{ service.icon }}"></i>
+                            <div class="terra-service-picker" data-home-service-picker data-brief-url="{% url 'brief_create' %}">
+                                <div class="terra-service-picker__list">
+                                {% for service in bundle_services %}
+                                    <article class="terra-service-row{% if service.key == 'hosting' %} terra-service-row--promo{% endif %}" data-home-service="{{ service.key }}">
+                                        <div class="p-4">
+                                            <div class="terra-service-row__top">
+                                                <div class="form-check terra-service-row__check">
+                                                    <input class="form-check-input"
+                                                           type="checkbox"
+                                                           id="home-service-{{ service.key }}"
+                                                           {% if service.key == "site_development" %}checked{% endif %}
+                                                           data-home-select="{{ service.key }}"
+                                                           data-home-field="{{ service.field_name }}">
                                                 </div>
-                                                <h3 class="h5">{{ service.title }}</h3>
-                                                <p class="text-secondary mb-2">{{ service.short_description }}</p>
-                                                <p class="mb-0">{{ service.description }}</p>
+                                                <label class="terra-service-row__headline" for="home-service-{{ service.key }}">
+                                                    <span class="terra-service-icon terra-service-row__icon">
+                                                    <i class="bi {{ service.icon|default:'bi-layers' }}"></i>
+                                                    </span>
+                                                    <span class="terra-service-row__title">{{ service.title }}</span>
+                                                    <span class="terra-service-row__price">{{ service.price }}</span>
+                                                </label>
                                             </div>
-                                        </article>
-                                    </div>
-                                {% empty %}
-                                    <div class="col-12">
-                                        <article class="card border-0 terra-content-card">
-                                            <div class="card-body p-4">
-                                                <div class="terra-service-icon mb-3">
-                                                    <i class="bi bi-layers"></i>
-                                                </div>
-                                                <h3 class="h5">Услуги</h3>
-                                                <p class="mb-0 text-secondary">Услуги можно добавить через Django admin или команду с тестовыми данными.</p>
+
+                                            <div class="terra-service-row__body">
+
+                                                {% if service.key == "hosting" %}
+                                                    <div class="terra-service-row__promo-card">
+                                                        <span class="terra-service-row__promo-copy">550 ₽ при оплате 3 месяцев</span>
+                                                    </div>
+
+                                                    <div class="terra-service-row__controls d-none" data-home-hosting-options>
+                                                        <div class="terra-service-choice-group">
+                                                            <label class="terra-service-choice">
+                                                                <input type="radio" name="home_hosting_plan" value="monthly" checked data-home-hosting-plan>
+                                                                <span class="terra-service-choice__copy">
+                                                                    <strong>1 месяц</strong>
+                                                                    <span>750 ₽</span>
+                                                                </span>
+                                                            </label>
+                                                            <label class="terra-service-choice terra-service-choice--accent">
+                                                                <input type="radio" name="home_hosting_plan" value="quarterly" data-home-hosting-plan>
+                                                                <span class="terra-service-choice__copy">
+                                                                    <strong>3 месяца</strong>
+                                                                    <span>1 687,50 ₽ со скидкой</span>
+                                                                </span>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+
+                                                {% if service.key == "site_development" %}
+                                                    <div class="terra-service-row__controls d-none" data-home-site-options>
+                                                        <div class="terra-service-choice-group">
+                                                            <label class="terra-service-choice">
+                                                                <input type="radio" name="home_site_type" value="single_page" checked data-home-site-type>
+                                                                <span class="terra-service-choice__copy">
+                                                                    <strong>Одностраничник</strong>
+                                                                    <span>3 000 ₽</span>
+                                                                </span>
+                                                            </label>
+                                                            <label class="terra-service-choice">
+                                                                <input type="radio" name="home_site_type" value="catalog" data-home-site-type>
+                                                                <span class="terra-service-choice__copy">
+                                                                    <strong>Сайт-каталог</strong>
+                                                                    <span>4 000 ₽</span>
+                                                                </span>
+                                                            </label>
+                                                        </div>
+                                                        <div class="terra-service-pages">
+                                                            <label for="home-extra-pages" class="form-label mb-2">Дополнительные страницы</label>
+                                                            <input type="number"
+                                                                   id="home-extra-pages"
+                                                                   class="form-control"
+                                                                   min="0"
+                                                                   step="1"
+                                                                   value="0"
+                                                                   data-home-extra-pages>
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
+
+                                                {% if service.details %}
+                                                    <div class="mt-1">
+                                                        <button class="btn btn-sm btn-outline-dark rounded-pill px-3"
+                                                                type="button"
+                                                                data-bs-toggle="collapse"
+                                                                data-bs-target="#{{ service.cta_target }}"
+                                                                aria-expanded="false"
+                                                                aria-controls="{{ service.cta_target }}">
+                                                            {{ service.cta_label }}
+                                                        </button>
+                                                    </div>
+                                                    <div class="collapse" id="{{ service.cta_target }}">
+                                                        <div class="terra-service-row__details">
+                                                            {% for detail in service.details %}
+                                                                <div>{{ detail }}</div>
+                                                            {% endfor %}
+                                                        </div>
+                                                    </div>
+                                                {% endif %}
                                             </div>
-                                        </article>
-                                    </div>
+                                        </div>
+                                    </article>
                                 {% endfor %}
+                                </div>
+
+                                {% if extra_bundle_services %}
+                                    <div class="mt-4">
+                                        <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-3">
+                                            <div>
+                                                <p class="terra-section__kicker mb-2">Дополнительно</p>
+                                                <h3 class="h5 mb-0">Ещё можно добавить</h3>
+                                            </div>
+                                        </div>
+                                        <div class="terra-service-picker__list">
+                                            {% for service in extra_bundle_services %}
+                                                <article class="terra-service-row" data-home-service="{{ service.key }}">
+                                                    <div class="p-4">
+                                                        <div class="terra-service-row__top">
+                                                            <div class="form-check terra-service-row__check">
+                                                                <input class="form-check-input"
+                                                                       type="checkbox"
+                                                                       id="home-service-{{ service.key }}"
+                                                                       data-home-select="{{ service.key }}"
+                                                                       data-home-field="{{ service.field_name }}">
+                                                            </div>
+                                                            <label class="terra-service-row__headline" for="home-service-{{ service.key }}">
+                                                                <span class="terra-service-icon terra-service-row__icon">
+                                                                    <i class="bi {{ service.icon|default:'bi-layers' }}"></i>
+                                                                </span>
+                                                                <span class="terra-service-row__title">{{ service.title }}</span>
+                                                                <span class="terra-service-row__price">{{ service.price }}</span>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </article>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endif %}
+
+                                <aside class="brief-price-widget card border-0 shadow-sm d-none" data-home-summary-widget>
+                                    <div class="card-body p-4">
+                                        <p class="section-kicker mb-2">Подборка</p>
+                                        <h2 class="h5 mb-3">Выбранные услуги</h2>
+                                        <div class="brief-price-breakdown" data-home-summary-list>
+                                            <div class="brief-price-breakdown__empty" data-home-summary-empty>
+                                                Выберите хотя бы одну услугу, и здесь появится готовая смета.
+                                            </div>
+                                        </div>
+                                        <div class="brief-price-total mt-3 pt-3 border-top">
+                                            <span>Итого</span>
+                                            <strong data-home-summary-total>0 ₽</strong>
+                                        </div>
+                                        <a href="{% url 'brief_create' %}" class="btn terra-btn-solid w-100 rounded-pill mt-3" data-home-summary-link>
+                                            Перейти к ТЗ
+                                        </a>
+                                    </div>
+                                </aside>
                             </div>
                         </section>
 
@@ -290,13 +422,10 @@
                                                 <div class="card-body p-4">
                                                     <p class="terra-section__kicker mb-2">Составление ТЗ</p>
                                                     <h3 class="h4">Сначала фиксируем задачу в ТЗ</h3>
-                                                    <p>ТЗ нужно, чтобы сразу собрать структуру сайта, материалы, пожелания по визуалу, сроки и объём работ. Так мы быстрее показываем макет и доводим проект до готовой ссылки без хаоса.</p>
                                                     <a href="{% url 'brief_create' %}" class="btn terra-btn-solid rounded-pill px-4">Перейти к составлению ТЗ</a>
-                                                    {% if contact_info and contact_info.phone %}
-                                                        <p class="process-brief-contact mt-3 mb-0">Или напиши нам / позвони: <a href="tel:{{ contact_info.phone }}">{{ contact_info.phone }}</a></p>
-                                                    {% else %}
-                                                        <p class="process-brief-contact mt-3 mb-0">Или <a href="{% url 'contact' %}">напиши нам</a>, если удобнее сначала коротко обсудить задачу.</p>
-                                                    {% endif %}
+
+                                                    <p class="process-brief-contact mt-3 mb-0">Или <a href="{% url 'contact' %}">напиши нам</a>, если удобнее обсудить задачу в чате.</p>
+                                                    
                                                 </div>
                                             </aside>
                                         </div>
@@ -310,10 +439,11 @@
         </div>
     </section>
 </section>
+{{ home_service_config|json_script:"home-service-config" }}
 {% endblock %}
 
 {% block footer %}
-<footer class="terra-footer">
+<footer class="terra-footer" id="contacts">
     <div class="container">
         <div class="terra-footer__inner">
             <div>
@@ -321,7 +451,7 @@
                     <span class="terra-brand__mark">{{ site_brand_name|slice:":1" }}</span>
                     <div class="terra-brand__copy">
                         <strong>{{ site_brand_name }}</strong>
-                        <span>Web Studio</span>
+                        <span>Веб студия</span>
                     </div>
                 </div>
                 <p class="terra-footer__lead">Разрабатываем сайты, личные кабинеты и внутренние системы с понятной архитектурой и поддержкой после запуска.</p>

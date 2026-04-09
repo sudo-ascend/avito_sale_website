@@ -2,6 +2,8 @@
 
 {% block body_class %}dashboard-shell{% endblock %}
 
+{% block header %}{% endblock %}
+
 {% block footer %}
     {% if '/dashboard/crm/' not in request.path %}
         {{ block.super }}

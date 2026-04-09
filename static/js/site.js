@@ -193,6 +193,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
     [...popoverTriggerList].forEach((element) => new bootstrap.Popover(element));
 
+    const siteHeaderPanel = document.getElementById("siteHeaderPanel");
+    if (siteHeaderPanel) {
+        const siteHeaderCollapse = bootstrap.Collapse.getOrCreateInstance(siteHeaderPanel, { toggle: false });
+        siteHeaderPanel.querySelectorAll("a").forEach((link) => {
+            link.addEventListener("click", () => {
+                if (window.innerWidth < 992) {
+                    siteHeaderCollapse.hide();
+                }
+            });
+        });
+    }
+
     const colorModeInput = document.getElementById("id_color_mode");
     const colorTemplateNameInput = document.getElementById("id_color_template_name");
     const hiddenColorInputPrimary = document.getElementById("id_color_preference");
@@ -638,19 +650,59 @@ document.addEventListener("DOMContentLoaded", () => {
     const briefForm = document.querySelector("[data-brief-pricing]");
     if (pricingConfigElement && briefForm) {
         const pricingConfig = JSON.parse(pricingConfigElement.textContent);
+        const shouldResetServiceDefaults = briefForm.dataset.resetServiceDefaults === "true";
         const clientTypeField = document.getElementById("id_client_type");
         const businessNameLabel = document.getElementById("business-name-label");
         const businessNameInput = document.getElementById("id_business_name");
         const siteTypeField = document.getElementById("id_site_type");
+        const extraPagesField = document.getElementById("id_extra_pages");
         const hostingField = document.getElementById("id_need_hosting");
+        const hostingPlanField = document.getElementById("id_hosting_plan");
+        const hostingPlanWrapper = document.querySelector("[data-hosting-plan-wrapper]");
         const domainField = document.getElementById("id_need_domain");
+        const logoDesignField = document.getElementById("id_need_logo_design");
+        const basicSeoField = document.getElementById("id_need_basic_seo");
+        const photoSelectionField = document.getElementById("id_need_photo_selection");
+        const emailFormField = document.getElementById("id_need_email_form");
+        const reviewsSectionField = document.getElementById("id_need_reviews_section");
         const estimatedPriceField = document.getElementById("id_estimated_price");
         const summaryService = document.querySelector("[data-summary-service]");
         const summaryBase = document.querySelector("[data-summary-base]");
         const summaryTotal = document.querySelector("[data-summary-total]");
+        const summaryBreakdown = document.querySelector("[data-summary-breakdown]");
+        const summaryBreakdownEmpty = document.querySelector("[data-summary-breakdown-empty]");
 
-        const formatRub = (value) =>
-            `${Math.round(Number(value || 0)).toLocaleString("ru-RU")} ₽`;
+        const addonFields = [
+            { element: domainField, key: "need_domain" },
+            { element: logoDesignField, key: "need_logo_design" },
+            { element: basicSeoField, key: "need_basic_seo" },
+            { element: photoSelectionField, key: "need_photo_selection" },
+            { element: emailFormField, key: "need_email_form" },
+            { element: reviewsSectionField, key: "need_reviews_section" },
+        ];
+        const summaryToggleMap = new Map(
+            [
+                ["need_hosting", hostingField],
+                ...addonFields.map(({ element, key }) => [key, element]),
+            ].filter(([, element]) => element)
+        );
+
+        const formatRub = (value) => {
+            const amount = Number(value || 0);
+            const hasFraction = Math.abs(amount - Math.round(amount)) > 0.001;
+            return `${amount.toLocaleString("ru-RU", {
+                minimumFractionDigits: hasFraction ? 2 : 0,
+                maximumFractionDigits: 2,
+            })} ₽`;
+        };
+
+        const getPositiveInteger = (value) => {
+            const number = Number.parseInt(String(value || "0"), 10);
+            if (Number.isNaN(number) || number < 0) {
+                return 0;
+            }
+            return number;
+        };
 
         const updateBusinessNameLabel = () => {
             if (!clientTypeField || !businessNameLabel || !businessNameInput) {
@@ -661,29 +713,487 @@ document.addEventListener("DOMContentLoaded", () => {
             businessNameInput.placeholder = isLegalEntity ? "ООО Ромашка" : "Иван Иванов";
         };
 
+        const updateHostingPlanVisibility = () => {
+            const isEnabled = Boolean(hostingField?.checked);
+            if (hostingPlanWrapper) {
+                hostingPlanWrapper.classList.toggle("d-none", !isEnabled);
+            }
+            if (hostingPlanField) {
+                hostingPlanField.disabled = !isEnabled;
+                if (!isEnabled) {
+                    hostingPlanField.value = "monthly";
+                }
+            }
+        };
+
+        const toggleSummaryOption = (key, isChecked) => {
+            const targetField = summaryToggleMap.get(key);
+            if (!targetField) {
+                return;
+            }
+            targetField.checked = isChecked;
+            if (key === "need_hosting") {
+                updateHostingPlanVisibility();
+            }
+            updatePricing();
+        };
+
+        const renderBreakdown = (rows) => {
+            if (!summaryBreakdown) {
+                return;
+            }
+
+            summaryBreakdown.querySelectorAll("[data-summary-row]").forEach((row) => row.remove());
+            if (summaryBreakdownEmpty) {
+                summaryBreakdownEmpty.classList.toggle("d-none", rows.length > 0);
+            }
+
+            rows.forEach((row) => {
+                if (row.kind === "detail") {
+                    const rowElement = document.createElement("div");
+                    const labelElement = document.createElement("span");
+                    const valueElement = document.createElement("strong");
+
+                    rowElement.className = "brief-price-breakdown__row brief-price-breakdown__row--detail";
+                    rowElement.dataset.summaryRow = "true";
+                    labelElement.textContent = row.label;
+                    valueElement.textContent = formatRub(row.value);
+
+                    rowElement.appendChild(labelElement);
+                    rowElement.appendChild(valueElement);
+                    summaryBreakdown.appendChild(rowElement);
+                    return;
+                }
+
+                const rowElement = document.createElement("div");
+                const checkboxElement = document.createElement("input");
+                const copyElement = document.createElement("span");
+                const labelElement = document.createElement("label");
+                const metaElement = document.createElement("span");
+                const valueElement = document.createElement("strong");
+                const checkboxId = `brief-summary-${row.key}`;
+
+                rowElement.className = "home-summary-option brief-summary-option";
+                rowElement.dataset.summaryRow = "true";
+                checkboxElement.type = "checkbox";
+                checkboxElement.className = "form-check-input home-summary-option__check";
+                checkboxElement.id = checkboxId;
+                checkboxElement.checked = Boolean(row.checked);
+                checkboxElement.setAttribute("aria-label", row.label);
+                checkboxElement.addEventListener("change", () => {
+                    toggleSummaryOption(row.key, checkboxElement.checked);
+                });
+                copyElement.className = "home-summary-option__copy";
+                labelElement.className = "home-summary-option__label";
+                labelElement.setAttribute("for", checkboxId);
+                labelElement.textContent = row.label;
+                metaElement.className = "home-summary-option__meta";
+                metaElement.textContent = row.meta || "";
+                metaElement.classList.toggle("d-none", !row.meta);
+                valueElement.className = "home-summary-option__value";
+                valueElement.textContent = formatRub(row.value);
+
+                copyElement.appendChild(labelElement);
+                if (row.meta) {
+                    copyElement.appendChild(metaElement);
+                }
+                rowElement.appendChild(checkboxElement);
+                rowElement.appendChild(copyElement);
+                rowElement.appendChild(valueElement);
+                summaryBreakdown.appendChild(rowElement);
+            });
+        };
+
         const updatePricing = () => {
             if (!siteTypeField || !summaryService || !summaryBase || !summaryTotal) {
                 return;
             }
+
             const basePrice = Number(pricingConfig.site_type_prices[siteTypeField.value] || 0);
-            const hostingPrice = hostingField && hostingField.checked ? Number(pricingConfig.hosting_price || 0) : 0;
-            const domainPrice = domainField && domainField.checked ? Number(pricingConfig.domain_price || 0) : 0;
-            const total = basePrice + hostingPrice + domainPrice;
+            const extraPages = getPositiveInteger(extraPagesField?.value);
+            const extraPagesPrice = extraPages * Number(pricingConfig.extra_page_price || 0);
+            const hostingPlanValue = hostingPlanField?.value || "monthly";
+            const hostingPrice = hostingField && hostingField.checked
+                ? Number(pricingConfig.hosting_plan_prices?.[hostingPlanValue] || 0)
+                : 0;
+
+            let total = basePrice + extraPagesPrice + hostingPrice;
+            const breakdownRows = [];
+
+            if (extraPages > 0) {
+                breakdownRows.push({
+                    kind: "detail",
+                    label: `${pricingConfig.addon_summary_labels?.extra_pages || "Доп. страницы"} x${extraPages}`,
+                    value: extraPagesPrice,
+                });
+            }
+
+            if (hostingPrice > 0) {
+                breakdownRows.push({
+                    kind: "toggle",
+                    key: "need_hosting",
+                    label: pricingConfig.hosting_summary_labels?.[hostingPlanValue] || "Хостинг сайта",
+                    value: hostingPrice,
+                    checked: true,
+                });
+            }
+
+            addonFields.forEach(({ element, key }) => {
+                if (!element?.checked) {
+                    return;
+                }
+                const addonPrice = Number(pricingConfig.addon_prices?.[key] || 0);
+                total += addonPrice;
+                breakdownRows.push({
+                    kind: "toggle",
+                    key,
+                    label: pricingConfig.addon_summary_labels?.[key] || key,
+                    value: addonPrice,
+                    checked: true,
+                });
+            });
 
             summaryService.textContent = siteTypeField.options[siteTypeField.selectedIndex]?.text || "";
             summaryBase.textContent = formatRub(basePrice);
             summaryTotal.textContent = formatRub(total);
+            renderBreakdown(breakdownRows);
             if (estimatedPriceField) {
                 estimatedPriceField.value = total.toFixed(2);
             }
         };
 
+        if (shouldResetServiceDefaults) {
+            if (siteTypeField) {
+                siteTypeField.value = "single_page";
+            }
+            if (extraPagesField) {
+                extraPagesField.value = "0";
+            }
+            if (hostingField) {
+                hostingField.checked = false;
+            }
+            if (hostingPlanField) {
+                hostingPlanField.value = "monthly";
+            }
+            addonFields.forEach(({ element }) => {
+                if (element) {
+                    element.checked = false;
+                }
+            });
+        }
+
         updateBusinessNameLabel();
+        updateHostingPlanVisibility();
         updatePricing();
 
         clientTypeField?.addEventListener("change", updateBusinessNameLabel);
         siteTypeField?.addEventListener("change", updatePricing);
-        hostingField?.addEventListener("change", updatePricing);
-        domainField?.addEventListener("change", updatePricing);
+        extraPagesField?.addEventListener("input", updatePricing);
+        extraPagesField?.addEventListener("change", updatePricing);
+        hostingField?.addEventListener("change", () => {
+            updateHostingPlanVisibility();
+            updatePricing();
+        });
+        hostingPlanField?.addEventListener("change", updatePricing);
+        addonFields.forEach(({ element }) => {
+            element?.addEventListener("change", updatePricing);
+        });
+    }
+
+    const homeServiceConfigElement = document.getElementById("home-service-config");
+    const homeServicePicker = document.querySelector("[data-home-service-picker]");
+    if (homeServiceConfigElement && homeServicePicker) {
+        const homeServiceConfig = JSON.parse(homeServiceConfigElement.textContent);
+        const briefUrl = homeServicePicker.dataset.briefUrl || "";
+        const siteDevelopmentField = homeServicePicker.querySelector("[data-home-select='site_development']");
+        const siteOptions = homeServicePicker.querySelector("[data-home-site-options]");
+        const siteTypeFields = [...homeServicePicker.querySelectorAll("[data-home-site-type]")];
+        const extraPagesField = homeServicePicker.querySelector("[data-home-extra-pages]");
+        const hostingField = homeServicePicker.querySelector("[data-home-select='hosting']");
+        const hostingOptions = homeServicePicker.querySelector("[data-home-hosting-options]");
+        const hostingPlanFields = [...homeServicePicker.querySelectorAll("[data-home-hosting-plan]")];
+        const addonFields = [...homeServicePicker.querySelectorAll("[data-home-select]")].filter(
+            (field) => !["site_development", "hosting"].includes(field.dataset.homeSelect || "")
+        );
+        const summaryWidget = homeServicePicker.querySelector("[data-home-summary-widget]");
+        const summaryList = homeServicePicker.querySelector("[data-home-summary-list]");
+        const summaryEmpty = homeServicePicker.querySelector("[data-home-summary-empty]");
+        const summaryTotal = homeServicePicker.querySelector("[data-home-summary-total]");
+        const summaryLink = homeServicePicker.querySelector("[data-home-summary-link]");
+        const serviceFieldByKey = new Map(
+            [
+                ["site_development", siteDevelopmentField],
+                ["hosting", hostingField],
+                ...addonFields.map((field) => [field.dataset.homeSelect || "", field]),
+            ].filter(([key, field]) => key && field)
+        );
+
+        const formatRub = (value) => {
+            const amount = Number(value || 0);
+            const hasFraction = Math.abs(amount - Math.round(amount)) > 0.001;
+            return `${amount.toLocaleString("ru-RU", {
+                minimumFractionDigits: hasFraction ? 2 : 0,
+                maximumFractionDigits: 2,
+            })} ₽`;
+        };
+
+        const getPositiveInteger = (value) => {
+            const number = Number.parseInt(String(value || "0"), 10);
+            if (Number.isNaN(number) || number < 0) {
+                return 0;
+            }
+            return number;
+        };
+
+        const getCheckedValue = (fields, fallback) =>
+            fields.find((field) => field.checked)?.value || fallback;
+
+        const setRowSelected = (key, isSelected) => {
+            const row = homeServicePicker.querySelector(`[data-home-service='${key}']`);
+            if (!row) {
+                return;
+            }
+            if (isSelected) {
+                row.setAttribute("data-selected", "true");
+            } else {
+                row.removeAttribute("data-selected");
+            }
+        };
+
+        const toggleOptionsBlock = (element, isVisible) => {
+            element?.classList.toggle("d-none", !isVisible);
+        };
+
+        const toggleServiceFromSummary = (key, isChecked) => {
+            const field = serviceFieldByKey.get(key);
+            if (!field) {
+                return;
+            }
+            field.checked = isChecked;
+            updateHomeServiceSummary();
+        };
+
+        const renderSummaryRows = (rows) => {
+            if (!summaryList) {
+                return;
+            }
+
+            summaryList.querySelectorAll("[data-home-summary-row]").forEach((row) => row.remove());
+            const normalizedRows = [];
+
+            if (siteDevelopmentField?.checked) {
+                const siteType = getCheckedValue(siteTypeFields, "single_page");
+                normalizedRows.push({
+                    kind: "service",
+                    key: "site_development",
+                    label: "Написание сайта",
+                    meta: siteType === "catalog" ? "Сайт-каталог" : "Одностраничник",
+                    value: Number(homeServiceConfig.site_type_prices?.[siteType] || 0),
+                    checked: true,
+                });
+
+                const extraPages = getPositiveInteger(extraPagesField?.value);
+                if (extraPages > 0) {
+                    normalizedRows.push({
+                        kind: "detail",
+                        label: `Доп. страницы x${extraPages}`,
+                        value: extraPages * Number(homeServiceConfig.extra_page_price || 0),
+                    });
+                }
+            }
+
+            if (hostingField?.checked) {
+                const hostingPlan = getCheckedValue(hostingPlanFields, "monthly");
+                normalizedRows.push({
+                    kind: "service",
+                    key: "hosting",
+                    label: "Хостинг сайта",
+                    meta: hostingPlan === "quarterly" ? "550 ₽ при оплате 3 месяцев" : "750 ₽/мес",
+                    value: Number(homeServiceConfig.hosting_plan_prices?.[hostingPlan] || 0),
+                    checked: true,
+                });
+            }
+
+            addonFields.forEach((field) => {
+                if (!field.checked) {
+                    return;
+                }
+
+                const rowKey = field.dataset.homeSelect || "";
+                const fieldName = field.dataset.homeField || "";
+                if (!rowKey || !fieldName) {
+                    return;
+                }
+
+                normalizedRows.push({
+                    kind: "service",
+                    key: rowKey,
+                    label: field.closest("[data-home-service]")?.querySelector(".terra-service-row__title")?.textContent?.trim() || fieldName,
+                    value: Number(homeServiceConfig.addon_prices?.[fieldName] || 0),
+                    checked: true,
+                });
+            });
+
+            if (summaryEmpty) {
+                summaryEmpty.classList.toggle("d-none", normalizedRows.length > 0);
+            }
+
+            normalizedRows.forEach((row) => {
+                if (row.kind === "detail") {
+                    const rowElement = document.createElement("div");
+                    const labelElement = document.createElement("span");
+                    const valueElement = document.createElement("strong");
+
+                    rowElement.className = "brief-price-breakdown__row brief-price-breakdown__row--detail";
+                    rowElement.dataset.homeSummaryRow = "true";
+                    labelElement.textContent = row.label;
+                    valueElement.textContent = formatRub(row.value);
+
+                    rowElement.appendChild(labelElement);
+                    rowElement.appendChild(valueElement);
+                    summaryList.appendChild(rowElement);
+                    return;
+                }
+
+                const rowElement = document.createElement("div");
+                const checkboxElement = document.createElement("input");
+                const copyElement = document.createElement("span");
+                const labelElement = document.createElement("span");
+                const metaElement = document.createElement("span");
+                const valueElement = document.createElement("strong");
+
+                rowElement.className = "home-summary-option";
+                rowElement.dataset.homeSummaryRow = "true";
+                checkboxElement.type = "checkbox";
+                checkboxElement.className = "form-check-input home-summary-option__check";
+                checkboxElement.checked = Boolean(row.checked);
+                checkboxElement.addEventListener("change", () => {
+                    toggleServiceFromSummary(row.key, checkboxElement.checked);
+                });
+                copyElement.className = "home-summary-option__copy";
+                labelElement.className = "home-summary-option__label";
+                labelElement.textContent = row.label;
+                metaElement.className = "home-summary-option__meta";
+                metaElement.textContent = row.meta || "";
+                metaElement.classList.toggle("d-none", !row.meta);
+                valueElement.className = "home-summary-option__value";
+                valueElement.textContent = formatRub(row.value);
+
+                copyElement.appendChild(labelElement);
+                copyElement.appendChild(metaElement);
+                rowElement.appendChild(checkboxElement);
+                rowElement.appendChild(copyElement);
+                rowElement.appendChild(valueElement);
+                summaryList.appendChild(rowElement);
+            });
+        };
+
+        if (siteDevelopmentField) {
+            siteDevelopmentField.checked = true;
+        }
+        if (extraPagesField) {
+            extraPagesField.value = "0";
+        }
+        siteTypeFields.forEach((field) => {
+            field.checked = field.value === "single_page";
+        });
+        if (hostingField) {
+            hostingField.checked = false;
+        }
+        hostingPlanFields.forEach((field) => {
+            field.checked = field.value === "monthly";
+        });
+        addonFields.forEach((field) => {
+            field.checked = false;
+        });
+
+        const updateHomeServiceSummary = () => {
+            const rows = [];
+            const params = new URLSearchParams();
+            let total = 0;
+
+            const siteSelected = Boolean(siteDevelopmentField?.checked);
+            setRowSelected("site_development", siteSelected);
+            toggleOptionsBlock(siteOptions, siteSelected);
+
+            if (siteSelected) {
+                const siteType = getCheckedValue(siteTypeFields, "single_page");
+                const sitePrice = Number(homeServiceConfig.site_type_prices?.[siteType] || 0);
+                const siteLabel = siteType === "catalog"
+                    ? "Написание сайта: сайт-каталог"
+                    : "Написание сайта: одностраничник";
+                rows.push({ label: siteLabel, value: sitePrice });
+                total += sitePrice;
+                params.set("site_type", siteType);
+
+                const extraPages = getPositiveInteger(extraPagesField?.value);
+                if (extraPages > 0) {
+                    const extraPagesPrice = extraPages * Number(homeServiceConfig.extra_page_price || 0);
+                    rows.push({ label: `Доп. страницы x${extraPages}`, value: extraPagesPrice });
+                    total += extraPagesPrice;
+                    params.set("extra_pages", String(extraPages));
+                }
+            }
+
+            const hostingSelected = Boolean(hostingField?.checked);
+            setRowSelected("hosting", hostingSelected);
+            toggleOptionsBlock(hostingOptions, hostingSelected);
+
+            if (hostingSelected) {
+                const hostingPlan = getCheckedValue(hostingPlanFields, "monthly");
+                const hostingPrice = Number(homeServiceConfig.hosting_plan_prices?.[hostingPlan] || 0);
+                const hostingLabel = hostingPlan === "quarterly"
+                    ? "Хостинг сайта: 3 месяца"
+                    : "Хостинг сайта: 1 месяц";
+
+                rows.push({ label: hostingLabel, value: hostingPrice });
+                total += hostingPrice;
+                params.set("need_hosting", "1");
+                params.set("hosting_plan", hostingPlan);
+            }
+
+            addonFields.forEach((field) => {
+                const rowKey = field.dataset.homeSelect || "";
+                const fieldName = field.dataset.homeField || "";
+                const isSelected = field.checked;
+
+                setRowSelected(rowKey, isSelected);
+                if (!isSelected || !fieldName) {
+                    return;
+                }
+
+                const addonPrice = Number(homeServiceConfig.addon_prices?.[fieldName] || 0);
+                const label = field.closest("[data-home-service]")?.querySelector(".terra-service-row__title")?.textContent?.trim() || fieldName;
+
+                rows.push({ label, value: addonPrice });
+                total += addonPrice;
+                params.set(fieldName, "1");
+            });
+
+            renderSummaryRows(rows);
+            summaryWidget?.classList.toggle("d-none", rows.length === 0);
+            if (summaryTotal) {
+                summaryTotal.textContent = formatRub(total);
+            }
+            if (summaryLink) {
+                summaryLink.href = rows.length && briefUrl ? `${briefUrl}?${params.toString()}` : briefUrl;
+            }
+        };
+
+        siteDevelopmentField?.addEventListener("change", updateHomeServiceSummary);
+        siteTypeFields.forEach((field) => {
+            field.addEventListener("change", updateHomeServiceSummary);
+        });
+        extraPagesField?.addEventListener("input", updateHomeServiceSummary);
+        extraPagesField?.addEventListener("change", updateHomeServiceSummary);
+        hostingField?.addEventListener("change", updateHomeServiceSummary);
+        hostingPlanFields.forEach((field) => {
+            field.addEventListener("change", updateHomeServiceSummary);
+        });
+        addonFields.forEach((field) => {
+            field.addEventListener("change", updateHomeServiceSummary);
+        });
+
+        updateHomeServiceSummary();
     }
 });

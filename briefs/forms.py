@@ -5,16 +5,22 @@ from django import forms
 from core.forms import BaseStyledModelForm
 
 from .models import BriefAttachment, BriefRequest
+from .pricing import (
+    EXTRA_PAGE_PRICE as PRICING_EXTRA_PAGE_PRICE,
+    HOSTING_PLAN_PRICES as PRICING_HOSTING_PLAN_PRICES,
+    OPTIONAL_SERVICE_PRICES as PRICING_OPTIONAL_SERVICE_PRICES,
+    SITE_TYPE_PRICES as PRICING_SITE_TYPE_PRICES,
+    calculate_estimated_price,
+)
 
 
 class BriefRequestForm(BaseStyledModelForm):
-    SITE_TYPE_PRICES = {
-        BriefRequest.SiteType.SINGLE_PAGE: Decimal("7500.00"),
-        BriefRequest.SiteType.CATALOG: Decimal("12000.00"),
-    }
-    HOSTING_PRICE = Decimal("750.00")
-    DOMAIN_PRICE = Decimal("550.00")
+    SITE_TYPE_PRICES = PRICING_SITE_TYPE_PRICES
+    EXTRA_PAGE_PRICE = PRICING_EXTRA_PAGE_PRICE
+    HOSTING_PLAN_PRICES = PRICING_HOSTING_PLAN_PRICES
+    OPTIONAL_SERVICE_PRICES = PRICING_OPTIONAL_SERVICE_PRICES
     OPTIONAL_FIELDS = {
+        "extra_pages",
         "preferred_contact_app",
         "contact_email",
         "client_comment",
@@ -23,7 +29,13 @@ class BriefRequestForm(BaseStyledModelForm):
         "logo",
         "reviews_files",
         "need_hosting",
+        "hosting_plan",
         "need_domain",
+        "need_logo_design",
+        "need_basic_seo",
+        "need_photo_selection",
+        "need_email_form",
+        "need_reviews_section",
         "estimated_price",
         "color_template_name",
     }
@@ -39,6 +51,7 @@ class BriefRequestForm(BaseStyledModelForm):
             "business_name",
             "work_region",
             "site_type",
+            "extra_pages",
             "color_mode",
             "color_template_name",
             "color_preference",
@@ -49,7 +62,13 @@ class BriefRequestForm(BaseStyledModelForm):
             "desired_domain",
             "logo",
             "need_hosting",
+            "hosting_plan",
             "need_domain",
+            "need_logo_design",
+            "need_basic_seo",
+            "need_photo_selection",
+            "need_email_form",
+            "need_reviews_section",
             "contact_phone",
             "preferred_contact_app",
             "contact_email",
@@ -64,6 +83,7 @@ class BriefRequestForm(BaseStyledModelForm):
             "color_accent": forms.HiddenInput(),
             "color_background": forms.HiddenInput(),
             "color_extra": forms.HiddenInput(),
+            "extra_pages": forms.NumberInput(attrs={"min": 0, "step": 1}),
             "reference_sites": forms.Textarea(attrs={"rows": 3}),
             "desired_domain": forms.TextInput(),
             "client_comment": forms.Textarea(attrs={"rows": 4}),
@@ -71,12 +91,18 @@ class BriefRequestForm(BaseStyledModelForm):
             "privacy_accepted": forms.CheckboxInput(),
             "need_hosting": forms.CheckboxInput(),
             "need_domain": forms.CheckboxInput(),
+            "need_logo_design": forms.CheckboxInput(),
+            "need_basic_seo": forms.CheckboxInput(),
+            "need_photo_selection": forms.CheckboxInput(),
+            "need_email_form": forms.CheckboxInput(),
+            "need_reviews_section": forms.CheckboxInput(),
         }
         labels = {
             "client_type": "Тип клиента",
             "business_name": "Имя / наименование компании",
             "work_region": "Адрес / регион работы",
             "site_type": "Тип сайта",
+            "extra_pages": "Дополнительные страницы",
             "color_preference": "Основной",
             "color_accent": "Акцент",
             "color_background": "Фон",
@@ -84,8 +110,14 @@ class BriefRequestForm(BaseStyledModelForm):
             "reference_sites": "Ссылки на примеры сайтов",
             "desired_domain": "Желаемый домен",
             "logo": "Логотип",
-            "need_hosting": "Хостинг 750 ₽/мес",
-            "need_domain": "Домен 550 ₽",
+            "need_hosting": "Хостинг сайта",
+            "hosting_plan": "Оплата хостинга",
+            "need_domain": "Регистрация домена",
+            "need_logo_design": "Создание логотипа",
+            "need_basic_seo": "Базовое SEO продвижение",
+            "need_photo_selection": "Подбор фото и картинок",
+            "need_email_form": "Форма с отправкой писем",
+            "need_reviews_section": "Секция с отзывами",
             "contact_phone": "Номер телефона",
             "preferred_contact_app": "Предпочитаемое приложение для связи",
             "client_comment": "Комментарий",
@@ -110,8 +142,22 @@ class BriefRequestForm(BaseStyledModelForm):
             ("", "Не выбрано"),
             *BriefRequest.ContactApp.choices,
         ]
+        self.fields["hosting_plan"].choices = [
+            (BriefRequest.HostingPlan.MONTHLY, "1 месяц — 750 ₽"),
+            (BriefRequest.HostingPlan.QUARTERLY, "3 месяца — 1 687,50 ₽ (-25%)"),
+        ]
         self.fields["preferred_contact_app"].initial = ""
+        self.fields["site_type"].initial = BriefRequest.SiteType.SINGLE_PAGE
         self.fields["estimated_price"].initial = self.SITE_TYPE_PRICES[BriefRequest.SiteType.SINGLE_PAGE]
+        self.fields["extra_pages"].initial = 0
+        self.fields["need_hosting"].initial = False
+        self.fields["hosting_plan"].initial = BriefRequest.HostingPlan.MONTHLY
+        self.fields["need_domain"].initial = False
+        self.fields["need_logo_design"].initial = False
+        self.fields["need_basic_seo"].initial = False
+        self.fields["need_photo_selection"].initial = False
+        self.fields["need_email_form"].initial = False
+        self.fields["need_reviews_section"].initial = False
         self.fields["color_mode"].initial = BriefRequest.ColorMode.TEMPLATE
         self.fields["color_preference"].initial = "#14344c"
         self.fields["color_accent"].initial = "#c96f3b"
@@ -123,6 +169,12 @@ class BriefRequestForm(BaseStyledModelForm):
         self.fields["client_comment"].widget.attrs.update(
             {
                 "placeholder": "Если есть уточнения, напишите их здесь.",
+            }
+        )
+        self.fields["extra_pages"].widget.attrs.update(
+            {
+                "placeholder": "0",
+                "inputmode": "numeric",
             }
         )
         self.fields["contact_phone"].widget.attrs.update(
@@ -138,14 +190,15 @@ class BriefRequestForm(BaseStyledModelForm):
     def clean(self):
         cleaned_data = super().clean()
         site_type = cleaned_data.get("site_type")
+        extra_pages = cleaned_data.get("extra_pages") or 0
         need_hosting = cleaned_data.get("need_hosting")
+        hosting_plan = cleaned_data.get("hosting_plan") or BriefRequest.HostingPlan.MONTHLY
         need_domain = cleaned_data.get("need_domain")
-
-        total = self.SITE_TYPE_PRICES.get(site_type, Decimal("0"))
-        if need_hosting:
-            total += self.HOSTING_PRICE
-        if need_domain:
-            total += self.DOMAIN_PRICE
+        need_logo_design = cleaned_data.get("need_logo_design")
+        need_basic_seo = cleaned_data.get("need_basic_seo")
+        need_photo_selection = cleaned_data.get("need_photo_selection")
+        need_email_form = cleaned_data.get("need_email_form")
+        need_reviews_section = cleaned_data.get("need_reviews_section")
 
         color_mode = cleaned_data.get("color_mode") or BriefRequest.ColorMode.TEMPLATE
         if color_mode == BriefRequest.ColorMode.TEMPLATE and not cleaned_data.get("color_template_name"):
@@ -156,6 +209,23 @@ class BriefRequestForm(BaseStyledModelForm):
         if not cleaned_data.get("preferred_contact_app"):
             cleaned_data["preferred_contact_app"] = BriefRequest.ContactApp.WHATSAPP
 
+        if not need_hosting:
+            hosting_plan = BriefRequest.HostingPlan.MONTHLY
+
+        cleaned_data["extra_pages"] = extra_pages
+        cleaned_data["hosting_plan"] = hosting_plan
+        total = calculate_estimated_price(
+            site_type=site_type,
+            extra_pages=extra_pages,
+            need_hosting=need_hosting,
+            hosting_plan=hosting_plan,
+            need_domain=need_domain,
+            need_logo_design=need_logo_design,
+            need_basic_seo=need_basic_seo,
+            need_photo_selection=need_photo_selection,
+            need_email_form=need_email_form,
+            need_reviews_section=need_reviews_section,
+        )
         cleaned_data["estimated_price"] = total
         return cleaned_data
 
@@ -213,6 +283,20 @@ class BriefRequestForm(BaseStyledModelForm):
     def pricing_config(self):
         return {
             "site_type_prices": {key: float(value) for key, value in self.SITE_TYPE_PRICES.items()},
-            "hosting_price": float(self.HOSTING_PRICE),
-            "domain_price": float(self.DOMAIN_PRICE),
+            "extra_page_price": float(self.EXTRA_PAGE_PRICE),
+            "hosting_plan_prices": {key: float(value) for key, value in self.HOSTING_PLAN_PRICES.items()},
+            "addon_prices": {key: float(value) for key, value in self.OPTIONAL_SERVICE_PRICES.items()},
+            "hosting_summary_labels": {
+                BriefRequest.HostingPlan.MONTHLY: "Хостинг сайта",
+                BriefRequest.HostingPlan.QUARTERLY: "Хостинг сайта на 3 месяца",
+            },
+            "addon_summary_labels": {
+                "extra_pages": "Доп. страницы",
+                "need_domain": "Регистрация домена",
+                "need_logo_design": "Создание логотипа",
+                "need_basic_seo": "Базовое SEO",
+                "need_photo_selection": "Подбор фото и картинок",
+                "need_email_form": "Форма с отправкой писем",
+                "need_reviews_section": "Секция с отзывами",
+            },
         }

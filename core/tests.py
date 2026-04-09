@@ -96,3 +96,27 @@ class HomeViewTests(TestCase):
         self.assertContains(response, "data-project-slider")
         self.assertContains(response, "Цветовая гамма")
         self.assertContains(response, project.cover_image.url)
+
+    def test_homepage_shows_bundle_services_section(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Обычно берут вместе")
+        self.assertContains(response, "Написание сайта")
+        self.assertContains(response, "Хостинг сайта")
+        self.assertContains(response, "Регистрация домена")
+        self.assertContains(response, "Акция -25%")
+        self.assertContains(response, "Ещё можно добавить")
+        self.assertContains(response, "Создание логотипа")
+        self.assertContains(response, "Подробнее")
+        self.assertContains(response, "data-home-service-picker")
+        self.assertContains(response, "data-home-summary-widget")
+
+    def test_homepage_marks_site_development_as_default_service(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode("utf-8")
+        self.assertRegex(content, r'id="home-service-site_development"[^>]*checked')
+        self.assertNotRegex(content, r'id="home-service-hosting"[^>]*checked')
+        self.assertNotRegex(content, r'id="home-service-domain"[^>]*checked')

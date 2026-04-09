@@ -143,8 +143,12 @@
                         {% endif %}
                     </div>
                     <div class="col-md-6"><strong>Доп. услуги:</strong>
-                        {% if order.brief.need_hosting or order.brief.need_domain %}
-                            {% if order.brief.need_hosting %}Хостинг{% endif %}{% if order.brief.need_hosting and order.brief.need_domain %}, {% endif %}{% if order.brief.need_domain %}Домен{% endif %}
+                        {% if order.brief.selected_extra_services %}
+                            <div class="d-flex flex-column gap-1 mt-1">
+                                {% for extra_service in order.brief.selected_extra_services %}
+                                    <span>{{ extra_service }}</span>
+                                {% endfor %}
+                            </div>
                         {% else %}
                             -
                         {% endif %}

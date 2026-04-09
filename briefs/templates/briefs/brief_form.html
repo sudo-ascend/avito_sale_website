@@ -12,7 +12,12 @@
                     <h1 class="mb-0">Заявка на разработку сайта</h1>
                 </div>
 
-                <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate data-brief-pricing>
+                <form method="post"
+                      enctype="multipart/form-data"
+                      class="needs-validation"
+                      novalidate
+                      data-brief-pricing
+                      data-reset-service-defaults="{% if reset_service_defaults %}true{% else %}false{% endif %}">
                     {% csrf_token %}
                     {{ form.estimated_price }}
                     {{ form.color_mode }}
@@ -43,18 +48,28 @@
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-body p-4">
                             <h2 class="h5 mb-4">2. Тип услуги</h2>
-                            <div class="mb-3">
-                                <label for="{{ form.site_type.id_for_label }}" class="form-label fw-semibold">
-                                    {{ form.site_type.label }}
-                                    <span class="text-danger">*</span>
-                                </label>
-                                <div class="mb-2">{{ form.site_type }}</div>
-                                <a href="{% url 'site_type_guide' %}" class="small text-decoration-none" target="_blank" rel="noopener noreferrer">
-                                    Чем отличаются типы сайтов
-                                </a>
-                                {% if form.site_type.errors %}
-                                    <div class="invalid-feedback d-block">{{ form.site_type.errors|join:", " }}</div>
-                                {% endif %}
+                            <div class="row g-3 align-items-start">
+                                <div class="col-md-7">
+                                    <div class="mb-0">
+                                        <label for="{{ form.site_type.id_for_label }}" class="form-label fw-semibold">
+                                            {{ form.site_type.label }}
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="mb-2">{{ form.site_type }}</div>
+                                        <a href="{% url 'site_type_guide' %}" class="small text-decoration-none" target="_blank" rel="noopener noreferrer">
+                                            Чем отличаются типы сайтов
+                                        </a>
+                                        {% if form.site_type.errors %}
+                                            <div class="invalid-feedback d-block">{{ form.site_type.errors|join:", " }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-5">
+                                    {% include "partials/form_field.html" with field=form.extra_pages %}
+                                </div>
+                            </div>
+                            <div class="brief-price-note mt-3">
+                                Одностраничник — 3 000 ₽, сайт-каталог — 4 000 ₽, каждая доп. страница — 1 000 ₽.
                             </div>
                         </div>
                     </div>
@@ -267,7 +282,114 @@
 
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-body p-4">
-                            <h2 class="h5 mb-4">4. Контактные данные</h2>
+                            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+                                <div>
+                                    <h2 class="h5 mb-1">4. Дополнительные услуги</h2>
+                                    <p class="text-secondary mb-0">Отметьте, что нужно сразу включить в работу.</p>
+                                </div>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="brief-addon-card" for="{{ form.need_hosting.id_for_label }}">
+                                        {{ form.need_hosting }}
+                                        <span class="brief-addon-card__body">
+                                            <span class="brief-addon-card__title">Хостинг сайта</span>
+                                            <span class="brief-addon-card__price">750 ₽/мес</span>
+                                            <span class="brief-addon-card__copy">Акция: при оплате на 3 месяца скидка 25%.</span>
+                                        </span>
+                                    </label>
+                                    {% if form.need_hosting.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.need_hosting.errors|join:", " }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="brief-addon-card" for="{{ form.need_domain.id_for_label }}">
+                                        {{ form.need_domain }}
+                                        <span class="brief-addon-card__body">
+                                            <span class="brief-addon-card__title">Регистрация домена</span>
+                                            <span class="brief-addon-card__price">550 ₽</span>
+                                            <span class="brief-addon-card__copy">Подберём и зарегистрируем адрес сайта.</span>
+                                        </span>
+                                    </label>
+                                    {% if form.need_domain.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.need_domain.errors|join:", " }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-12{% if not form.need_hosting.value %} d-none{% endif %}" data-hosting-plan-wrapper>
+                                    {% include "partials/form_field.html" with field=form.hosting_plan %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="brief-addon-card" for="{{ form.need_logo_design.id_for_label }}">
+                                        {{ form.need_logo_design }}
+                                        <span class="brief-addon-card__body">
+                                            <span class="brief-addon-card__title">Создание логотипа</span>
+                                            <span class="brief-addon-card__price">500 ₽</span>
+                                            <span class="brief-addon-card__copy">Сделаем 4 варианта, чтобы вы выбрали лучший.</span>
+                                        </span>
+                                    </label>
+                                    {% if form.need_logo_design.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.need_logo_design.errors|join:", " }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="brief-addon-card" for="{{ form.need_basic_seo.id_for_label }}">
+                                        {{ form.need_basic_seo }}
+                                        <span class="brief-addon-card__body">
+                                            <span class="brief-addon-card__title">Базовое SEO продвижение</span>
+                                            <span class="brief-addon-card__price">500 ₽</span>
+                                            <span class="brief-addon-card__copy">Базовая оптимизация без Яндекс Директа.</span>
+                                        </span>
+                                    </label>
+                                    {% if form.need_basic_seo.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.need_basic_seo.errors|join:", " }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="brief-addon-card" for="{{ form.need_photo_selection.id_for_label }}">
+                                        {{ form.need_photo_selection }}
+                                        <span class="brief-addon-card__body">
+                                            <span class="brief-addon-card__title">Подбор фото и картинок</span>
+                                            <span class="brief-addon-card__price">2 000 ₽</span>
+                                            <span class="brief-addon-card__copy">Подберём визуалы под нишу и стиль сайта.</span>
+                                        </span>
+                                    </label>
+                                    {% if form.need_photo_selection.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.need_photo_selection.errors|join:", " }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="brief-addon-card" for="{{ form.need_email_form.id_for_label }}">
+                                        {{ form.need_email_form }}
+                                        <span class="brief-addon-card__body">
+                                            <span class="brief-addon-card__title">Форма с отправкой писем</span>
+                                            <span class="brief-addon-card__price">1 500 ₽</span>
+                                            <span class="brief-addon-card__copy">Заявки с сайта будут приходить на почту.</span>
+                                        </span>
+                                    </label>
+                                    {% if form.need_email_form.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.need_email_form.errors|join:", " }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="brief-addon-card" for="{{ form.need_reviews_section.id_for_label }}">
+                                        {{ form.need_reviews_section }}
+                                        <span class="brief-addon-card__body">
+                                            <span class="brief-addon-card__title">Секция с отзывами</span>
+                                            <span class="brief-addon-card__price">250 ₽</span>
+                                            <span class="brief-addon-card__copy">Поможем придумать реалистичные отзывы и оформить блок.</span>
+                                        </span>
+                                    </label>
+                                    {% if form.need_reviews_section.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.need_reviews_section.errors|join:", " }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-body p-4">
+                            <h2 class="h5 mb-4">5. Контактные данные</h2>
                             <div class="row g-3">
                                 <div class="col-md-4">{% include "partials/form_field.html" with field=form.contact_phone %}</div>
                                 <div class="col-md-4">{% include "partials/form_field.html" with field=form.preferred_contact_app %}</div>
@@ -278,7 +400,7 @@
 
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-body p-4">
-                            <h2 class="h5 mb-4">5. Комментарий</h2>
+                            <h2 class="h5 mb-4">6. Комментарий</h2>
                             {{ form.client_comment }}
                             {% if form.client_comment.errors %}
                                 <div class="invalid-feedback d-block">{{ form.client_comment.errors|join:", " }}</div>
@@ -307,32 +429,25 @@
                             <h2 class="h5 mb-3" data-summary-service>Одностраничный сайт - визитка / резюме</h2>
 
                             <div class="brief-price-line">
-                                <span>Цена услуги</span>
-                                <strong data-summary-base>7 500 ₽</strong>
+                                <span>Базовая цена</span>
+                                <strong data-summary-base>3 000 ₽</strong>
                             </div>
 
-                            <div class="pt-3 mt-3 border-top">
-                                <div class="mb-3">
-                                    <div class="form-check">
-                                        {{ form.need_hosting }}
-                                        <label class="form-check-label" for="{{ form.need_hosting.id_for_label }}">
-                                            Хостинг 750 ₽/мес
-                                        </label>
-                                    </div>
+                            <div class="brief-price-breakdown mt-3 pt-3 border-top">
+                                <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
+                                    <span class="small fw-semibold">Что в расчёте</span>
+                                    <span class="small text-secondary">Можно менять прямо в форме</span>
                                 </div>
-                                <div>
-                                    <div class="form-check">
-                                        {{ form.need_domain }}
-                                        <label class="form-check-label" for="{{ form.need_domain.id_for_label }}">
-                                            Домен 550 ₽
-                                        </label>
+                                <div data-summary-breakdown>
+                                    <div class="brief-price-breakdown__empty" data-summary-breakdown-empty>
+                                        Дополнительные услуги пока не выбраны.
                                     </div>
                                 </div>
                             </div>
 
                             <div class="brief-price-total mt-3 pt-3 border-top">
                                 <span>Итого</span>
-                                <strong data-summary-total>7 500 ₽</strong>
+                                <strong data-summary-total>3 000 ₽</strong>
                             </div>
 
                             <div class="brief-color-summary mt-3 pt-3 border-top">
