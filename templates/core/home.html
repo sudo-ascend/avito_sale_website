@@ -129,7 +129,118 @@
                                 <a href="{% url 'portfolio_list' %}" class="btn btn-outline-dark rounded-pill px-3">Все проекты</a>
                             </div>
 
-                            {% include "portfolio/includes/project_card_grid.html" with projects=popular_projects empty_title="Портфолио пока пустое" empty_copy="Структура уже готова, осталось только наполнить её опубликованными проектами." %}
+                            <div class="home-portfolio-grid">
+                                {% include "portfolio/includes/project_card_grid.html" with projects=popular_projects empty_title="Портфолио пока пустое" empty_copy="Структура уже готова, осталось только наполнить её опубликованными проектами." %}
+                            </div>
+                        </section>
+
+                        <section id="complex-sites">
+                            <div class="card border-0 terra-complex-card">
+                                <div class="card-body p-4 p-lg-5">
+                                    <div class="row g-4 align-items-start">
+                                        <div class="col-lg-5">
+                                            <p class="terra-section__kicker mb-2">Системы под бизнес</p>
+                                            <h2 class="mb-3">Делаем рабочие системы с админкой и интеграциями</h2>
+                                            <p class="terra-complex-copy mb-0">
+                                                Если бизнесу уже мало обычного сайта, собираем внутренние системы под процессы компании:
+                                                с ролями, реестрами, админкой, файловой структурой и внешними интеграциями.
+                                            </p>
+
+                                            <div class="terra-complex-tags">
+                                                <span class="terra-complex-tag">Роли и доступы</span>
+                                                <span class="terra-complex-tag">Реестры</span>
+                                                <span class="terra-complex-tag">WebDAV</span>
+                                                <span class="terra-complex-tag">Контроль сроков</span>
+                                            </div>
+
+                                            <div class="terra-complex-price">
+                                                <span>Стоимость проекта</span>
+                                                <strong>180к</strong>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-lg-7">
+                                            <div class="terra-complex-case">
+                                                <div class="terra-complex-case__top">
+                                                    <div>
+                                                        <p class="terra-complex-case__eyebrow">Пример проекта</p>
+                                                        <h3 class="h4 mb-1">gas-spec.ru</h3>
+                                                        <p class="mb-0 text-secondary">Система для автоматизации документооборота, заказов, ролей сотрудников и дедлайнов.</p>
+                                                    </div>
+                                                    <a href="https://gas-spec.ru" target="_blank" rel="noopener" class="terra-complex-case__link">
+                                                        Открыть пример
+                                                    </a>
+                                                </div>
+
+                                                <p class="terra-complex-case__excerpt">
+                                                    Проект сделан для ООО «Специалист» как кастомная рабочая система вместо типовых решений, которые не подходили под реальные процессы компании.
+                                                </p>
+
+                                                <div class="collapse" id="complexCaseDetails">
+                                                    <div class="terra-complex-case__details">
+                                                        <p class="mb-0">
+                                                            Основные системы внутри проекта:
+                                                        </p>
+
+                                                        <div class="terra-complex-points">
+                                                            <div class="terra-complex-point">
+                                                                <strong>Реестры заказов, договоров и проектов</strong>
+                                                                <span>Единая система с родительскими и дочерними заказами и наглядной структурой данных.</span>
+                                                            </div>
+                                                            <div class="terra-complex-point">
+                                                                <strong>Разделение сотрудников на группы</strong>
+                                                                <span>Проектировщики, сметчики, инженеры и другие роли работают в своей зоне ответственности.</span>
+                                                            </div>
+                                                            <div class="terra-complex-point">
+                                                                <strong>Профили сотрудников с персональными настройками сайта</strong>
+                                                                <span>Отдельные профили сотрудников с настройками под формат работы и рабочую роль.</span>
+                                                            </div>
+                                                            <div class="terra-complex-point">
+                                                                <strong>Регистрация, авторизация и восстановление пароля</strong>
+                                                                <span>Полный контур доступа для сотрудников внутри системы.</span>
+                                                            </div>
+                                                            <div class="terra-complex-point">
+                                                                <strong>Добавление и редактирование заказов</strong>
+                                                                <span>Работа с заказами и объектами в одном интерфейсе без лишних ручных действий.</span>
+                                                            </div>
+                                                            <div class="terra-complex-point">
+                                                                <strong>Список всех задач работника</strong>
+                                                                <span>Сотрудник видит свои задачи, статусы и связанные с ними рабочие действия.</span>
+                                                            </div>
+                                                            <div class="terra-complex-point">
+                                                                <strong>Автоматическое отслеживание дедлайнов и выявление просрочек</strong>
+                                                                <span>Система показывает сроки, просрочки и проблемные задачи по заказам.</span>
+                                                            </div>
+                                                            <div class="terra-complex-point">
+                                                                <strong>Связь с облачным хранилищем</strong>
+                                                                <span>Интеграция через WebDAV для работы с файловой структурой и документами.</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <p class="mb-0">
+                                                            Технологии: Django, Python, SQLite, HTML, CSS, Bootstrap, JavaScript, WebDAV и Git.
+                                                            Система вышла в релиз 1 января 2026 года.
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="terra-complex-actions">
+                                                    <button class="btn btn-outline-dark rounded-pill px-4"
+                                                            type="button"
+                                                            data-bs-toggle="collapse"
+                                                            data-bs-target="#complexCaseDetails"
+                                                            aria-expanded="false"
+                                                            aria-controls="complexCaseDetails">
+                                                        Подробнее
+                                                    </button>
+                                                    <a href="{% url 'contact' %}" class="btn terra-btn-solid rounded-pill px-4">Написать</a>
+                                                    <p class="terra-complex-note mb-0">Обсудим ваши требования, цену и сроки.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </section>
 
                         <section id="advantages">

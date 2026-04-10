@@ -45,7 +45,7 @@ class HomeView(TemplateView):
         )
         context["featured_projects"] = featured_projects
         context["hero_project"] = featured_projects[0] if featured_projects else None
-        context["popular_projects"] = featured_projects[:4]
+        context["popular_projects"] = featured_projects[:6]
         context["suggested_projects"] = featured_projects[4:7] or featured_projects[:3]
         context["catalog_projects"] = featured_projects[:4]
         context["contact_info"] = (

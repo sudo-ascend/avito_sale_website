@@ -49,18 +49,12 @@
                         </div>
                         {% with palette=project.palette_colors %}
                             <div class="project-card__palette">
-                                <p class="project-card__palette-label mb-2">Цветовая гамма</p>
                                 {% if palette %}
-                                    <div class="project-sample-palette mb-2">
+                                    <div class="project-sample-palette">
                                         {% for color in palette %}
-                                            <span class="color-swatch-btn color-swatch-btn-sm palette-display-chip" title="{{ project.title }} {{ color }}">
+                                            <span class="color-swatch-btn color-swatch-btn-sm palette-display-chip" title="Цвет палитры {{ project.title }}">
                                                 <span style="background-color: {{ color }};"></span>
                                             </span>
-                                        {% endfor %}
-                                    </div>
-                                    <div class="project-card__palette-codes">
-                                        {% for color in palette %}
-                                            <span class="project-card__palette-code">{{ color }}</span>
                                         {% endfor %}
                                     </div>
                                 {% else %}

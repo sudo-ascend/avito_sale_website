@@ -94,8 +94,38 @@ class HomeViewTests(TestCase):
         self.assertContains(response, "Примеры наших работ")
         self.assertContains(response, "portfolio-project-grid")
         self.assertContains(response, "data-project-slider")
-        self.assertContains(response, "Цветовая гамма")
         self.assertContains(response, project.cover_image.url)
+
+    def test_homepage_passes_six_popular_projects_for_responsive_grid(self):
+        start_date = date(2026, 3, 1)
+        for index in range(7):
+            Project.objects.create(
+                title=f"Popular project {index}",
+                short_description="Short description",
+                description="Long description",
+                completion_date=start_date + timedelta(days=index),
+                stack_notes="HTML, CSS",
+                is_published=True,
+            )
+
+        response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.context["popular_projects"]), 6)
+        self.assertContains(response, "home-portfolio-grid")
+
+    def test_homepage_shows_complex_project_section(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "gas-spec.ru")
+        self.assertContains(response, "180к")
+        self.assertContains(response, "Подробнее")
+        self.assertContains(response, "Написать")
+        self.assertContains(response, "complexCaseDetails")
+        self.assertContains(response, "WebDAV")
+        self.assertContains(response, "1 января 2026 года")
+        self.assertNotContains(response, "Lorem ipsum")
 
     def test_homepage_shows_bundle_services_section(self):
         response = self.client.get(reverse("home"))

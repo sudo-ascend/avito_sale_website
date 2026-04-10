@@ -64,4 +64,3 @@ class PortfolioDemoPageTests(TestCase):
         self.assertContains(response, "data-slider-next")
         self.assertContains(response, self.project.cover_image.url)
         self.assertContains(response, self.gallery_image.image.url)
-        self.assertContains(response, "Цветовая гамма")
