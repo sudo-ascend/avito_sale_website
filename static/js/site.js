@@ -74,6 +74,144 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+    const body = document.body;
+    const header = document.getElementById("site-header");
+    const navCollapse = document.getElementById("mainNav");
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImage = document.getElementById("lightbox-image");
+    const lightboxTitle = document.getElementById("lightbox-title");
+    const lightboxText = document.getElementById("lightbox-text");
+
+    window.requestAnimationFrame(() => {
+        body.classList.add("loaded");
+    });
+
+    const syncHeaderState = () => {
+        if (!header) {
+            return;
+        }
+        header.classList.toggle("is-scrolled", window.scrollY > 16);
+    };
+
+    syncHeaderState();
+    window.addEventListener("scroll", syncHeaderState, { passive: true });
+
+    const revealElements = document.querySelectorAll(".reveal");
+    if ("IntersectionObserver" in window) {
+        const revealObserver = new IntersectionObserver(
+            (entries, observer) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) {
+                        return;
+                    }
+                    entry.target.classList.add("is-visible");
+                    observer.unobserve(entry.target);
+                });
+            },
+            {
+                threshold: 0.08,
+                rootMargin: "0px 0px 4% 0px",
+            }
+        );
+
+        revealElements.forEach((item) => revealObserver.observe(item));
+    } else {
+        revealElements.forEach((item) => item.classList.add("is-visible"));
+    }
+
+    document.querySelectorAll("a[href*='#']").forEach((anchor) => {
+        anchor.addEventListener("click", (event) => {
+            const href = anchor.getAttribute("href");
+            if (!href || href === "#") {
+                return;
+            }
+
+            let targetUrl;
+            try {
+                targetUrl = new URL(href, window.location.href);
+            } catch {
+                return;
+            }
+
+            if (!targetUrl.hash) {
+                return;
+            }
+            if (targetUrl.origin !== window.location.origin || targetUrl.pathname !== window.location.pathname) {
+                return;
+            }
+
+            const target = document.querySelector(targetUrl.hash);
+            if (!target) {
+                return;
+            }
+
+            event.preventDefault();
+            const offset = header ? header.offsetHeight + 18 : 96;
+            const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+
+            window.scrollTo({
+                top,
+                behavior: "smooth",
+            });
+
+            if (navCollapse && navCollapse.classList.contains("show") && window.bootstrap) {
+                const collapseInstance = bootstrap.Collapse.getInstance(navCollapse);
+                collapseInstance?.hide();
+            }
+        });
+    });
+
+    let lastLightboxTrigger = null;
+
+    const openLightbox = (trigger) => {
+        if (!lightbox || !lightboxImage || !lightboxTitle || !lightboxText) {
+            return;
+        }
+
+        lastLightboxTrigger = trigger;
+        lightboxImage.src = trigger.dataset.lightboxImage || "";
+        lightboxImage.alt = trigger.querySelector("img")?.alt || trigger.dataset.lightboxTitle || "";
+        lightboxTitle.textContent = trigger.dataset.lightboxTitle || "";
+        lightboxText.textContent = trigger.dataset.lightboxText || "";
+        lightbox.hidden = false;
+
+        window.requestAnimationFrame(() => {
+            lightbox.classList.add("is-open");
+            body.classList.add("lightbox-open");
+        });
+    };
+
+    const closeLightbox = () => {
+        if (!lightbox || lightbox.hidden) {
+            return;
+        }
+
+        lightbox.classList.remove("is-open");
+        body.classList.remove("lightbox-open");
+
+        window.setTimeout(() => {
+            lightbox.hidden = true;
+            lightboxImage.src = "";
+            if (lastLightboxTrigger) {
+                lastLightboxTrigger.focus();
+            }
+        }, 220);
+    };
+
+    document.querySelectorAll("[data-lightbox-image]").forEach((trigger) => {
+        trigger.addEventListener("click", () => openLightbox(trigger));
+    });
+
+    lightbox?.querySelectorAll("[data-lightbox-close]").forEach((closer) => {
+        closer.addEventListener("click", closeLightbox);
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+            closeLightbox();
+        }
+    });
+
     const repeatableFileFields = document.querySelectorAll("[data-repeatable-file-field]");
     repeatableFileFields.forEach((field) => {
         const fieldName = field.dataset.fieldName || "";
@@ -900,6 +1038,33 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    const contactShell = document.querySelector("[data-contact-email]");
+    const contactEmail = contactShell?.dataset.contactEmail?.trim();
+    const contactPhoneHref = contactShell?.dataset.contactPhoneHref?.trim();
+    const contactPhoneText = contactShell?.dataset.contactPhoneText?.trim();
+
+    if (contactEmail) {
+        document.querySelectorAll("[data-contact-email-link]").forEach((link) => {
+            link.setAttribute("href", `mailto:${contactEmail}`);
+        });
+
+        document.querySelectorAll("[data-contact-email-text]").forEach((node) => {
+            node.textContent = contactEmail;
+        });
+    }
+
+    if (contactPhoneHref) {
+        document.querySelectorAll("[data-contact-phone-link]").forEach((link) => {
+            link.setAttribute("href", `tel:${contactPhoneHref}`);
+        });
+    }
+
+    if (contactPhoneText) {
+        document.querySelectorAll("[data-contact-phone-text]").forEach((node) => {
+            node.textContent = contactPhoneText;
+        });
+    }
+
     const homeServiceConfigElement = document.getElementById("home-service-config");
     const homeServicePicker = document.querySelector("[data-home-service-picker]");
     if (homeServiceConfigElement && homeServicePicker) {
@@ -920,6 +1085,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const summaryEmpty = homeServicePicker.querySelector("[data-home-summary-empty]");
         const summaryTotal = homeServicePicker.querySelector("[data-home-summary-total]");
         const summaryLink = homeServicePicker.querySelector("[data-home-summary-link]");
+        const summaryTotalBlock = summaryTotal?.closest(".brief-price-total");
+        const summaryAction = summaryLink;
         const serviceFieldByKey = new Map(
             [
                 ["site_development", siteDevelopmentField],
@@ -927,6 +1094,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 ...addonFields.map((field) => [field.dataset.homeSelect || "", field]),
             ].filter(([key, field]) => key && field)
         );
+        let summaryEmptyDismissed = false;
+
+        const summaryEmptyClose = summaryWidget?.querySelector("[data-home-summary-empty-close]");
+        summaryTotalBlock?.classList.add("d-none");
+        summaryAction?.classList.add("d-none");
 
         const formatRub = (value) => {
             const amount = Number(value || 0);
@@ -1088,9 +1260,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         };
 
-        if (siteDevelopmentField) {
-            siteDevelopmentField.checked = true;
-        }
         if (extraPagesField) {
             extraPagesField.value = "0";
         }
@@ -1171,14 +1340,26 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             renderSummaryRows(rows);
-            summaryWidget?.classList.toggle("d-none", rows.length === 0);
+            const hasRows = rows.length > 0;
+            const showEmptyPrompt = !hasRows && !summaryEmptyDismissed;
+
+            summaryWidget?.classList.toggle("d-none", !hasRows && !showEmptyPrompt);
+            summaryWidget?.classList.toggle("brief-price-widget--idle", showEmptyPrompt);
+            summaryEmpty?.classList.toggle("d-none", !showEmptyPrompt);
+            summaryTotalBlock?.classList.toggle("d-none", !hasRows);
+            summaryAction?.classList.toggle("d-none", !hasRows);
             if (summaryTotal) {
                 summaryTotal.textContent = formatRub(total);
             }
             if (summaryLink) {
-                summaryLink.href = rows.length && briefUrl ? `${briefUrl}?${params.toString()}` : briefUrl;
+                summaryLink.href = hasRows && briefUrl ? `${briefUrl}?${params.toString()}` : briefUrl;
             }
         };
+
+        summaryEmptyClose?.addEventListener("click", () => {
+            summaryEmptyDismissed = true;
+            updateHomeServiceSummary();
+        });
 
         siteDevelopmentField?.addEventListener("change", updateHomeServiceSummary);
         siteTypeFields.forEach((field) => {

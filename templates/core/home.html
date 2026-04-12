@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load static %}
+{% load static core_tags %}
 
 {% block title %}{{ site_brand_name }} | Веб-студия{% endblock %}
 
@@ -7,7 +7,7 @@
 
 {% block content %}
 <section class="terra-shell">
-    <section class="terra-hero" id="hero"{% if hero_project and hero_project.cover_image %} style="--terra-hero-image: url('{{ hero_project.cover_image.url }}');"{% endif %}>
+    <section class="terra-hero" id="hero" style="--terra-hero-image: url('{% static 'img/hero/hero-code-background.jpg' %}');">
         <div class="container py-3 py-lg-4">
             <div class="row justify-content-center">
                 <div class="col-lg-9">
@@ -26,7 +26,7 @@
                                     <a href="{% url 'portfolio_list' %}" class="btn btn-sm btn-light border rounded-pill px-3">Портфолио</a>
                                     <a href="{% url 'brief_create' %}" class="btn btn-sm btn-light border rounded-pill px-3">Создать ТЗ</a>
                                 </div>
-                                <a href="{% url 'contact' %}" class="btn btn-sm btn-outline-dark rounded-pill px-3">Контакты</a>
+                                <a href="#contacts" class="btn btn-sm btn-outline-dark rounded-pill px-3">Контакты</a>
                             </div>
                         </div>
 
@@ -47,8 +47,8 @@
                                 <div class="d-grid gap-3">
                                     <div class="card border-0 shadow-sm terra-side-card">
                                         <div class="card-body p-4">
-                                            <p class="terra-section__kicker mb-2">Понятное сопровождение</p>
-                                            <p class="mb-0">После запуска можно быстро вносить правки и дальше спокойно вести сайт, домен, хостинг и обновления без хаоса.</p>
+                                            <p class="terra-section__kicker mb-2">Запуск и поддержка</p>
+                                            <p class="mb-0">Помогаем с доменом, хостингом, публикацией и дальнейшими точечными обновлениями, чтобы проект не завис после релиза.</p>
                                         </div>
                                     </div>
                                     <div class="row g-3">
@@ -74,7 +74,7 @@
                                             <div class="d-flex flex-wrap gap-2">
                                                 <span class="terra-chip">Без водяных знаков</span>
                                                 <span class="terra-chip">Легко обновлять</span>
-                                                <span class="terra-chip">Масштабирование</span>
+                                                <span class="terra-chip">CRM и автоматизация</span>
                                                 <span class="terra-chip">Django + Bootstrap</span>
                                             </div>
                                         </div>
@@ -115,7 +115,7 @@
         </div>
     </section>
 
-    <section class="py-4 py-lg-5 terra-paper-section" style="--terra-paper-image: url('{% static 'img/textures/light-paper-fibers.png' %}');">
+    <section class="py-4 py-lg-5 terra-paper-section">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-lg-9">
@@ -153,17 +153,22 @@
                                                 <span class="terra-complex-tag">Контроль сроков</span>
                                             </div>
 
-                                            <div class="terra-complex-price">
-                                                <span>Стоимость проекта</span>
-                                                <strong>180к</strong>
-                                            </div>
+                                            <figure class="terra-complex-case__media terra-complex-case__media--offset">
+                                                <img
+                                                    class="terra-complex-case__image"
+                                                    src="{% static 'img/home/gas-system-presentation-order-edit.png' %}"
+                                                    alt="Экран редактирования заказа в системе gas-spec.ru">
+                                                <figcaption class="terra-complex-case__caption">
+                                                    Форма редактирования заказа и связанных сущностей без лишних переходов между экранами.
+                                                </figcaption>
+                                            </figure>
                                         </div>
 
                                         <div class="col-lg-7">
                                             <div class="terra-complex-case">
                                                 <div class="terra-complex-case__top">
                                                     <div>
-                                                        <p class="terra-complex-case__eyebrow">Пример проекта</p>
+                                                        <p class="terra-complex-case__eyebrow">ООО «Специалист»</p>
                                                         <h3 class="h4 mb-1">gas-spec.ru</h3>
                                                         <p class="mb-0 text-secondary">Система для автоматизации документооборота, заказов, ролей сотрудников и дедлайнов.</p>
                                                     </div>
@@ -172,71 +177,83 @@
                                                     </a>
                                                 </div>
 
-                                                <p class="terra-complex-case__excerpt">
-                                                    Проект сделан для ООО «Специалист» как кастомная рабочая система вместо типовых решений, которые не подходили под реальные процессы компании.
+                                                <p class="terra-complex-case__summary">
+                                                    Готовые решения оказались слишком сложными для нужного сценария, поэтому для компании собрали отдельную рабочую систему под реальные процессы.
                                                 </p>
 
-                                                <div class="collapse" id="complexCaseDetails">
-                                                    <div class="terra-complex-case__details">
-                                                        <p class="mb-0">
-                                                            Основные системы внутри проекта:
-                                                        </p>
+                                                <figure class="terra-complex-case__media terra-complex-case__media--offset">
+                                                    <img
+                                                        class="terra-complex-case__image"
+                                                        src="{% static 'img/home/gas-system-presentation-shot.png' %}"
+                                                        alt="Главный экран системы gas-spec.ru">
+                                                    <figcaption class="terra-complex-case__caption">
+                                                        Главная рабочая зона проекта с быстрым доступом к разделам, заказам и связанным действиям.
+                                                    </figcaption>
+                                                </figure>
 
-                                                        <div class="terra-complex-points">
-                                                            <div class="terra-complex-point">
-                                                                <strong>Реестры заказов, договоров и проектов</strong>
-                                                                <span>Единая система с родительскими и дочерними заказами и наглядной структурой данных.</span>
-                                                            </div>
-                                                            <div class="terra-complex-point">
-                                                                <strong>Разделение сотрудников на группы</strong>
-                                                                <span>Проектировщики, сметчики, инженеры и другие роли работают в своей зоне ответственности.</span>
-                                                            </div>
-                                                            <div class="terra-complex-point">
-                                                                <strong>Профили сотрудников с персональными настройками сайта</strong>
-                                                                <span>Отдельные профили сотрудников с настройками под формат работы и рабочую роль.</span>
-                                                            </div>
-                                                            <div class="terra-complex-point">
-                                                                <strong>Регистрация, авторизация и восстановление пароля</strong>
-                                                                <span>Полный контур доступа для сотрудников внутри системы.</span>
-                                                            </div>
-                                                            <div class="terra-complex-point">
-                                                                <strong>Добавление и редактирование заказов</strong>
-                                                                <span>Работа с заказами и объектами в одном интерфейсе без лишних ручных действий.</span>
-                                                            </div>
-                                                            <div class="terra-complex-point">
-                                                                <strong>Список всех задач работника</strong>
-                                                                <span>Сотрудник видит свои задачи, статусы и связанные с ними рабочие действия.</span>
-                                                            </div>
-                                                            <div class="terra-complex-point">
-                                                                <strong>Автоматическое отслеживание дедлайнов и выявление просрочек</strong>
-                                                                <span>Система показывает сроки, просрочки и проблемные задачи по заказам.</span>
-                                                            </div>
-                                                            <div class="terra-complex-point">
-                                                                <strong>Связь с облачным хранилищем</strong>
-                                                                <span>Интеграция через WebDAV для работы с файловой структурой и документами.</span>
-                                                            </div>
-                                                        </div>
+                                                <div class="terra-complex-case__details">
+                                                    <div>
+                                                        <strong class="d-block mb-2">Что сделано</strong>
+                                                        <ul class="terra-complex-list mb-0">
+                                                            <li>Реестры заказов, договоров и проектов с понятной структурой данных.</li>
+                                                            <li>Разделение сотрудников по ролям и доступам внутри системы.</li>
+                                                            <li>Работа с файлами и документами через интеграцию WebDAV.</li>
+                                                            <li>Контроль сроков, статусов и просрочек без ручного ведения таблиц.</li>
+                                                        </ul>
+                                                    </div>
 
-                                                        <p class="mb-0">
-                                                            Технологии: Django, Python, SQLite, HTML, CSS, Bootstrap, JavaScript, WebDAV и Git.
-                                                            Система вышла в релиз 1 января 2026 года.
-                                                        </p>
+                                                    <p class="terra-complex-case__excerpt mb-0">
+                                                        Технологии: Django, Python, SQLite, HTML, CSS, Bootstrap, JavaScript, WebDAV и Git.
+                                                    </p>
+
+                                                    <div class="terra-complex-actions">
+                                                        <a href="#contacts" class="btn terra-btn-solid rounded-pill px-4">Написать</a>
+                                                        <p class="terra-complex-note mb-0">Обсудим ваши требования, цену и сроки.</p>
                                                     </div>
                                                 </div>
-
-                                                <div class="terra-complex-actions">
-                                                    <button class="btn btn-outline-dark rounded-pill px-4"
-                                                            type="button"
-                                                            data-bs-toggle="collapse"
-                                                            data-bs-target="#complexCaseDetails"
-                                                            aria-expanded="false"
-                                                            aria-controls="complexCaseDetails">
-                                                        Подробнее
-                                                    </button>
-                                                    <a href="{% url 'contact' %}" class="btn terra-btn-solid rounded-pill px-4">Написать</a>
-                                                    <p class="terra-complex-note mb-0">Обсудим ваши требования, цену и сроки.</p>
-                                                </div>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section id="telegram-bots" class="card border-0 terra-content-card">
+                            <div class="card-body p-4 p-lg-5">
+                                <div class="row g-4 align-items-start">
+                                    <div class="col-lg-5">
+                                        <p class="terra-section__kicker mb-2">Telegram-боты</p>
+                                        <h2 class="mb-3">Идеи для Telegram-бота: зачем он нужен и как работает</h2>
+                                        <p class="mb-4 text-secondary">
+                                            Здесь говорим не про сложность, а про полезный сценарий. Сначала определяем,
+                                            зачем клиенту писать именно в Telegram, а потом собираем короткий путь:
+                                            приветствие, кнопки, сбор контакта, ответы на частые вопросы и передача заявки дальше.
+                                        </p>
+                                        <div class="terra-complex-points terra-complex-points--telegram">
+                                            <div class="terra-complex-point">
+                                                <strong>Зачем</strong>
+                                                <span>Чтобы клиенту было проще написать, а бизнесу не терять обращения и быстрее доводить человека до нужного действия.</span>
+                                            </div>
+                                            <div class="terra-complex-point">
+                                                <strong>Как</strong>
+                                                <span>Через короткий сценарий: старт, несколько понятных кнопок, сбор контакта и передача заявки дальше без лишних шагов.</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-7">
+                                        <div class="terra-telegram-gallery" aria-label="Примеры экранов Telegram-ботов">
+                                            <figure class="terra-telegram-shot">
+                                                <img
+                                                    src="{% static 'img/home/telegram-bot-chat-menu.jpg' %}"
+                                                    alt="Пример стартового экрана Telegram-бота с приветствием и кнопкой запуска"
+                                                    loading="lazy">
+                                            </figure>
+                                            <figure class="terra-telegram-shot">
+                                                <img
+                                                    src="{% static 'img/home/telegram-bot-chat-invoice.jpg' %}"
+                                                    alt="Пример экрана Telegram-бота с карточкой товара и оплатой"
+                                                    loading="lazy">
+                                            </figure>
                                         </div>
                                     </div>
                                 </div>
@@ -280,8 +297,8 @@
                                     <div class="card border-0 h-100 terra-content-card">
                                         <div class="card-body p-4">
                                             <span class="terra-benefit-index">04</span>
-                                            <h3 class="h5">Проще масштабировать</h3>
-                                            <p class="mb-0 text-secondary">Когда бизнес растет, в сайт можно спокойно добавить новые страницы, формы, каталог, интеграции и внутренние инструменты.</p>
+                                            <h3 class="h5">Структура под ваши процессы</h3>
+                                            <p class="mb-0 text-secondary">Формы, блоки, каталог, CRM-связки и внутренние разделы проектируем под реальную работу бизнеса, а не под усреднённый шаблон.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -289,8 +306,8 @@
                                     <div class="card border-0 h-100 terra-content-card">
                                         <div class="card-body p-4">
                                             <span class="terra-benefit-index">05</span>
-                                            <h3 class="h5">Без лишнего мусора</h3>
-                                            <p class="mb-0 text-secondary">Нет перегруза из десятков ненужных плагинов и тяжелых шаблонов. Это упрощает поддержку и помогает сайту работать чище.</p>
+                                            <h3 class="h5">Без подписок на конструкторы</h3>
+                                            <p class="mb-0 text-secondary">Проект остаётся вашим: без ограничений платформы, скрытых тарифов и необходимости подгонять бизнес под чужую экосистему.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -298,8 +315,8 @@
                                     <div class="card border-0 h-100 terra-content-card">
                                         <div class="card-body p-4">
                                             <span class="terra-benefit-index">06</span>
-                                            <h3 class="h5">Понятное сопровождение</h3>
-                                            <p class="mb-0 text-secondary">После запуска можно быстро вносить правки и дальше спокойно вести сайт, домен, хостинг и обновления без хаоса.</p>
+                                            <h3 class="h5">Поддержка после релиза</h3>
+                                            <p class="mb-0 text-secondary">Остаёмся на связи после публикации: помогаем с доменом, хостингом, мелкими правками и техническими вопросами.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -324,7 +341,6 @@
                                                     <input class="form-check-input"
                                                            type="checkbox"
                                                            id="home-service-{{ service.key }}"
-                                                           {% if service.key == "site_development" %}checked{% endif %}
                                                            data-home-select="{{ service.key }}"
                                                            data-home-field="{{ service.field_name }}">
                                                 </div>
@@ -341,7 +357,7 @@
 
                                                 {% if service.key == "hosting" %}
                                                     <div class="terra-service-row__promo-card">
-                                                        <span class="terra-service-row__promo-copy">550 ₽ при оплате 3 месяцев</span>
+                                                        <span class="terra-service-row__promo-copy">Акция -25%, 550 ₽ при оплате 3 месяцев</span>
                                                     </div>
 
                                                     <div class="terra-service-row__controls d-none" data-home-hosting-options>
@@ -455,20 +471,59 @@
                                     </div>
                                 {% endif %}
 
-                                <aside class="brief-price-widget card border-0 shadow-sm d-none" data-home-summary-widget>
+                                <div class="mt-4">
+                                    <div class="card border-0 terra-content-card">
+                                        <div class="card-body p-4">
+                                            <div class="d-flex flex-column flex-lg-row align-items-lg-start justify-content-between gap-4">
+                                                <div>
+                                                    <div class="d-flex align-items-center gap-3 mb-3">
+                                                        <span class="terra-service-icon">
+                                                            <i class="bi bi-telegram"></i>
+                                                        </span>
+                                                        <div>
+                                                            <p class="terra-section__kicker mb-2">Отдельная услуга</p>
+                                                            <h3 class="h4 mb-0">Telegram-боты и связка с сайтом</h3>
+                                                        </div>
+                                                    </div>
+                                                    <p class="mb-0 text-secondary">
+                                                        Делаем Telegram-ботов для заявок, уведомлений, записи, FAQ и простых сценариев общения.
+                                                        При необходимости связываем бота с сайтом, чтобы обращения, статусы и сообщения не терялись между каналами.
+                                                    </p>
+                                                </div>
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    <span class="terra-complex-tag">Заявки из сайта</span>
+                                                    <span class="terra-complex-tag">Уведомления</span>
+                                                    <span class="terra-complex-tag">FAQ и сценарии</span>
+                                                    <span class="terra-complex-tag">Связка с внутренней логикой</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <aside class="brief-price-widget brief-price-widget--idle card border-0 shadow-sm" data-home-summary-widget>
                                     <div class="card-body p-4">
                                         <p class="section-kicker mb-2">Подборка</p>
                                         <h2 class="h5 mb-3">Выбранные услуги</h2>
                                         <div class="brief-price-breakdown" data-home-summary-list>
-                                            <div class="brief-price-breakdown__empty" data-home-summary-empty>
-                                                Выберите хотя бы одну услугу, и здесь появится готовая смета.
+                                            <div class="brief-price-breakdown__empty home-summary-empty" data-home-summary-empty>
+                                                <div class="home-summary-empty__body">
+                                                    <strong>Положите в корзину</strong>
+                                                    <span>Добавьте услугу, и здесь появится готовая подборка.</span>
+                                                </div>
+                                                <button type="button"
+                                                        class="home-summary-empty__close"
+                                                        data-home-summary-empty-close
+                                                        aria-label="Закрыть окно">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
                                             </div>
                                         </div>
-                                        <div class="brief-price-total mt-3 pt-3 border-top">
+                                        <div class="brief-price-total mt-3 pt-3 border-top d-none">
                                             <span>Итого</span>
                                             <strong data-home-summary-total>0 ₽</strong>
                                         </div>
-                                        <a href="{% url 'brief_create' %}" class="btn terra-btn-solid w-100 rounded-pill mt-3" data-home-summary-link>
+                                        <a href="{% url 'brief_create' %}" class="btn terra-btn-solid w-100 rounded-pill mt-3 d-none" data-home-summary-link>
                                             Перейти к ТЗ
                                         </a>
                                     </div>
@@ -481,7 +536,7 @@
                                 <div class="row g-4">
                                     <div class="col-lg-7">
                                         <p class="terra-section__kicker terra-section__kicker--light mb-2">Как работаем</p>
-                                        <h2 class="text-white mb-4">Понятный процесс без хаоса</h2>
+                                        <h2 class="text-white mb-4">Как идёт работа по проекту</h2>
                                         <div class="d-grid gap-3">
                                             <article class="terra-process-step">
                                                 <span>01</span>
@@ -535,7 +590,7 @@
                                                     <h3 class="h4">Сначала фиксируем задачу в ТЗ</h3>
                                                     <a href="{% url 'brief_create' %}" class="btn terra-btn-solid rounded-pill px-4">Перейти к составлению ТЗ</a>
 
-                                                    <p class="process-brief-contact mt-3 mb-0">Или <a href="{% url 'contact' %}">напиши нам</a>, если удобнее обсудить задачу в чате.</p>
+                                                    <p class="process-brief-contact mt-3 mb-0">Или <a href="#contacts">напиши нам</a>, если удобнее обсудить задачу в чате.</p>
                                                     
                                                 </div>
                                             </aside>
@@ -544,6 +599,7 @@
                                 </div>
                             </div>
                         </section>
+
                     </div>
                 </div>
             </div>
@@ -556,39 +612,77 @@
 {% block footer %}
 <footer class="terra-footer" id="contacts">
     <div class="container">
-        <div class="terra-footer__inner">
-            <div>
-                <div class="terra-brand terra-brand--footer">
-                    <span class="terra-brand__mark">{{ site_brand_name|slice:":1" }}</span>
-                    <div class="terra-brand__copy">
-                        <strong>{{ site_brand_name }}</strong>
-                        <span>Веб студия</span>
+        <div class="row g-4 align-items-start">
+            <div class="col-lg-5">
+                <div class="footer-brand">
+                    <div class="terra-brand terra-brand--footer">
+                        <span class="terra-brand__mark">{{ site_brand_name|slice:":1" }}</span>
+                        <div class="terra-brand__copy">
+                            <strong>{{ site_brand_name }}</strong>
+                            <span>Веб студия</span>
+                        </div>
                     </div>
-                </div>
-                <p class="terra-footer__lead">Разрабатываем сайты, личные кабинеты и внутренние системы с понятной архитектурой и поддержкой после запуска.</p>
-                <div class="terra-footer__socials">
-                    <span><i class="bi bi-instagram"></i></span>
-                    <span><i class="bi bi-telegram"></i></span>
-                    <span><i class="bi bi-whatsapp"></i></span>
+                    <p>Разрабатываем сайты, личные кабинеты и внутренние системы с понятной архитектурой и поддержкой после запуска.</p>
+                    {% if contact_info and contact_info.telegram or contact_info and contact_info.whatsapp or contact_info and contact_info.email %}
+                        <div class="footer-messenger-list" aria-label="Мессенджеры и быстрые контакты">
+                            {% if contact_info and contact_info.telegram %}
+                                <a class="footer-messenger-link"
+                                   href="{{ contact_info.telegram|telegram_href }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   aria-label="Написать в Telegram">
+                                    <i class="bi bi-telegram" aria-hidden="true"></i>
+                                </a>
+                            {% endif %}
+                            {% if contact_info and contact_info.whatsapp or contact_info and contact_info.phone %}
+                                <a class="footer-messenger-link"
+                                   href="{{ contact_info.whatsapp|default:contact_info.phone|whatsapp_href }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   aria-label="Написать в WhatsApp">
+                                    <i class="bi bi-whatsapp" aria-hidden="true"></i>
+                                </a>
+                            {% endif %}
+                            {% if contact_info and contact_info.email %}
+                                <a class="footer-messenger-link"
+                                   href="mailto:{{ contact_info.email }}"
+                                   aria-label="Написать на почту">
+                                    <i class="bi bi-envelope-fill" aria-hidden="true"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 </div>
             </div>
-            <div>
-                <p class="terra-footer__title">Навигация</p>
-                <a href="{% url 'home' %}">Главная</a>
-                <a href="{% url 'portfolio_list' %}">Портфолио</a>
-                <a href="{% url 'brief_create' %}">Форма ТЗ</a>
-                <a href="{% url 'contact' %}">Контакты</a>
+            <div class="col-lg-7">
+                <div class="footer-links-grid">
+                    <a href="{% url 'home' %}">Главная</a>
+                    <a href="{% url 'portfolio_list' %}">Портфолио</a>
+                    <a href="{% url 'brief_create' %}">Форма ТЗ</a>
+                    <a href="#contacts">Контакты</a>
+                </div>
+                <div class="footer-contact-list">
+                    <a class="footer-contact-item"
+                       href="{% if contact_info and contact_info.email %}mailto:{{ contact_info.email }}{% else %}{% url 'contact' %}{% endif %}">
+                        <span class="footer-contact-item__label">Почта</span>
+                        <strong>{% if contact_info and contact_info.email %}{{ contact_info.email }}{% else %}Заполните email в админке{% endif %}</strong>
+                    </a>
+                    <a class="footer-contact-item"
+                       href="{% if contact_info and contact_info.phone %}tel:{{ contact_info.phone|phone_href }}{% else %}{% url 'contact' %}{% endif %}">
+                        <span class="footer-contact-item__label">Телефон</span>
+                        <strong>{% if contact_info and contact_info.phone %}{{ contact_info.phone }}{% else %}Добавьте номер телефона{% endif %}</strong>
+                    </a>
+                </div>
             </div>
-            <div>
-                <p class="terra-footer__title">Контакты</p>
-                {% if contact_info %}
-                    <a href="mailto:{{ contact_info.email }}">{{ contact_info.email }}</a>
-                    <a href="tel:{{ contact_info.phone }}">{{ contact_info.phone }}</a>
-                    {% if contact_info.telegram %}<span>{{ contact_info.telegram }}</span>{% endif %}
-                    {% if contact_info.address %}<span>{{ contact_info.address }}</span>{% endif %}
-                {% else %}
-                    <span>Контакты можно заполнить в админке Django.</span>
-                {% endif %}
+            <div class="col-12">
+                <div class="footer-credit">
+                    <span>Разработка сайта:</span>
+                    <a class="btn btn-brand btn-brand--sm"
+                       href="https://www.avito.ru/moskva/predlozheniya_uslug/razrabotka_sayta_pod_klyuch_s_fiksirovannoy_tsenoy_8019642727"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       aria-label="Ссылка на профиль разработчика на Avito">Связаться на Avito</a>
+                </div>
             </div>
         </div>
     </div>

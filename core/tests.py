@@ -119,13 +119,41 @@ class HomeViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "gas-spec.ru")
-        self.assertContains(response, "180к")
-        self.assertContains(response, "Подробнее")
+        self.assertContains(response, "/static/img/home/gas-system-presentation-shot.png")
+        self.assertContains(response, "/static/img/home/gas-system-presentation-order-edit.png")
+        self.assertContains(response, "ООО «Специалист»")
+        self.assertContains(response, "Готовые решения оказались слишком сложными")
+        self.assertContains(response, "Что сделано")
+        self.assertContains(response, "Реестры заказов, договоров и проектов")
+        self.assertNotContains(response, "180к")
         self.assertContains(response, "Написать")
-        self.assertContains(response, "complexCaseDetails")
         self.assertContains(response, "WebDAV")
-        self.assertContains(response, "1 января 2026 года")
+        self.assertNotContains(response, 'data-bs-target="#complexCaseDetails"')
         self.assertNotContains(response, "Lorem ipsum")
+
+    def test_homepage_does_not_show_removed_advantages(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Проще масштабировать")
+        self.assertNotContains(response, "Без лишнего мусора")
+        self.assertNotContains(response, "Понятное сопровождение")
+        self.assertNotContains(response, "После запуска можно быстро вносить правки")
+        self.assertNotContains(response, "Масштабирование")
+        self.assertNotContains(response, "Понятный процесс без хаоса")
+
+    def test_homepage_shows_contacts_in_footer(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="contacts"')
+        self.assertContains(response, "footer-contact-list")
+        self.assertContains(response, "Почта")
+        self.assertContains(response, "Телефон")
+        self.assertContains(response, "footer-credit")
+        self.assertContains(response, "btn-brand")
+        self.assertNotContains(response, "contact-shell")
+        self.assertNotContains(response, "Выберите удобный способ связи")
 
     def test_homepage_shows_bundle_services_section(self):
         response = self.client.get(reverse("home"))
@@ -141,12 +169,39 @@ class HomeViewTests(TestCase):
         self.assertContains(response, "Подробнее")
         self.assertContains(response, "data-home-service-picker")
         self.assertContains(response, "data-home-summary-widget")
+        self.assertContains(response, "Telegram-боты и связка с сайтом")
 
-    def test_homepage_marks_site_development_as_default_service(self):
+    def test_homepage_shows_telegram_bot_block_under_business_systems(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="telegram-bots"')
+        self.assertContains(response, "Идеи для Telegram-бота: зачем он нужен и как работает")
+        self.assertContains(response, "Зачем")
+        self.assertContains(response, "Как")
+        self.assertContains(response, "Подходит как отдельная услуга или как дополнение к сайту")
+        self.assertContains(response, "telegram-bot-chat-menu.jpg")
+        self.assertContains(response, "telegram-bot-chat-invoice.jpg")
+
+    def test_homepage_leaves_bundle_services_unselected_by_default(self):
         response = self.client.get(reverse("home"))
 
         self.assertEqual(response.status_code, 200)
         content = response.content.decode("utf-8")
-        self.assertRegex(content, r'id="home-service-site_development"[^>]*checked')
+        self.assertNotRegex(content, r'id="home-service-site_development"[^>]*checked')
         self.assertNotRegex(content, r'id="home-service-hosting"[^>]*checked')
         self.assertNotRegex(content, r'id="home-service-domain"[^>]*checked')
+        self.assertRegex(
+            content,
+            r'<aside class="brief-price-widget brief-price-widget--idle card border-0 shadow-sm" data-home-summary-widget>',
+        )
+        self.assertContains(response, "Положите в корзину")
+        self.assertContains(response, "data-home-summary-empty-close")
+
+
+class SiteTypeGuideViewTests(TestCase):
+    def test_site_type_guide_avoids_removed_scaling_phrase(self):
+        response = self.client.get(reverse("site_type_guide"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "лучше масштабируется, когда бизнес растёт")

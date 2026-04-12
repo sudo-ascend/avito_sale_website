@@ -44,7 +44,6 @@
                                         <a href="{{ project.get_absolute_url }}" class="project-card__title-link">{{ project.title }}</a>
                                     {% endif %}
                                 </h2>
-                                <p class="small text-secondary mb-0">{{ project.completion_date|date:"m.Y" }}</p>
                             </div>
                         </div>
                         {% with palette=project.palette_colors %}
