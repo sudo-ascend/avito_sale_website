@@ -1,3 +1,5 @@
+import logging
+
 from django.conf import settings
 from django.contrib import messages
 from django.core.mail import send_mail
@@ -10,6 +12,8 @@ from portfolio.models import Project
 from .forms import BriefRequestForm
 from .models import BriefRequest
 from .services import sync_brief_to_crm
+
+logger = logging.getLogger(__name__)
 
 
 class BriefCreateView(CreateView):
@@ -161,10 +165,13 @@ class BriefCreateView(CreateView):
                 ),
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[settings.BRIEF_NOTIFICATION_EMAIL],
-                fail_silently=True,
+                fail_silently=False,
             )
         except Exception:
-            pass
+            logger.exception(
+                "Failed to send brief notification email",
+                extra={"brief_id": self.object.pk, "order_id": order.pk},
+            )
         return response
 
 

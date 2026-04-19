@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{{ site_brand_name }}{% endblock %}</title>
+    <link rel="icon" type="image/webp" href="{% static 'img/custom-websites-logo.webp' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
@@ -19,7 +20,7 @@
             <div class="container">
                 <div class="site-header__inner">
                     <a class="site-brand" href="{% url 'home' %}" aria-label="{{ site_brand_name }}">
-                        <img src="{% static 'img/custom-websites-logo.png' %}" alt="{{ site_brand_name }}" class="site-brand__logo" width="442" height="442">
+                        <img src="{% static 'img/custom-websites-logo.webp' %}" alt="{{ site_brand_name }}" class="site-brand__logo" width="256" height="256">
                         <span class="site-brand__copy">
                             <span class="site-brand__name">{{ site_brand_name }}</span>
                             <span class="site-brand__subtitle">
@@ -98,7 +99,7 @@
                 <div class="row g-4 align-items-start">
                     <div class="col-lg-4">
                         <p class="footer-kicker">Web Studio</p>
-                        <img src="{% static 'img/custom-websites-logo.png' %}" alt="{{ site_brand_name }}" class="site-footer__logo mb-3" width="442" height="442">
+                        <img src="{% static 'img/custom-websites-logo.webp' %}" alt="{{ site_brand_name }}" class="site-footer__logo mb-3" width="256" height="256">
                         <p class="mb-0 text-secondary">Разрабатываем сайты, личные кабинеты и внутренние системы с понятной архитектурой и поддержкой после запуска.</p>
                     </div>
                     <div class="col-sm-6 col-lg-4">

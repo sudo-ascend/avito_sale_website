@@ -52,6 +52,25 @@ def ensure_technologies() -> dict[str, Technology]:
     return result
 
 
+def cleanup_project_media_files(media_root: Path, slug: str) -> None:
+    patterns = (
+        f"{slug}-cover*",
+        f"{slug}-gallery-*",
+        f"{slug}-shot-*",
+        f"{slug}-section-*",
+        f"{slug}-cover-shot-*",
+        f"{slug}-cover-section-*",
+        f"{slug}-screenshot*",
+    )
+    for folder in (media_root / "portfolio" / "covers", media_root / "portfolio" / "gallery"):
+        if not folder.exists():
+            continue
+        for pattern in patterns:
+            for file_path in folder.glob(pattern):
+                if file_path.is_file():
+                    file_path.unlink(missing_ok=True)
+
+
 PROJECTS = [
     {
         "zip_prefix": "сайтики/первый шаблон/",
@@ -67,7 +86,7 @@ PROJECTS = [
         ),
         "completion_date": date(2026, 3, 25),
         "stack_notes": "HTML, CSS, JavaScript, адаптивная вёрстка, демо-форма.",
-        "external_url": "/portfolio/site/expert-landing/",
+        "external_url": "https://sudo-ascend.github.io/avito_example_003/",
         "color_palette": "#24554f, #c2905e, #f5f0e7, #18252d",
         "cover": "assets/img/og-cover.svg",
         "gallery": [
@@ -87,7 +106,7 @@ PROJECTS = [
         ),
         "completion_date": date(2026, 3, 26),
         "stack_notes": "HTML, CSS, JavaScript, адаптивная вёрстка, прямые CTA без формы.",
-        "external_url": "/portfolio/site/math-tutor-landing/",
+        "external_url": "https://sudo-ascend.github.io/avito_example_002/",
         "color_palette": "#2250a3, #ffb84d, #f7f8fc, #15203d",
         "cover": "assets/img/og-cover.svg",
         "gallery": [
@@ -107,7 +126,7 @@ PROJECTS = [
         ),
         "completion_date": date(2026, 3, 27),
         "stack_notes": "HTML, CSS, JavaScript, каталог букетов, форма заказа, насыщенный визуал.",
-        "external_url": "/portfolio/site/bloom-atelier/",
+        "external_url": "https://sudo-ascend.github.io/avito_example_004/",
         "color_palette": "#d77d96, #f7dfe5, #fffaf7, #352726",
         "cover": "assets/images/hero-bouquet.jpg",
         "gallery": [
@@ -135,6 +154,7 @@ def import_projects() -> None:
             if target_dir.exists():
                 shutil.rmtree(target_dir)
             target_dir.mkdir(parents=True, exist_ok=True)
+            cleanup_project_media_files(media_root, item["slug"])
 
             for fixed_name, raw_name in name_map.items():
                 if not fixed_name.startswith(prefix) or fixed_name.endswith("/"):

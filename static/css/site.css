@@ -1368,6 +1368,19 @@ a {
   gap: 0.6rem;
 }
 
+.terra-brand__logo {
+  display: block;
+  width: clamp(3rem, 8vw, 4rem);
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.terra-brand__logo--footer {
+  width: clamp(3.25rem, 9vw, 4.5rem);
+}
+
 .terra-brand__mark {
   width: 1.8rem;
   height: 1.8rem;
