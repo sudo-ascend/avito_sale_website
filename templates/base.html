@@ -21,16 +21,6 @@
                 <div class="site-header__inner">
                     <a class="site-brand" href="{% url 'home' %}" aria-label="{{ site_brand_name }}">
                         <img src="{% static 'img/custom-websites-logo.webp' %}" alt="{{ site_brand_name }}" class="site-brand__logo" width="256" height="256">
-                        <span class="site-brand__copy">
-                            <span class="site-brand__name">{{ site_brand_name }}</span>
-                            <span class="site-brand__subtitle">
-                                {% if primary_contact and primary_contact.tagline %}
-                                    {{ primary_contact.tagline }}
-                                {% else %}
-                                    Самописные сайты
-                                {% endif %}
-                            </span>
-                        </span>
                     </a>
 
                     <button class="site-menu-toggle collapsed"
@@ -49,40 +39,11 @@
                         <nav class="site-header__nav" aria-label="Навигация по сайту">
                             <a href="{% url 'home' %}">Главная</a>
                             <a href="{% url 'portfolio_list' %}">Портфолио</a>
-                            <a href="{% url 'home' %}#services">Услуги</a>
-                            <a href="{% url 'brief_create' %}">ТЗ</a>
+                            <a href="{% url 'brief_create' %}">Составить ТЗ</a>
                             <a href="{% url 'contact' %}">Контакты</a>
                         </nav>
-
-                        <div class="site-header__actions">
-                            {% if primary_contact and primary_contact.phone %}
-                                <a class="site-header__button site-header__button--primary" href="tel:{{ primary_contact.phone|phone_href }}">Позвонить</a>
-                            {% endif %}
-                            {% if primary_contact and primary_contact.whatsapp or primary_contact and primary_contact.phone %}
-                                <a class="site-header__button"
-                                   href="{{ primary_contact.whatsapp|default:primary_contact.phone|whatsapp_href }}"
-                                   target="_blank"
-                                   rel="noopener noreferrer">WhatsApp</a>
-                            {% endif %}
-                            {% if primary_contact and primary_contact.telegram %}
-                                <a class="site-header__button"
-                                   href="{{ primary_contact.telegram|telegram_href }}"
-                                   target="_blank"
-                                   rel="noopener noreferrer">Telegram</a>
-                            {% endif %}
-                            {% if user.is_authenticated and user.is_staff %}
-                                <a class="site-header__button" href="{% url 'crm_order_list' %}">CRM</a>
-                                <a class="site-header__button" href="{% url 'logout' %}">Выйти</a>
-                            {% endif %}
-                        </div>
                     </div>
                 </div>
-                {% if primary_contact and primary_contact.address or primary_contact and primary_contact.working_hours %}
-                    <div class="site-header__meta">
-                        {% if primary_contact.address %}<span>{{ primary_contact.address }}</span>{% endif %}
-                        {% if primary_contact.working_hours %}<span>{{ primary_contact.working_hours }}</span>{% endif %}
-                    </div>
-                {% endif %}
             </div>
         </header>
     {% endblock %}
@@ -116,16 +77,12 @@
                     </div>
                     <div class="col-sm-6 col-lg-4">
                         <h3 class="h6 text-uppercase text-secondary mb-3">Контакты</h3>
-                        {% if primary_contact %}
-                            <ul class="list-unstyled footer-links mb-0">
-                                <li><a href="mailto:{{ primary_contact.email }}">{{ primary_contact.email }}</a></li>
-                                <li><a href="tel:{{ primary_contact.phone|phone_href }}">{{ primary_contact.phone }}</a></li>
-                                {% if primary_contact.telegram %}<li>{{ primary_contact.telegram }}</li>{% endif %}
-                                {% if primary_contact.address %}<li>{{ primary_contact.address }}</li>{% endif %}
-                            </ul>
-                        {% else %}
-                            <p class="text-secondary mb-0">Контакты можно заполнить в админке Django.</p>
-                        {% endif %}
+                        <ul class="list-unstyled footer-links mb-0">
+                            <li><a href="mailto:{{ primary_contact.email }}">{{ primary_contact.email }}</a></li>
+                            <li><a href="tel:{{ primary_contact.phone|phone_href }}">{{ primary_contact.phone }}</a></li>
+                            {% if primary_contact.telegram %}<li>{{ primary_contact.telegram }}</li>{% endif %}
+                            {% if primary_contact.address %}<li>{{ primary_contact.address }}</li>{% endif %}
+                        </ul>
                     </div>
                 </div>
             </div>

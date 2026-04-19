@@ -1,19 +1,15 @@
-import logging
-
-from django.conf import settings
-from django.contrib import messages
-from django.core.mail import send_mail
 from django.db import transaction
+from django.http import Http404, HttpResponse
 from django.urls import reverse_lazy
+from django.views import View
 from django.views.generic import CreateView, TemplateView
 
 from portfolio.models import Project
 
 from .forms import BriefRequestForm
 from .models import BriefRequest
-from .services import sync_brief_to_crm
-
-logger = logging.getLogger(__name__)
+from .pdf import build_brief_pdf, get_brief_pdf_filename
+from .services import send_brief_notification, sync_brief_to_crm
 
 
 class BriefCreateView(CreateView):
@@ -95,9 +91,9 @@ class BriefCreateView(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         projects = list(
-            Project.objects.filter(is_published=True, is_featured=True)
+            Project.objects.filter(is_published=True)
             .prefetch_related("technologies")
-            .order_by("-completion_date")[:3]
+            .order_by("-is_featured", "-completion_date", "-created_at")
         )
         if projects:
             context["brief_project_examples"] = [
@@ -135,45 +131,50 @@ class BriefCreateView(CreateView):
         with transaction.atomic():
             response = super().form_valid(form)
             order = sync_brief_to_crm(self.object)
-        messages.success(self.request, "ТЗ успешно отправлено. Мы свяжемся с вами в ближайшее время.")
-        extras = self.object.selected_extra_services
-        color_source = (
-            f"Шаблон: {self.object.color_template_name}"
-            if self.object.color_mode == self.object.ColorMode.TEMPLATE and self.object.color_template_name
-            else "Кастомная палитра"
-        )
-        try:
-            send_mail(
-                subject=f"Новая заявка с сайта: {self.object.business_name}",
-                message=(
-                    f"Название: {self.object.business_name}\n"
-                    f"Тип клиента: {self.object.get_client_type_display()}\n"
-                    f"Тип сайта: {self.object.get_site_type_display()}\n"
-                    f"Доп. страниц: {self.object.extra_pages}\n"
-                    f"Email: {self.object.contact_email}\n"
-                    f"Телефон: {self.object.contact_phone}\n"
-                    f"Предпочитаемая связь: {self.object.get_preferred_contact_app_display()}\n"
-                    f"Регион: {self.object.work_region}\n"
-                    f"Режим палитры: {color_source}\n"
-                    f"Палитра: {self.object.palette_summary}\n"
-                    f"Референсы: {self.object.reference_sites}\n"
-                    f"Желаемый домен: {self.object.desired_domain or '-'}\n"
-                    f"Комментарий клиента: {self.object.client_comment or '-'}\n"
-                    f"Доп. услуги: {', '.join(extras) if extras else '-'}\n"
-                    f"Ориентировочная стоимость: {self.object.estimated_price} ₽\n"
-                    f"CRM-заказ: #{order.pk} {order.title}"
-                ),
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[settings.BRIEF_NOTIFICATION_EMAIL],
-                fail_silently=False,
-            )
-        except Exception:
-            logger.exception(
-                "Failed to send brief notification email",
-                extra={"brief_id": self.object.pk, "order_id": order.pk},
-            )
+        self.request.session["latest_brief_id"] = self.object.pk
+        self.request.session.modified = True
+        send_brief_notification(self.object, order)
         return response
 
 
 class BriefSuccessView(TemplateView):
     template_name = "briefs/brief_success.html"
+
+    def get_brief(self):
+        brief_id = self.request.session.get("latest_brief_id")
+        if not brief_id:
+            return None
+        return (
+            BriefRequest.objects.filter(pk=brief_id)
+            .prefetch_related("attachments")
+            .first()
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        brief = self.get_brief()
+        context["brief"] = brief
+        context["download_url"] = reverse_lazy("brief_download_pdf")
+        return context
+
+
+class BriefPdfDownloadView(View):
+    def get_brief(self, request):
+        brief_id = request.session.get("latest_brief_id")
+        if not brief_id:
+            raise Http404("Заявка не найдена.")
+        brief = (
+            BriefRequest.objects.filter(pk=brief_id)
+            .prefetch_related("attachments")
+            .first()
+        )
+        if brief is None:
+            raise Http404("Заявка не найдена.")
+        return brief
+
+    def get(self, request, *args, **kwargs):
+        brief = self.get_brief(request)
+        disposition = "inline" if request.GET.get("disposition") == "inline" else "attachment"
+        response = HttpResponse(build_brief_pdf(brief), content_type="application/pdf")
+        response["Content-Disposition"] = f'{disposition}; filename="{get_brief_pdf_filename(brief)}"'
+        return response

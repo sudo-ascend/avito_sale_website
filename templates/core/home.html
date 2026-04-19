@@ -226,7 +226,7 @@
                         <section id="telegram-bots" class="card border-0 terra-content-card">
                             <div class="card-body p-4 p-lg-5">
                                 <div class="row g-4 align-items-start">
-                                    <div class="col-lg-5">
+                                    <div class="col-lg-7">
                                         <p class="terra-section__kicker mb-2">Telegram-боты</p>
                                         <h2 class="mb-3">Идеи для Telegram-бота: зачем он нужен и как работает</h2>
                                         <p class="mb-4 text-secondary">
@@ -234,29 +234,13 @@
                                             зачем клиенту писать именно в Telegram, а потом собираем короткий путь:
                                             приветствие, кнопки, сбор контакта, ответы на частые вопросы и передача заявки дальше.
                                         </p>
-                                        <div class="terra-complex-points terra-complex-points--telegram">
-                                            <div class="terra-complex-point">
-                                                <strong>Зачем</strong>
-                                                <span>Чтобы клиенту было проще написать, а бизнесу не терять обращения и быстрее доводить человека до нужного действия.</span>
-                                            </div>
-                                            <div class="terra-complex-point">
-                                                <strong>Как</strong>
-                                                <span>Через короткий сценарий: старт, несколько понятных кнопок, сбор контакта и передача заявки дальше без лишних шагов.</span>
-                                            </div>
-                                        </div>
                                     </div>
-                                    <div class="col-lg-7">
+                                    <div class="col-lg-5">
                                         <div class="terra-telegram-gallery" aria-label="Примеры экранов Telegram-ботов">
                                             <figure class="terra-telegram-shot">
                                                 <img
                                                     src="{% static 'img/home/telegram-bot-chat-menu.jpg' %}"
                                                     alt="Пример стартового экрана Telegram-бота с приветствием и кнопкой запуска"
-                                                    loading="lazy">
-                                            </figure>
-                                            <figure class="terra-telegram-shot">
-                                                <img
-                                                    src="{% static 'img/home/telegram-bot-chat-invoice.jpg' %}"
-                                                    alt="Пример экрана Telegram-бота с карточкой товара и оплатой"
                                                     loading="lazy">
                                             </figure>
                                         </div>
@@ -339,7 +323,7 @@
                             <div class="terra-service-picker" data-home-service-picker data-brief-url="{% url 'brief_create' %}">
                                 <div class="terra-service-picker__list">
                                 {% for service in bundle_services %}
-                                    <article class="terra-service-row{% if service.key == 'hosting' %} terra-service-row--promo{% endif %}" data-home-service="{{ service.key }}">
+                                    <article class="terra-service-row" data-home-service="{{ service.key }}">
                                         <div class="p-4">
                                             <div class="terra-service-row__top">
                                                 <div class="form-check terra-service-row__check">
@@ -361,10 +345,6 @@
                                             <div class="terra-service-row__body">
 
                                                 {% if service.key == "hosting" %}
-                                                    <div class="terra-service-row__promo-card">
-                                                        <span class="terra-service-row__promo-copy">Акция -25%, 550 ₽ при оплате 3 месяцев</span>
-                                                    </div>
-
                                                     <div class="terra-service-row__controls d-none" data-home-hosting-options>
                                                         <div class="terra-service-choice-group">
                                                             <label class="terra-service-choice">
@@ -378,7 +358,7 @@
                                                                 <input type="radio" name="home_hosting_plan" value="quarterly" data-home-hosting-plan>
                                                                 <span class="terra-service-choice__copy">
                                                                     <strong>3 месяца</strong>
-                                                                    <span>1 687,50 ₽ со скидкой</span>
+                                                                    <span>1 687,50 ₽</span>
                                                                 </span>
                                                             </label>
                                                         </div>
@@ -673,14 +653,14 @@
                 </div>
                 <div class="footer-contact-list">
                     <a class="footer-contact-item"
-                       href="{% if contact_info and contact_info.email %}mailto:{{ contact_info.email }}{% else %}{% url 'contact' %}{% endif %}">
+                       href="mailto:{{ contact_info.email }}">
                         <span class="footer-contact-item__label">Почта</span>
-                        <strong>{% if contact_info and contact_info.email %}{{ contact_info.email }}{% else %}Заполните email в админке{% endif %}</strong>
+                        <strong>{{ contact_info.email }}</strong>
                     </a>
                     <a class="footer-contact-item"
-                       href="{% if contact_info and contact_info.phone %}tel:{{ contact_info.phone|phone_href }}{% else %}{% url 'contact' %}{% endif %}">
+                       href="tel:{{ contact_info.phone|phone_href }}">
                         <span class="footer-contact-item__label">Телефон</span>
-                        <strong>{% if contact_info and contact_info.phone %}{{ contact_info.phone }}{% else %}Добавьте номер телефона{% endif %}</strong>
+                        <strong>{{ contact_info.phone }}</strong>
                     </a>
                 </div>
             </div>

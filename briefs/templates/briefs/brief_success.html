@@ -1,22 +1,68 @@
 {% extends "base.html" %}
 
-{% block title %}ТЗ отправлено | {{ site_brand_name }}{% endblock %}
+{% block title %}УСПЕШНО | {{ site_brand_name }}{% endblock %}
 
 {% block content %}
-<section class="py-5">
+<section class="brief-success-shell py-5">
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-lg-7">
-                <div class="card border-0 shadow-sm text-center">
-                    <div class="card-body p-5">
-                        <p class="section-kicker mb-2">Спасибо</p>
-                        <h1 class="mb-3">Техническое задание отправлено</h1>
-                        <p class="text-secondary mb-4">Мы сохранили заявку в базе и скоро свяжемся с тобой для уточнения деталей и подготовки предложения.</p>
-                        <div class="d-flex justify-content-center flex-wrap gap-3">
-                            <a href="{% url 'home' %}" class="btn btn-outline-dark">На главную</a>
-                            <a href="{% url 'portfolio_list' %}" class="btn btn-accent">Посмотреть портфолио</a>
-                        </div>
+            <div class="col-12 col-xl-9">
+                <div class="brief-success-card">
+                    <div class="brief-success-check" aria-hidden="true">
+                        <i class="bi bi-check2"></i>
                     </div>
+                    <p class="brief-success-kicker">Заявка отправлена</p>
+                    <h1 class="brief-success-title">УСПЕШНО</h1>
+                    <p class="brief-success-copy">
+                        Техническое задание сохранено. PDF уже подготовлен и отправлен вам на почту, которая указана для уведомлений сайта.
+                    </p>
+
+                    {% if brief %}
+                        <div class="brief-success-summary">
+                            <article class="brief-success-summary__item">
+                                <span>Компания / имя</span>
+                                <strong>{{ brief.business_name }}</strong>
+                            </article>
+                            <article class="brief-success-summary__item">
+                                <span>Тип сайта</span>
+                                <strong>{{ brief.get_site_type_display }}</strong>
+                            </article>
+                            <article class="brief-success-summary__item">
+                                <span>Ориентир по стоимости</span>
+                                <strong>{{ brief.estimated_price }} ₽</strong>
+                            </article>
+                            <article class="brief-success-summary__item">
+                                <span>Контакт</span>
+                                <strong>{{ brief.contact_phone }}</strong>
+                            </article>
+                        </div>
+
+                        <div class="brief-success-actions">
+                            <a href="{{ download_url }}?disposition=inline"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="btn btn-outline-dark btn-lg rounded-pill px-4">
+                                Сохранить ТЗ у себя
+                            </a>
+                            <a href="{{ download_url }}"
+                               class="btn terra-btn-solid btn-download-pdf btn-lg rounded-pill px-4">
+                                Скачать PDF
+                            </a>
+                        </div>
+
+                        <p class="brief-success-note">
+                            Откройте PDF в новой вкладке, если хотите сохранить его у себя или переслать коллегам.
+                        </p>
+                    {% else %}
+                        <div class="brief-success-actions">
+                            <a href="{% url 'brief_create' %}" class="btn btn-accent btn-lg rounded-pill px-4">Заполнить новое ТЗ</a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="brief-success-footer-actions">
+                    <a href="{% url 'home' %}" class="btn btn-light border rounded-pill px-4">На главную</a>
+                    <a href="{% url 'portfolio_list' %}" class="btn btn-light border rounded-pill px-4">Посмотреть портфолио</a>
                 </div>
             </div>
         </div>

@@ -329,7 +329,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]');
-    [...popoverTriggerList].forEach((element) => new bootstrap.Popover(element));
+    [...popoverTriggerList].forEach(
+        (element) =>
+            new bootstrap.Popover(element, {
+                container: "body",
+            })
+    );
 
     const siteHeaderPanel = document.getElementById("siteHeaderPanel");
     if (siteHeaderPanel) {
@@ -775,10 +780,19 @@ document.addEventListener("DOMContentLoaded", () => {
             form.querySelectorAll("[data-repeatable-file-field]").forEach((field) => {
                 field.dispatchEvent(new CustomEvent("validate-repeatable-files"));
             });
-            const isValid = form.checkValidity();
-            if (!isValid) {
+            const invalidField = [...form.elements].find((field) => {
+                if (!field || typeof field.checkValidity !== "function") {
+                    return false;
+                }
+                if (field.disabled || field.type === "hidden") {
+                    return false;
+                }
+                return !field.checkValidity();
+            });
+            if (invalidField) {
                 event.preventDefault();
                 event.stopPropagation();
+                invalidField.focus();
             }
             form.classList.add("was-validated");
         });

@@ -1,12 +1,14 @@
 import tempfile
 from decimal import Decimal
 
+from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils.datastructures import MultiValueDict
 
 from crm.models import Client as CRMClient, Order
+from portfolio.models import Project
 
 from .forms import BriefRequestForm
 from .models import BriefAttachment, BriefRequest
@@ -19,7 +21,11 @@ SMALL_GIF = (
 )
 
 
-@override_settings(DEFAULT_FILE_STORAGE="django.core.files.storage.FileSystemStorage")
+@override_settings(
+    DEFAULT_FILE_STORAGE="django.core.files.storage.FileSystemStorage",
+    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
+    BRIEF_NOTIFICATION_EMAIL="owner@example.com",
+)
 class BriefRequestFormTests(TestCase):
     def setUp(self):
         super().setUp()
@@ -131,7 +137,7 @@ class BriefRequestFormTests(TestCase):
             brief.selected_extra_services,
             [
                 "Доп. страницы: 2 x 1 000 ₽",
-                "Хостинг сайта на 3 месяца 1 687,50 ₽ (-25%)",
+                "Хостинг сайта на 3 месяца 1 687,50 ₽",
                 "Регистрация домена 550 ₽",
                 "Создание логотипа 500 ₽",
                 "Базовое SEO продвижение 500 ₽",
@@ -141,7 +147,7 @@ class BriefRequestFormTests(TestCase):
             ],
         )
 
-    def test_form_requires_at_least_one_file_in_required_multiple_groups_only(self):
+    def test_form_requires_only_reviews_files_from_repeatable_groups(self):
         files = MultiValueDict(
             {
                 "reviews_files": [
@@ -151,9 +157,7 @@ class BriefRequestFormTests(TestCase):
         )
         form = self.build_form(files=files)
 
-        self.assertFalse(form.is_valid())
-        self.assertIn("photos_files", form.errors)
-        self.assertIn("texts_files", form.errors)
+        self.assertTrue(form.is_valid(), form.errors)
         self.assertNotIn("reviews_files", form.errors)
         self.assertNotIn("logo", form.errors)
 
@@ -199,6 +203,7 @@ class BriefRequestFormTests(TestCase):
         self.assertEqual(BriefRequest.objects.count(), 1)
         self.assertEqual(CRMClient.objects.count(), 1)
         self.assertEqual(Order.objects.count(), 1)
+        self.assertEqual(len(mail.outbox), 1)
 
         crm_client = CRMClient.objects.get()
         order = Order.objects.get()
@@ -207,10 +212,65 @@ class BriefRequestFormTests(TestCase):
         self.assertEqual(order.client_id, crm_client.pk)
         self.assertIn("Доп. страниц:", order.description)
         self.assertIn("1", order.description)
-        self.assertIn("Хостинг сайта на 3 месяца 1 687,50 ₽ (-25%)", order.description)
+        self.assertIn("Хостинг сайта на 3 месяца 1 687,50 ₽", order.description)
         self.assertIn("Создание логотипа 500 ₽", order.description)
         self.assertIn("Желаемый домен:", order.description)
         self.assertIn("site.ru", order.description)
+
+        attachment = mail.outbox[0].attachments[0]
+        attachment_name = getattr(attachment, "filename", attachment[0])
+        attachment_content = getattr(attachment, "content", attachment[1])
+        attachment_mimetype = getattr(attachment, "mimetype", attachment[2])
+        self.assertTrue(attachment_name.endswith(".pdf"))
+        self.assertEqual(attachment_mimetype, "application/pdf")
+        self.assertTrue(attachment_content.startswith(b"%PDF"))
+
+    def test_brief_success_page_offers_pdf_actions_and_download(self):
+        response = self.client.post(
+            reverse("brief_create"),
+            data={
+                "client_type": BriefRequest.ClientType.INDIVIDUAL,
+                "business_name": "Тестовый клиент",
+                "work_region": "Москва",
+                "site_type": BriefRequest.SiteType.SINGLE_PAGE,
+                "extra_pages": "0",
+                "color_mode": BriefRequest.ColorMode.TEMPLATE,
+                "color_template_name": "Template A",
+                "color_preference": "#14344c",
+                "color_accent": "#c96f3b",
+                "color_background": "#f4f1ea",
+                "color_extra": "#2b506b",
+                "reference_sites": "",
+                "desired_domain": "",
+                "hosting_plan": BriefRequest.HostingPlan.MONTHLY,
+                "contact_phone": "9991234567",
+                "preferred_contact_app": "",
+                "contact_email": "",
+                "client_comment": "",
+                "privacy_accepted": "on",
+                "photos_files": [
+                    SimpleUploadedFile("photo-1.txt", b"photo-1", content_type="text/plain"),
+                ],
+                "texts_files": [
+                    SimpleUploadedFile("text-1.txt", b"text-1", content_type="text/plain"),
+                ],
+                "reviews_files": [
+                    SimpleUploadedFile("review-1.txt", b"review-1", content_type="text/plain"),
+                ],
+            },
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "УСПЕШНО")
+        self.assertContains(response, "Сохранить ТЗ у себя")
+        self.assertContains(response, "Скачать PDF")
+
+        pdf_response = self.client.get(reverse("brief_download_pdf"))
+        self.assertEqual(pdf_response.status_code, 200)
+        self.assertEqual(pdf_response["Content-Type"], "application/pdf")
+        self.assertIn("attachment;", pdf_response["Content-Disposition"])
+        self.assertTrue(pdf_response.content.startswith(b"%PDF"))
 
     def test_brief_create_view_prefills_selected_services_from_query_params(self):
         response = self.client.get(
@@ -249,3 +309,40 @@ class BriefRequestFormTests(TestCase):
         self.assertFalse(form["need_email_form"].value())
         self.assertFalse(form["need_reviews_section"].value())
         self.assertTrue(response.context["reset_service_defaults"])
+
+    def test_brief_create_view_shows_all_published_portfolio_examples(self):
+        first_project = Project.objects.create(
+            title="First Example",
+            short_description="Описание первого проекта",
+            description="Полное описание",
+            completion_date="2026-03-01",
+            stack_notes="HTML, CSS",
+            is_published=True,
+            is_featured=False,
+        )
+        second_project = Project.objects.create(
+            title="Second Example",
+            short_description="Описание второго проекта",
+            description="Полное описание",
+            completion_date="2026-03-02",
+            stack_notes="HTML, CSS",
+            is_published=True,
+            is_featured=True,
+        )
+        hidden_project = Project.objects.create(
+            title="Hidden Example",
+            short_description="Скрытый проект",
+            description="Полное описание",
+            completion_date="2026-03-03",
+            stack_notes="HTML, CSS",
+            is_published=False,
+        )
+
+        response = self.client.get(reverse("brief_create"))
+
+        self.assertEqual(response.status_code, 200)
+        examples = response.context["brief_project_examples"]
+        titles = [example["title"] for example in examples]
+        self.assertIn(first_project.title, titles)
+        self.assertIn(second_project.title, titles)
+        self.assertNotIn(hidden_project.title, titles)

@@ -40,6 +40,18 @@ class HomeViewTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "core/home.html")
 
+    def test_homepage_header_shows_logo_and_primary_nav(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'class="site-brand"')
+        self.assertContains(response, reverse("home"))
+        self.assertContains(response, reverse("portfolio_list"))
+        self.assertContains(response, reverse("brief_create"))
+        self.assertContains(response, reverse("contact"))
+        self.assertContains(response, "Составить ТЗ")
+        self.assertNotContains(response, 'href="/#services"')
+
     def test_homepage_shows_up_to_nine_published_projects(self):
         start_date = date(2026, 1, 1)
         for index in range(10):
@@ -150,9 +162,13 @@ class HomeViewTests(TestCase):
         self.assertContains(response, "footer-contact-list")
         self.assertContains(response, "Почта")
         self.assertContains(response, "Телефон")
+        self.assertContains(response, "grachevilia09@yandex.ru")
+        self.assertContains(response, "79167950225")
         self.assertContains(response, "footer-credit")
         self.assertContains(response, "btn-brand")
         self.assertNotContains(response, "contact-shell")
+        self.assertNotContains(response, "Заполните email в админке")
+        self.assertNotContains(response, "Добавьте номер телефона")
         self.assertNotContains(response, "Выберите удобный способ связи")
 
     def test_homepage_shows_bundle_services_section(self):
@@ -205,3 +221,14 @@ class SiteTypeGuideViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, "лучше масштабируется, когда бизнес растёт")
+
+
+class ContactViewTests(TestCase):
+    def test_contact_page_shows_fallback_contact_details(self):
+        response = self.client.get(reverse("contact"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "core/contact.html")
+        self.assertContains(response, "grachevilia09@yandex.ru")
+        self.assertContains(response, "79167950225")
+        self.assertNotContains(response, "Контактные данные пока не заполнены")

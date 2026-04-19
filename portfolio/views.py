@@ -5,7 +5,7 @@ from django.conf import settings
 from django.http import FileResponse, Http404
 from django.views.generic import DetailView, ListView
 
-from .models import Project, Technology
+from .models import Project
 
 
 class ProjectListView(ListView):
@@ -19,15 +19,14 @@ class ProjectListView(ListView):
             .prefetch_related("technologies", "images")
             .order_by("-completion_date")
         )
-        technology_slug = self.request.GET.get("technology")
-        if technology_slug:
-            queryset = queryset.filter(technologies__slug=technology_slug)
+        title_query = self.request.GET.get("title", "").strip()
+        if title_query:
+            queryset = queryset.filter(title__icontains=title_query)
         return queryset.distinct()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["technologies"] = Technology.objects.all()
-        context["selected_technology"] = self.request.GET.get("technology", "")
+        context["title_query"] = self.request.GET.get("title", "").strip()
         return context
 
 

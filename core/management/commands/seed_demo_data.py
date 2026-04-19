@@ -32,7 +32,7 @@ class Command(BaseCommand):
             defaults={
                 "company_name": "Grachev Studio",
                 "tagline": "Сайты, CRM и сопровождение цифровых продуктов",
-                "phone": "+7 (999) 555-44-33",
+                "phone": "79167950225",
                 "telegram": "@grachevstudio",
                 "address": "Москва, удаленная команда",
                 "working_hours": "Пн-Пт, 10:00-19:00",

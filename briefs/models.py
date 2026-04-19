@@ -37,7 +37,7 @@ class BriefRequest(TimeStampedModel):
 
     class HostingPlan(models.TextChoices):
         MONTHLY = "monthly", "1 месяц"
-        QUARTERLY = "quarterly", "3 месяца (-25%)"
+        QUARTERLY = "quarterly", "3 месяца"
 
     class ColorMode(models.TextChoices):
         TEMPLATE = "template", "По шаблону"

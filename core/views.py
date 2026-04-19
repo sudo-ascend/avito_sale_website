@@ -18,10 +18,11 @@ from briefs.pricing import (
 from crm.models import Client, Order
 from portfolio.models import Project, Technology
 
+from .contact_data import get_primary_contact
 from .excel import autosize_columns, style_header, workbook_response
 from .forms import ManagerUserCreationForm
 from .mixins import StaffRequiredMixin, SuperuserRequiredMixin
-from .models import ContactInfo, Service
+from .models import Service
 
 
 def _is_staff(user):
@@ -48,9 +49,7 @@ class HomeView(TemplateView):
         context["popular_projects"] = featured_projects[:6]
         context["suggested_projects"] = featured_projects[4:7] or featured_projects[:3]
         context["catalog_projects"] = featured_projects[:4]
-        context["contact_info"] = (
-            ContactInfo.objects.filter(is_primary=True).first() or ContactInfo.objects.first()
-        )
+        context["contact_info"] = get_primary_contact()
         context["services"] = Service.objects.filter(is_active=True)
         context["bundle_services"] = [
             service for service in HOME_SERVICE_BUNDLES if service["key"] in HOME_COMMON_BUNDLE_KEYS
@@ -78,9 +77,7 @@ class ContactView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["contact_info"] = (
-            ContactInfo.objects.filter(is_primary=True).first() or ContactInfo.objects.first()
-        )
+        context["contact_info"] = get_primary_contact()
         return context
 
 

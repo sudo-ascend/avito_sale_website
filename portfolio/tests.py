@@ -34,6 +34,15 @@ class PortfolioDemoPageTests(TestCase):
         self.site_dir = self.media_root / "portfolio" / "sites" / self.project.slug
         self.site_dir.mkdir(parents=True, exist_ok=True)
         (self.site_dir / "index.html").write_text("<html><body>Demo site</body></html>", encoding="utf-8")
+        self.second_project = Project.objects.create(
+            title="Another Landing",
+            short_description="Еще один проект",
+            description="Описание второго проекта",
+            completion_date="2026-03-01",
+            stack_notes="Django",
+            external_url="https://example.org",
+            is_published=True,
+        )
 
     def tearDown(self):
         self.settings_override.disable()
@@ -64,3 +73,11 @@ class PortfolioDemoPageTests(TestCase):
         self.assertContains(response, "data-slider-next")
         self.assertContains(response, self.project.cover_image.url)
         self.assertContains(response, self.gallery_image.image.url)
+
+    def test_project_list_filters_by_title(self):
+        response = self.client.get(reverse("portfolio_list"), {"title": "Demo"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Demo Project")
+        self.assertNotContains(response, "Another Landing")
+        self.assertContains(response, 'value="Demo"', html=False)

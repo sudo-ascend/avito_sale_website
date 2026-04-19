@@ -35,7 +35,7 @@ OPTIONAL_SERVICE_LABELS = {
 
 HOSTING_PLAN_SUMMARIES = {
     "monthly": "Хостинг сайта 750 ₽/мес",
-    "quarterly": "Хостинг сайта на 3 месяца 1 687,50 ₽ (-25%)",
+    "quarterly": "Хостинг сайта на 3 месяца 1 687,50 ₽",
 }
 
 HOME_SERVICE_BUNDLES = [
@@ -62,10 +62,7 @@ HOME_SERVICE_BUNDLES = [
         "title": "Хостинг сайта",
         "price": "750 ₽/мес",
         "short_description": "Сразу подключаем площадку для публикации сайта.",
-        "description": "Акция: при оплате на 3 месяца действует скидка 25%.",
-        "promo_badge": "Акция -25%",
-        "promo_title": "При оплате на 3 месяца",
-        "promo_copy": "1 687,50 ₽ вместо 2 250 ₽",
+        "description": "Можно выбрать оплату на 1 или 3 месяца, как удобнее для запуска проекта.",
         "details": [],
         "cta_target": "",
         "cta_label": "",

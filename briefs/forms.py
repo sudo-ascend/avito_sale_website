@@ -21,6 +21,8 @@ class BriefRequestForm(BaseStyledModelForm):
     OPTIONAL_SERVICE_PRICES = PRICING_OPTIONAL_SERVICE_PRICES
     OPTIONAL_FIELDS = {
         "extra_pages",
+        "photos_files",
+        "texts_files",
         "preferred_contact_app",
         "contact_email",
         "client_comment",
@@ -128,7 +130,11 @@ class BriefRequestForm(BaseStyledModelForm):
         for name, field in self.fields.items():
             field.help_text = ""
             field.required = name not in self.OPTIONAL_FIELDS
-            if isinstance(field.widget, forms.CheckboxInput):
+            if isinstance(field.widget, forms.HiddenInput):
+                # Hidden fields are validated server-side; do not let browser
+                # constraint validation block form submission on invisible inputs.
+                field.widget.attrs.pop("required", None)
+            elif isinstance(field.widget, forms.CheckboxInput):
                 if field.required and name == "privacy_accepted":
                     field.widget.attrs["required"] = "required"
                 else:
@@ -144,7 +150,7 @@ class BriefRequestForm(BaseStyledModelForm):
         ]
         self.fields["hosting_plan"].choices = [
             (BriefRequest.HostingPlan.MONTHLY, "1 месяц — 750 ₽"),
-            (BriefRequest.HostingPlan.QUARTERLY, "3 месяца — 1 687,50 ₽ (-25%)"),
+            (BriefRequest.HostingPlan.QUARTERLY, "3 месяца — 1 687,50 ₽"),
         ]
         self.fields["preferred_contact_app"].initial = ""
         self.fields["site_type"].initial = BriefRequest.SiteType.SINGLE_PAGE
