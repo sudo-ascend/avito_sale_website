@@ -3,7 +3,13 @@
         {% for project in projects %}
             <div class="col-md-6">
                 <article class="card project-card project-card--portfolio h-100 border-0 shadow-sm">
-                    <div class="project-card__media project-card__media--slider" data-project-slider tabindex="0" aria-label="Галерея проекта {{ project.title }}">
+                    <div class="project-card__media project-card__media--slider"
+                         data-project-slider
+                         data-project-link="{% if project.external_url %}{{ project.external_url }}{% elif project.has_demo_site %}{{ project.demo_url }}{% else %}{{ project.get_absolute_url }}{% endif %}"
+                         {% if project.external_url or project.has_demo_site %}data-project-link-external="true"{% endif %}
+                         tabindex="0"
+                         role="link"
+                         aria-label="Галерея проекта {{ project.title }}">
                         <div class="project-card__slider-track" data-slider-track>
                             {% if project.cover_image %}
                                 <div class="project-card__slide" data-slider-slide>
@@ -69,7 +75,7 @@
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-4">
                         <h3 class="h5">{{ empty_title|default:"Проекты пока не добавлены." }}</h3>
-                        <p class="mb-0 text-secondary">{{ empty_copy|default:"Добавьте опубликованные проекты, и они появятся в этом блоке." }}</p>
+                        <p class="mb-0 text-secondary">{{ empty_copy|default:"Опубликованные проекты появятся здесь автоматически." }}</p>
                     </div>
                 </div>
             </div>

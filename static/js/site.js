@@ -1,77 +1,187 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const phoneInputs = document.querySelectorAll("[data-phone-input='true']");
+    const phoneInputs = Array.from(document.querySelectorAll("[data-phone-input='true']"));
 
     const getPhoneDigits = (value, maxDigits) => {
         let digits = String(value || "").replace(/\D/g, "");
-        if (digits.length === maxDigits + 1 && /^[78]/.test(digits)) {
+        if (digits.length >= maxDigits + 1 && /^[78]/.test(digits)) {
             digits = digits.slice(1);
         }
         return digits.slice(0, maxDigits);
     };
 
     const formatPhoneValue = (digits) => {
-        if (!digits) {
+        if (!digits.length) {
             return "";
         }
 
-        const parts = [];
-        const area = digits.slice(0, 3);
-        const first = digits.slice(3, 6);
-        const second = digits.slice(6, 8);
-        const third = digits.slice(8, 10);
+        let formattedValue = "+7";
 
-        if (area) {
-            parts.push(`(${area}`);
-        }
-        if (area.length === 3) {
-            parts[0] += ")";
-        }
-        if (first) {
-            parts.push(first);
-        }
-        if (second) {
-            parts.push(second);
-        }
-        if (third) {
-            parts.push(third);
+        if (digits.length > 0) {
+            formattedValue += ` (${digits.slice(0, 3)}`;
         }
 
-        const formatted = [];
-        if (parts[0]) {
-            formatted.push(parts[0]);
+        if (digits.length >= 3) {
+            formattedValue += ")";
         }
-        if (parts[1]) {
-            formatted.push(parts[1]);
+
+        if (digits.length > 3) {
+            formattedValue += ` ${digits.slice(3, 6)}`;
         }
-        let result = formatted.join(" ");
-        if (parts[2]) {
-            result += `-${parts[2]}`;
+
+        if (digits.length > 6) {
+            formattedValue += `-${digits.slice(6, 8)}`;
         }
-        if (parts[3]) {
-            result += `-${parts[3]}`;
+
+        if (digits.length > 8) {
+            formattedValue += `-${digits.slice(8, 10)}`;
         }
-        return result;
+
+        return formattedValue;
     };
 
-    const applyPhoneFormatting = (input) => {
+    const countDigitsBeforeCaret = (value, caretPosition) => {
+        const digits = String(value || "")
+            .slice(0, caretPosition)
+            .replace(/\D/g, "");
+        if (digits.startsWith("7")) {
+            return Math.max(0, digits.length - 1);
+        }
+        return digits.length;
+    };
+
+    const getCaretPositionForDigitIndex = (value, digitIndex) => {
+        if (digitIndex <= 0) {
+            return value.startsWith("+7") ? Math.min(value.length, 4) : 0;
+        }
+
+        let seenDigits = 0;
+        for (let index = 0; index < value.length; index += 1) {
+            if (/\d/.test(value[index])) {
+                if (value.startsWith("+7") && index === 1) {
+                    continue;
+                }
+                seenDigits += 1;
+            }
+
+            if (seenDigits >= digitIndex) {
+                return index + 1;
+            }
+        }
+
+        return value.length;
+    };
+
+    const setMaskedValue = (input, digits, digitIndex) => {
+        const formattedValue = formatPhoneValue(digits);
+        input.value = formattedValue;
+
+        if (typeof digitIndex !== "number") {
+            return;
+        }
+
+        const caretPosition = getCaretPositionForDigitIndex(formattedValue, digitIndex);
+        input.setSelectionRange(caretPosition, caretPosition);
+    };
+
+    const applyPhoneFormatting = (input, digitIndex) => {
         const maxDigits = Number(input.dataset.phoneDigits || 10);
         const digits = getPhoneDigits(input.value, maxDigits);
-        input.value = formatPhoneValue(digits);
+        setMaskedValue(input, digits, digitIndex);
 
         if (digits.length && digits.length < maxDigits) {
             input.setCustomValidity(`Введите ${maxDigits} цифр номера телефона.`);
         } else {
             input.setCustomValidity("");
         }
+
+        if (digits.length && digits.length < maxDigits) {
+            input.setCustomValidity(`Введите ${maxDigits} цифр номера телефона.`);
+        }
+    };
+
+    const removeDigitNearCaret = (input, direction) => {
+        const selectionStart = input.selectionStart || 0;
+        const maxDigits = Number(input.dataset.phoneDigits || 10);
+        const digits = getPhoneDigits(input.value, maxDigits);
+
+        if (!digits.length) {
+            return false;
+        }
+
+        const digitIndex = direction === "backward"
+            ? countDigitsBeforeCaret(input.value, selectionStart) - 1
+            : countDigitsBeforeCaret(input.value, selectionStart);
+
+        if (digitIndex < 0 || digitIndex >= digits.length) {
+            return false;
+        }
+
+        const nextDigits = digits.slice(0, digitIndex) + digits.slice(digitIndex + 1);
+        setMaskedValue(input, nextDigits, digitIndex);
+        input.setCustomValidity(
+            nextDigits.length && nextDigits.length < maxDigits
+                ? `Введите ${maxDigits} цифр номера телефона.`
+                : ""
+        );
+        return true;
     };
 
     phoneInputs.forEach((input) => {
-        applyPhoneFormatting(input);
-        input.addEventListener("input", () => applyPhoneFormatting(input));
-        input.addEventListener("blur", () => applyPhoneFormatting(input));
-        input.addEventListener("paste", () => {
-            window.requestAnimationFrame(() => applyPhoneFormatting(input));
+        input.addEventListener("blur", () => {
+            applyPhoneFormatting(input);
         });
+
+        input.addEventListener("input", () => {
+            const digitIndex = countDigitsBeforeCaret(input.value, input.selectionStart || 0);
+            applyPhoneFormatting(input, digitIndex);
+        });
+
+        input.addEventListener("paste", (event) => {
+            event.preventDefault();
+            const pastedText = (event.clipboardData || window.clipboardData).getData("text");
+            const maxDigits = Number(input.dataset.phoneDigits || 10);
+            input.value = pastedText;
+            applyPhoneFormatting(input, getPhoneDigits(pastedText, maxDigits).length);
+        });
+
+        input.addEventListener("keydown", (event) => {
+            const hasSelection = input.selectionStart !== input.selectionEnd;
+            const isModifierKey = event.ctrlKey || event.metaKey;
+
+            if (event.key === "Backspace" && !hasSelection) {
+                const charBeforeCaret = input.value[(input.selectionStart || 0) - 1];
+
+                if (charBeforeCaret && !/\d/.test(charBeforeCaret)) {
+                    event.preventDefault();
+                    removeDigitNearCaret(input, "backward");
+                }
+                return;
+            }
+
+            if (event.key === "Delete" && !hasSelection) {
+                const charAfterCaret = input.value[input.selectionStart || 0];
+
+                if (charAfterCaret && !/\d/.test(charAfterCaret)) {
+                    event.preventDefault();
+                    removeDigitNearCaret(input, "forward");
+                }
+                return;
+            }
+
+            if ([46, 8, 9, 27, 13].includes(event.keyCode) ||
+                isModifierKey ||
+                (event.keyCode >= 35 && event.keyCode <= 39)) {
+                return;
+            }
+
+            if ((event.keyCode < 48 || event.keyCode > 57) && (event.keyCode < 96 || event.keyCode > 105)) {
+                event.preventDefault();
+            }
+        });
+
+        if (input.value.trim()) {
+            applyPhoneFormatting(input);
+        }
     });
 
     const body = document.body;
@@ -680,6 +790,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const nextButton = slider.querySelector("[data-slider-next]");
         const currentLabel = slider.querySelector("[data-slider-current]");
         const totalLabel = slider.querySelector("[data-slider-total]");
+        const projectLink = slider.dataset.projectLink;
+        const projectLinkExternal = slider.dataset.projectLinkExternal === "true";
 
         if (!track || !slides.length) {
             return;
@@ -709,7 +821,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
         prevButton?.addEventListener("click", () => stepSlider(-1));
         nextButton?.addEventListener("click", () => stepSlider(1));
+        const openProjectLink = () => {
+            if (!projectLink) {
+                return;
+            }
+
+            if (projectLinkExternal) {
+                window.open(projectLink, "_blank", "noopener");
+                return;
+            }
+
+            window.location.href = projectLink;
+        };
+
+        slider.addEventListener("click", (event) => {
+            if (event.target.closest("[data-slider-prev], [data-slider-next]")) {
+                return;
+            }
+            openProjectLink();
+        });
         slider.addEventListener("keydown", (event) => {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                openProjectLink();
+            }
             if (event.key === "ArrowLeft") {
                 event.preventDefault();
                 stepSlider(-1);
@@ -1390,5 +1525,303 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         updateHomeServiceSummary();
+    }
+
+    const guideAnchors = [...document.querySelectorAll("[data-guide-step]")]
+        .map((element) => ({
+            element,
+            step: Number.parseInt(element.dataset.guideStep || "0", 10),
+            title: element.dataset.guideTitle || "",
+            text: element.dataset.guideCopy || "",
+            emoji: element.dataset.guideEmoji || "✨",
+            placement: element.dataset.guidePlacement || "bottom",
+            passive: element.dataset.guidePassive === "true",
+        }))
+        .filter((item) => item.step > 0)
+        .sort((left, right) => left.step - right.step);
+
+    if (guideAnchors.length) {
+        const safeStorage = {
+            get(key) {
+                try {
+                    return window.sessionStorage.getItem(key);
+                } catch {
+                    return null;
+                }
+            },
+            set(key, value) {
+                try {
+                    window.sessionStorage.setItem(key, value);
+                } catch {
+                    // Ignore storage failures in private mode or strict browser settings.
+                }
+            },
+        };
+        const guideScope = body.classList.contains("terra-home-page")
+            ? "home"
+            : body.classList.contains("brief-form-page")
+                ? "brief-form"
+                : window.location.pathname;
+        const storageKey = `nova-guide-dismissed:${guideScope}`;
+        const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+        const launcher = document.createElement("button");
+        launcher.type = "button";
+        launcher.className = "nova-guide-launcher";
+        launcher.setAttribute("aria-label", "Открыть подсказки по странице");
+        launcher.innerHTML = `
+            <span class="nova-guide-launcher__emoji" aria-hidden="true">✨</span>
+            <span class="nova-guide-launcher__label">Подсказки</span>
+        `;
+
+        const guide = document.createElement("aside");
+        guide.className = "nova-guide";
+        guide.setAttribute("aria-live", "polite");
+        guide.setAttribute("aria-hidden", "true");
+        guide.innerHTML = `
+            <div class="nova-guide__bubble">
+                <button type="button" class="nova-guide__close" aria-label="Скрыть подсказку">×</button>
+                <div class="nova-guide__top">
+                    <div class="nova-guide__avatar" aria-hidden="true">✨</div>
+                    <div class="nova-guide__copy">
+                        <span class="nova-guide__eyebrow">Навигатор</span>
+                        <h3 class="nova-guide__title"></h3>
+                        <p class="nova-guide__text"></p>
+                    </div>
+                </div>
+                <div class="nova-guide__footer">
+                    <span class="nova-guide__progress"></span>
+                    <div class="nova-guide__actions">
+                        <button type="button" class="nova-guide__button" data-guide-dismiss>Скрыть</button>
+                        <button type="button" class="nova-guide__button nova-guide__button--primary" data-guide-next>Дальше</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        body.appendChild(launcher);
+        body.appendChild(guide);
+
+        const guideAvatar = guide.querySelector(".nova-guide__avatar");
+        const guideTitle = guide.querySelector(".nova-guide__title");
+        const guideText = guide.querySelector(".nova-guide__text");
+        const guideProgress = guide.querySelector(".nova-guide__progress");
+        const guideNext = guide.querySelector("[data-guide-next]");
+        const guideDismiss = guide.querySelector("[data-guide-dismiss]");
+        const guideClose = guide.querySelector(".nova-guide__close");
+
+        let activeGuideIndex = 0;
+        let activeGuideTarget = null;
+        let guideOpen = false;
+        let positionFrame = 0;
+
+        const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+        const isMobileGuide = () => window.innerWidth < 768;
+
+        const clearGuideTarget = () => {
+            activeGuideTarget?.classList.remove("guide-focus-target");
+            activeGuideTarget = null;
+            body.classList.remove("guide-hero-intro-active");
+            body.classList.remove("guide-overlay-active");
+        };
+
+        const queueGuidePosition = () => {
+            if (!guideOpen) {
+                return;
+            }
+            if (positionFrame) {
+                window.cancelAnimationFrame(positionFrame);
+            }
+            positionFrame = window.requestAnimationFrame(() => {
+                positionFrame = 0;
+                positionGuide();
+            });
+        };
+
+        const pickPlacement = (preferred, rect, width, height) => {
+            const padding = 20;
+            const available = {
+                top: rect.top - padding,
+                bottom: window.innerHeight - rect.bottom - padding,
+                left: rect.left - padding,
+                right: window.innerWidth - rect.right - padding,
+            };
+            const fits = {
+                top: available.top >= height + 18,
+                bottom: available.bottom >= height + 18,
+                left: available.left >= width + 18,
+                right: available.right >= width + 18,
+            };
+
+            if (preferred && fits[preferred]) {
+                return preferred;
+            }
+
+            return Object.entries(available)
+                .sort((left, right) => right[1] - left[1])
+                .map(([name]) => name)
+                .find((name) => fits[name]) || preferred || "bottom";
+        };
+
+        function positionGuide() {
+            if (!guideOpen || !activeGuideTarget) {
+                return;
+            }
+
+            if (isMobileGuide()) {
+                guide.dataset.mobile = "true";
+                guide.dataset.placement = "bottom";
+                guide.style.top = "auto";
+                guide.style.left = "0.75rem";
+                return;
+            }
+
+            guide.dataset.mobile = "false";
+
+            const rect = activeGuideTarget.getBoundingClientRect();
+            const bubbleRect = guide.getBoundingClientRect();
+            const bubbleWidth = bubbleRect.width || Math.min(340, window.innerWidth - 24);
+            const bubbleHeight = bubbleRect.height || 220;
+            const viewportPadding = 16;
+            const isHeroIntro = activeGuideTarget.classList.contains("terra-guide-floating-anchor");
+
+            if (isHeroIntro) {
+                const heroRect = activeGuideTarget.closest(".terra-hero")?.getBoundingClientRect() || rect;
+                const centeredLeft = clamp(
+                    heroRect.left + (heroRect.width - bubbleWidth) / 2,
+                    viewportPadding,
+                    window.innerWidth - bubbleWidth - viewportPadding,
+                );
+                const centeredTop = clamp(
+                    heroRect.top + (heroRect.height - bubbleHeight) / 2,
+                    viewportPadding,
+                    window.innerHeight - bubbleHeight - viewportPadding,
+                );
+
+                guide.dataset.placement = "center";
+                guide.style.left = `${Math.round(centeredLeft)}px`;
+                guide.style.top = `${Math.round(centeredTop)}px`;
+                return;
+            }
+
+            const placement = pickPlacement(guideAnchors[activeGuideIndex]?.placement, rect, bubbleWidth, bubbleHeight);
+            const spacing = 18;
+            let top = rect.bottom + spacing;
+            let left = rect.left;
+
+            if (placement === "top") {
+                top = rect.top - bubbleHeight - spacing;
+                left = rect.left;
+            } else if (placement === "left") {
+                top = rect.top + (rect.height - bubbleHeight) / 2;
+                left = rect.left - bubbleWidth - spacing;
+            } else if (placement === "right") {
+                top = rect.top + (rect.height - bubbleHeight) / 2;
+                left = rect.right + spacing;
+            }
+
+            if (placement === "top" || placement === "bottom") {
+                left = clamp(left, viewportPadding, window.innerWidth - bubbleWidth - viewportPadding);
+            }
+
+            if (placement === "left" || placement === "right") {
+                top = clamp(top, viewportPadding, window.innerHeight - bubbleHeight - viewportPadding);
+            }
+
+            guide.dataset.placement = placement;
+            guide.style.left = `${Math.round(left)}px`;
+            guide.style.top = `${Math.round(clamp(top, viewportPadding, window.innerHeight - bubbleHeight - viewportPadding))}px`;
+        }
+
+        const syncGuideStep = (index, options = {}) => {
+            const { remember = false } = options;
+            const guideStep = guideAnchors[index];
+            if (!guideStep) {
+                return;
+            }
+
+            activeGuideIndex = index;
+            clearGuideTarget();
+            activeGuideTarget = guideStep.element;
+            activeGuideTarget.classList.add("guide-focus-target");
+            if (activeGuideTarget.classList.contains("terra-guide-floating-anchor")) {
+                body.classList.add("guide-hero-intro-active");
+            }
+
+            const targetRect = activeGuideTarget.getBoundingClientRect();
+            const targetIsVisible = targetRect.top >= 110 && targetRect.bottom <= window.innerHeight - 80;
+            if (!targetIsVisible) {
+                activeGuideTarget.scrollIntoView({
+                    block: isMobileGuide() ? "start" : "center",
+                    inline: "nearest",
+                    behavior: reduceMotion.matches ? "auto" : "smooth",
+                });
+            }
+
+            if (guideAvatar) {
+                guideAvatar.textContent = guideStep.emoji;
+            }
+            if (guideTitle) {
+                guideTitle.textContent = guideStep.title;
+            }
+            if (guideText) {
+                guideText.textContent = guideStep.text;
+            }
+            if (guideProgress) {
+                guideProgress.textContent = `${index + 1} / ${guideAnchors.length}`;
+            }
+            if (guideNext) {
+                guideNext.textContent = index === guideAnchors.length - 1 ? "Готово" : "Дальше";
+            }
+
+            body.classList.add("guide-overlay-active");
+            guideOpen = true;
+            guide.setAttribute("aria-hidden", "false");
+            launcher.classList.add("d-none");
+
+            window.setTimeout(() => {
+                positionGuide();
+                guide.classList.add("is-open");
+            }, targetIsVisible || reduceMotion.matches ? 40 : 280);
+
+            if (remember) {
+                safeStorage.set(storageKey, "0");
+            }
+        };
+
+        const closeGuide = ({ remember = true } = {}) => {
+            guideOpen = false;
+            guide.classList.remove("is-open");
+            guide.setAttribute("aria-hidden", "true");
+            clearGuideTarget();
+            launcher.classList.remove("d-none");
+            if (remember) {
+                safeStorage.set(storageKey, "1");
+            }
+        };
+
+        launcher.addEventListener("click", () => {
+            safeStorage.set(storageKey, "0");
+            syncGuideStep(0, { remember: true });
+        });
+
+        guideNext?.addEventListener("click", () => {
+            if (activeGuideIndex >= guideAnchors.length - 1) {
+                closeGuide();
+                return;
+            }
+            syncGuideStep(activeGuideIndex + 1);
+        });
+
+        guideDismiss?.addEventListener("click", () => closeGuide());
+        guideClose?.addEventListener("click", () => closeGuide());
+
+        window.addEventListener("resize", queueGuidePosition);
+        window.addEventListener("scroll", queueGuidePosition, { passive: true });
+
+        if (safeStorage.get(storageKey) !== "1") {
+            window.setTimeout(() => {
+                syncGuideStep(0);
+            }, reduceMotion.matches ? 120 : 700);
+        }
     }
 });

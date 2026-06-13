@@ -37,6 +37,13 @@
 
                         <div class="row g-4 g-xl-5 align-items-end">
                             <div class="col-lg-8">
+                                <div class="terra-guide-floating-anchor"
+                                     data-guide-step="1"
+                                     data-guide-emoji="✨"
+                                     data-guide-title="Добро пожаловать"
+                                     data-guide-copy="Если хотите, проведу маленькую экскурсию и покажу, куда здесь лучше нажать в первую очередь."
+                                     data-guide-placement="bottom"
+                                     aria-hidden="true"></div>
                                 <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
                                     <span class="badge rounded-pill text-bg-light px-3 py-2">Веб студия</span>
                                     <span class="badge rounded-pill terra-badge-soft px-3 py-2">Самописные сайты</span>
@@ -131,7 +138,13 @@
                                     <p class="terra-section__kicker mb-2">Портфолио</p>
                                     <h2 class="mb-0">Примеры наших работ</h2>
                                 </div>
-                                <a href="{% url 'portfolio_list' %}" class="btn btn-outline-dark rounded-pill px-3">Все проекты</a>
+                                <a href="{% url 'portfolio_list' %}"
+                                   class="btn btn-outline-dark rounded-pill px-3"
+                                   data-guide-step="2"
+                                   data-guide-emoji="👀"
+                                   data-guide-title="Посмотрите наши работы"
+                                   data-guide-copy="Если хотите быстро понять стиль, уровень и типы проектов, загляните в портфолио."
+                                   data-guide-placement="bottom">Все проекты</a>
                             </div>
 
                             <div class="home-portfolio-grid">
@@ -223,7 +236,7 @@
                             </div>
                         </section>
 
-                        <section id="telegram-bots" class="card border-0 terra-content-card">
+                        <section id="telegram-bots" class="card border-0 terra-content-card terra-hover-section">
                             <div class="card-body p-4 p-lg-5">
                                 <div class="row g-4 align-items-start">
                                     <div class="col-lg-7">
@@ -314,13 +327,19 @@
 
                         <section id="services">
                             <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-4">
-                                <div>
+                                <div data-guide-step="3"
+                                     data-guide-emoji="💸"
+                                     data-guide-title="Прикиньте ориентировочную цену заказа"
+                                     data-guide-copy="Здесь удобно быстро собрать состав работ и понять примерный бюджет ещё до заполнения формы."
+                                     data-guide-placement="bottom">
                                     <p class="terra-section__kicker mb-2">Услуги</p>
                                     <h2 class="mb-0">Обычно берут вместе</h2>
                                 </div>
                                 <a href="{% url 'brief_create' %}" class="btn terra-btn-solid rounded-pill px-4">Обсудить проект</a>
                             </div>
-                            <div class="terra-service-picker" data-home-service-picker data-brief-url="{% url 'brief_create' %}">
+                            <div class="terra-service-picker"
+                                 data-home-service-picker
+                                 data-brief-url="{% url 'brief_create' %}">
                                 <div class="terra-service-picker__list">
                                 {% for service in bundle_services %}
                                     <article class="terra-service-row" data-home-service="{{ service.key }}">
@@ -456,8 +475,7 @@
                                     </div>
                                 {% endif %}
 
-                                <div class="mt-4">
-                                    <div class="card border-0 terra-content-card">
+                                <section id="standalone-service" class="mt-4 card border-0 terra-content-card terra-hover-section">
                                         <div class="card-body p-4">
                                             <div class="d-flex flex-column flex-lg-row align-items-lg-start justify-content-between gap-4">
                                                 <div>
@@ -483,10 +501,10 @@
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
+                                </section>
 
-                                <aside class="brief-price-widget brief-price-widget--idle card border-0 shadow-sm" data-home-summary-widget>
+                                <aside class="brief-price-widget brief-price-widget--idle card border-0 shadow-sm"
+                                       data-home-summary-widget>
                                     <div class="card-body p-4">
                                         <p class="section-kicker mb-2">Подборка</p>
                                         <h2 class="h5 mb-3">Выбранные услуги</h2>
@@ -573,7 +591,13 @@
                                                 <div class="card-body p-4">
                                                     <p class="terra-section__kicker mb-2">Составление ТЗ</p>
                                                     <h3 class="h4">Сначала фиксируем задачу в ТЗ</h3>
-                                                    <a href="{% url 'brief_create' %}" class="btn terra-btn-solid rounded-pill px-4">Перейти к составлению ТЗ</a>
+                                                    <a href="{% url 'brief_create' %}"
+                                                       class="btn terra-btn-solid rounded-pill px-4"
+                                                       data-guide-step="4"
+                                                       data-guide-emoji="📝"
+                                                       data-guide-title="Если вы уже определились, что вы хотите — перейдите к форме"
+                                                       data-guide-copy="Там можно спокойно собрать вводные, пожелания и ориентиры по проекту в одном месте."
+                                                       data-guide-placement="left">Перейти к составлению ТЗ</a>
 
                                                     <p class="process-brief-contact mt-3 mb-0">Или <a href="#contacts">напиши нам</a>, если удобнее обсудить задачу в чате.</p>
                                                     

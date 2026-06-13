@@ -185,7 +185,7 @@ class BriefRequestForm(BaseStyledModelForm):
         )
         self.fields["contact_phone"].widget.attrs.update(
             {
-                "placeholder": "9991234567",
+                "placeholder": "+7 (999) 123-45-67",
                 "inputmode": "numeric",
                 "autocomplete": "tel-national",
                 "data-phone-input": "true",

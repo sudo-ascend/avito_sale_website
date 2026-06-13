@@ -12,6 +12,7 @@ from portfolio.models import Project
 
 from .forms import BriefRequestForm
 from .models import BriefAttachment, BriefRequest
+from .services import get_brief_notification_recipient
 
 
 SMALL_GIF = (
@@ -204,6 +205,7 @@ class BriefRequestFormTests(TestCase):
         self.assertEqual(CRMClient.objects.count(), 1)
         self.assertEqual(Order.objects.count(), 1)
         self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["owner@example.com"])
 
         crm_client = CRMClient.objects.get()
         order = Order.objects.get()
@@ -224,6 +226,51 @@ class BriefRequestFormTests(TestCase):
         self.assertTrue(attachment_name.endswith(".pdf"))
         self.assertEqual(attachment_mimetype, "application/pdf")
         self.assertTrue(attachment_content.startswith(b"%PDF"))
+
+    @override_settings(
+        BRIEF_NOTIFICATION_EMAIL="grachevilia09",
+        DEFAULT_FROM_EMAIL="grachevilia09@yandex.ru",
+        NOTIFICATION_EMAIL="owner@example.com",
+    )
+    def test_brief_notification_recipient_uses_sender_domain_for_login_only_value(self):
+        self.assertEqual(get_brief_notification_recipient(), "grachevilia09@yandex.ru")
+
+        response = self.client.post(
+            reverse("brief_create"),
+            data={
+                "client_type": BriefRequest.ClientType.INDIVIDUAL,
+                "business_name": "РўРµСЃС‚ РїРѕС‡С‚С‹",
+                "work_region": "РњРѕСЃРєРІР°",
+                "site_type": BriefRequest.SiteType.SINGLE_PAGE,
+                "extra_pages": "0",
+                "color_mode": BriefRequest.ColorMode.TEMPLATE,
+                "color_template_name": "Template A",
+                "color_preference": "#14344c",
+                "color_accent": "#c96f3b",
+                "color_background": "#f4f1ea",
+                "color_extra": "#2b506b",
+                "reference_sites": "",
+                "desired_domain": "",
+                "hosting_plan": BriefRequest.HostingPlan.MONTHLY,
+                "contact_phone": "9991234567",
+                "preferred_contact_app": "",
+                "contact_email": "",
+                "client_comment": "",
+                "privacy_accepted": "on",
+                "photos_files": [
+                    SimpleUploadedFile("photo-1.txt", b"photo-1", content_type="text/plain"),
+                ],
+                "texts_files": [
+                    SimpleUploadedFile("text-1.txt", b"text-1", content_type="text/plain"),
+                ],
+                "reviews_files": [
+                    SimpleUploadedFile("review-1.txt", b"review-1", content_type="text/plain"),
+                ],
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(mail.outbox[-1].to, ["grachevilia09@yandex.ru"])
 
     def test_brief_success_page_offers_pdf_actions_and_download(self):
         response = self.client.post(

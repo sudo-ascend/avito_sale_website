@@ -2,6 +2,8 @@
 
 {% block title %}Форма ТЗ | {{ site_brand_name }}{% endblock %}
 
+{% block body_class %}brief-form-page{% endblock %}
+
 {% block content %}
 <section class="py-5">
     <div class="container">
@@ -28,7 +30,12 @@
                     {{ form.color_background }}
                     {{ form.color_extra }}
 
-                    <div class="card border-0 shadow-sm mb-4">
+                    <div class="card border-0 shadow-sm mb-4"
+                         data-guide-step="1"
+                         data-guide-emoji="🧭"
+                         data-guide-title="Коротко о проекте"
+                         data-guide-copy="Начинаем с самого базового: кто вы, как называется проект и в каком регионе он работает. Это даёт нормальный контекст ещё до деталей."
+                         data-guide-placement="bottom">
                         <div class="card-body p-4">
                             <h2 class="h5 mb-4">1. О компании</h2>
                             {% include "partials/form_field.html" with field=form.client_type %}
@@ -46,7 +53,12 @@
                         </div>
                     </div>
 
-                    <div class="card border-0 shadow-sm mb-4">
+                    <div class="card border-0 shadow-sm mb-4"
+                         data-guide-step="2"
+                         data-guide-emoji="🧩"
+                         data-guide-title="Выбираем тип сайта"
+                         data-guide-copy="Вот здесь уже формируется сам формат проекта: лендинг, каталог и количество дополнительных страниц."
+                         data-guide-placement="bottom">
                         <div class="card-body p-4">
                             <h2 class="h5 mb-4">2. Тип услуги</h2>
                             <div class="row g-3 align-items-start">
@@ -72,7 +84,12 @@
                         </div>
                     </div>
 
-                    <div class="card border-0 shadow-sm mb-4">
+                    <div class="card border-0 shadow-sm mb-4"
+                         data-guide-step="3"
+                         data-guide-emoji="🎨"
+                         data-guide-title="Покажите визуальное настроение"
+                         data-guide-copy="Можно выбрать палитру по готовым кейсам или собрать свою. Даже короткий ориентир по цветам уже сильно ускоряет дизайн."
+                         data-guide-placement="bottom">
                         <div class="card-body p-4">
                             <h2 class="h5 mb-4">3. Контент</h2>
                             <div class="mb-3">
@@ -279,7 +296,12 @@
                         </div>
                     </div>
 
-                    <div class="card border-0 shadow-sm mb-4">
+                    <div class="card border-0 shadow-sm mb-4"
+                         data-guide-step="4"
+                         data-guide-emoji="🛠"
+                         data-guide-title="Добираем полезные опции"
+                         data-guide-copy="Тут удобно сразу отметить сопутствующие вещи: домен, хостинг, логотип, SEO и всё, что не хочется обсуждать отдельно в переписке."
+                         data-guide-placement="top">
                         <div class="card-body p-4">
                             <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
                                 <div>
@@ -421,7 +443,12 @@
                         </div>
                     </div>
 
-                    <div class="brief-submit-panel card border-0 shadow-sm mt-4 mb-4">
+                    <div class="brief-submit-panel card border-0 shadow-sm mt-4 mb-4"
+                         data-guide-step="5"
+                         data-guide-emoji="🚀"
+                         data-guide-title="Финиш здесь"
+                         data-guide-copy="Когда всё отмечено, просто отправляйте форму. Справа уже собрана сумма, а внутри заявки останутся ваши выбранные ориентиры."
+                         data-guide-placement="top">
                         <div class="card-body p-4">
                             <button type="submit" class="btn terra-btn-solid btn-lg w-100 rounded-pill">Отправить форму</button>
                         </div>

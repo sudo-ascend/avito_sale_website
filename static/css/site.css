@@ -41,6 +41,17 @@ h1, h2, h3, h4, h5, .site-brand__name {
     font-family: "Manrope", sans-serif;
 }
 
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+    transform-origin: left center;
+    transition: color 0.18s ease, transform 0.18s ease;
+}
+
+h1:hover, h2:hover, h3:hover, h4:hover, h5:hover, h6:hover,
+.h1:hover, .h2:hover, .h3:hover, .h4:hover, .h5:hover, .h6:hover {
+    transform: scale(1.015);
+}
+
 a {
     color: var(--primary);
 }
@@ -355,6 +366,7 @@ a {
     aspect-ratio: 16 / 10;
     background: linear-gradient(135deg, rgba(20, 52, 76, 0.92), rgba(201, 111, 59, 0.74));
     overflow: hidden;
+    cursor: pointer;
 }
 
 .portfolio-project-surface {
@@ -801,11 +813,18 @@ a {
     max-height: none;
     overflow: visible;
     margin-top: 1rem;
+    transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
 }
 
 .brief-submit-panel {
     position: relative;
     z-index: 1031;
+    transition: transform 0.24s ease, box-shadow 0.24s ease;
+    animation: subtlePanelFloat 6.5s ease-in-out infinite;
+}
+
+.brief-submit-panel:hover {
+    animation-play-state: paused;
 }
 
 .brief-submit-panel .terra-btn-solid,
@@ -892,6 +911,13 @@ a {
     font-size: 1.6rem;
 }
 
+body.brief-form-page .brief-price-total {
+    padding: 0.8rem 0.95rem;
+    border-radius: 1rem;
+    background: linear-gradient(135deg, rgba(136, 185, 42, 0.12), rgba(255, 255, 255, 0.04));
+    box-shadow: inset 0 0 0 1px rgba(201, 234, 52, 0.08);
+}
+
 .brief-price-note {
     color: var(--muted);
     line-height: 1.6;
@@ -917,11 +943,18 @@ a {
     transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
 }
 
+.brief-addon-card--forest:hover {
+    transform: translateY(-3px);
+    border-color: rgba(201, 234, 52, 0.2);
+    box-shadow: 0 24px 44px rgba(6, 8, 7, 0.28);
+}
+
 .brief-addon-card--forest:has(input[type="checkbox"]:checked) {
     background: rgba(33, 38, 34, 0.98);
     box-shadow:
         inset 4px 0 0 var(--terra-accent, #c5ea34),
         var(--terra-shadow, 0 22px 46px rgba(6, 8, 7, 0.24));
+    border-color: rgba(201, 234, 52, 0.22);
 }
 
 .brief-addon-card input[type="checkbox"] {
@@ -1306,6 +1339,10 @@ a {
 .palette-display-chip {
     cursor: default;
     pointer-events: none;
+}
+
+body.brief-form-page .color-preview-strip {
+    position: relative;
 }
 
 .file-input-hidden {
@@ -2420,8 +2457,16 @@ body.terra-page .popover .popover-body {
 }
 
 .contact-shell {
+    position: relative;
+    overflow: hidden;
     padding: clamp(1.6rem, 4vw, 2.4rem);
-    background: var(--contact-shell-glow), var(--contact-shell-bg);
+    background:
+        var(--contact-shell-glow),
+        url("../img/textures/light-paper-fibers-tinted.png"),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(239, 242, 234, 0.18)),
+        var(--contact-shell-bg);
+    background-repeat: no-repeat, repeat, no-repeat, no-repeat;
+    background-size: auto, 220px auto, auto, auto;
     border: 1px solid rgba(255, 255, 255, 0.95);
     border-radius: 2.25rem;
     box-shadow: var(--shadow);
@@ -2993,6 +3038,34 @@ body.terra-page .popover .popover-body {
     padding: clamp(0.2rem, 1vw, 0.5rem) 0 clamp(1.8rem, 3vw, 2.4rem);
 }
 
+.terra-home-page .terra-hero-inner::before,
+.terra-home-page .terra-hero-inner::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(10px);
+    opacity: 0.7;
+    animation: ambientBlobDrift 11s ease-in-out infinite;
+}
+
+.terra-home-page .terra-hero-inner::before {
+    top: 6%;
+    right: -6%;
+    width: 15rem;
+    height: 15rem;
+    background: radial-gradient(circle, rgba(201, 234, 52, 0.2) 0, rgba(136, 185, 42, 0.08) 42%, transparent 72%);
+}
+
+.terra-home-page .terra-hero-inner::after {
+    left: -4%;
+    bottom: 8%;
+    width: 11rem;
+    height: 11rem;
+    background: radial-gradient(circle, rgba(110, 168, 75, 0.18) 0, rgba(201, 234, 52, 0.08) 40%, transparent 70%);
+    animation-delay: -5.5s;
+}
+
 .terra-nav-card {
     background:
         url("../img/textures/light-paper-fibers-tinted.png"),
@@ -3009,11 +3082,63 @@ body.terra-page .popover .popover-body {
     border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
+.terra-btn-solid,
+.btn-brand,
+.site-header__button--primary,
+.btn-accent,
+.brief-success-actions .btn-download-pdf {
+    position: relative;
+    overflow: hidden;
+    font-weight: 800;
+}
+
 .terra-btn-solid {
     background: var(--terra-accent);
     border-color: var(--terra-accent);
     color: #213015;
-    font-weight: 800;
+}
+
+.terra-btn-solid::after,
+.btn-brand::after,
+.site-header__button--primary::after,
+.btn-accent::after,
+.brief-success-actions .btn-download-pdf::after,
+.site-header__button:not(.site-header__button--primary)::after,
+.terra-btn-outline::after,
+.btn-outline-dark::after,
+.btn-light.border::after,
+.btn-ghost::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 -35%;
+    width: 32%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.34), transparent);
+    transform: skewX(-20deg);
+    opacity: 0;
+}
+
+.terra-btn-solid:hover::after,
+.terra-btn-solid:focus-visible::after,
+.btn-brand:hover::after,
+.btn-brand:focus-visible::after,
+.site-header__button--primary:hover::after,
+.site-header__button--primary:focus-visible::after,
+.btn-accent:hover::after,
+.btn-accent:focus-visible::after,
+.brief-success-actions .btn-download-pdf:hover::after,
+.brief-success-actions .btn-download-pdf:focus-visible::after,
+.site-header__button:not(.site-header__button--primary):hover::after,
+.site-header__button:not(.site-header__button--primary):focus-visible::after,
+.terra-btn-outline:hover::after,
+.terra-btn-outline:focus-visible::after,
+.btn-outline-dark:hover::after,
+.btn-outline-dark:focus-visible::after,
+.btn-light.border:hover::after,
+.btn-light.border:focus-visible::after,
+.btn-ghost:hover::after,
+.btn-ghost:focus-visible::after {
+    opacity: 1;
+    animation: buttonSheen 0.9s ease;
 }
 
 .terra-btn-solid:hover,
@@ -3023,7 +3148,13 @@ body.terra-page .popover .popover-body {
     color: #213015;
 }
 
-.terra-btn-outline {
+.terra-btn-outline,
+.btn-outline-dark,
+.btn-light.border,
+.btn-ghost,
+.site-header__button:not(.site-header__button--primary) {
+    position: relative;
+    overflow: hidden;
     border-color: rgba(255, 255, 255, 0.28);
     background: rgba(255, 255, 255, 0.1);
     color: #fff;
@@ -3051,6 +3182,33 @@ body.terra-page .popover .popover-body {
     max-width: 56ch;
 }
 
+.terra-guide-floating-anchor {
+    position: absolute;
+    top: 49%;
+    left: 50%;
+    width: min(34rem, 72vw);
+    height: min(14rem, 34vh);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.terra-guide-floating-anchor.guide-focus-target::after {
+    inset: 0;
+    border: none;
+    border-radius: 2rem;
+    box-shadow: none;
+    background: transparent;
+    animation: none;
+}
+
+body.terra-home-page.guide-hero-intro-active .terra-hero::after {
+    display: block;
+    background:
+        radial-gradient(circle at center, rgba(255, 255, 255, 0.025), transparent 20%),
+        linear-gradient(180deg, rgba(7, 10, 8, 0.4), rgba(7, 10, 8, 0.6));
+    mask-image: none;
+}
+
 .terra-hero .text-white {
     color: #ffffff !important;
 }
@@ -3060,11 +3218,14 @@ body.terra-page .popover .popover-body {
 }
 
 .terra-side-card {
+    position: relative;
+    overflow: hidden;
     background:
         url("../img/textures/light-paper-fibers-tinted.png"),
         rgba(255, 253, 247, 0.96);
     background-size: 220px auto, auto;
     border-radius: 1.2rem;
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
 }
 
 .terra-metric-card {
@@ -3179,10 +3340,39 @@ body.terra-page .popover .popover-body {
 }
 
 .terra-content-card {
+    position: relative;
+    overflow: hidden;
     border: 1px solid var(--terra-line);
     border-radius: 1.2rem;
     background: #ffffff;
     box-shadow: 0 14px 28px rgba(57, 66, 38, 0.06);
+    transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+}
+
+.terra-content-card::before,
+body.brief-form-page .brief-price-widget--brief::before,
+body.brief-form-page .brief-submit-panel::before {
+    content: "";
+    position: absolute;
+    inset: auto -8% -48% auto;
+    width: 12rem;
+    height: 12rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(201, 234, 52, 0.14) 0, rgba(136, 185, 42, 0.07) 42%, transparent 72%);
+    pointer-events: none;
+    z-index: 0;
+    animation: ambientBlobDrift 10s ease-in-out infinite;
+}
+
+.terra-content-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+#advantages .terra-content-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 22px 40px rgba(57, 66, 38, 0.11);
+    border-color: rgba(136, 185, 42, 0.18);
 }
 
 .terra-complex-card {
@@ -3436,14 +3626,22 @@ body.terra-page .popover .popover-body {
 .terra-paper-section::before {
     display: block;
     background:
-        radial-gradient(circle at 18% 20%, rgba(74, 82, 68, 0.12), transparent 28%),
-        radial-gradient(circle at 82% 18%, rgba(92, 100, 85, 0.08), transparent 30%),
-        radial-gradient(circle at 54% 74%, rgba(68, 76, 63, 0.07), transparent 34%),
-        linear-gradient(180deg, rgba(80, 88, 74, 0.05) 0%, rgba(255, 255, 255, 0) 38%, rgba(72, 80, 67, 0.08) 100%);
+        radial-gradient(circle at 16% 18%, rgba(74, 82, 68, 0.14), transparent 26%),
+        radial-gradient(circle at 84% 16%, rgba(92, 100, 85, 0.1), transparent 28%),
+        radial-gradient(circle at 56% 76%, rgba(68, 76, 63, 0.08), transparent 32%),
+        linear-gradient(180deg, rgba(80, 88, 74, 0.04) 0%, rgba(255, 255, 255, 0.02) 34%, rgba(72, 80, 67, 0.07) 100%);
 }
 
 .terra-paper-section::after {
-    display: none;
+    display: block;
+    background:
+        url("../img/textures/light-paper-fibers-tinted.png"),
+        radial-gradient(circle at 22% 28%, rgba(255, 255, 255, 0.46), transparent 20%),
+        radial-gradient(circle at 78% 62%, rgba(96, 108, 84, 0.06), transparent 24%);
+    background-repeat: repeat, no-repeat, no-repeat;
+    background-size: 220px auto, auto, auto;
+    opacity: 0.18;
+    mix-blend-mode: multiply;
 }
 
 .terra-paper-section > .container {
@@ -3498,6 +3696,11 @@ body.terra-page .popover .popover-body {
     transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
+.terra-home-page .terra-service-row:hover {
+    transform: translateX(4px);
+    box-shadow: inset 4px 0 0 rgba(201, 234, 52, 0.34);
+}
+
 .terra-service-row:last-child {
     border-bottom: 0;
 }
@@ -3505,6 +3708,12 @@ body.terra-page .popover .popover-body {
 .terra-service-row[data-selected="true"] {
     background: #ffffff;
     box-shadow: inset 4px 0 0 #c5ea34;
+}
+
+.terra-home-page .terra-service-icon,
+.terra-home-page .terra-service-row__icon {
+    box-shadow: 0 0 0 0 rgba(201, 234, 52, 0.18);
+    animation: processBeacon 3.8s ease-in-out infinite;
 }
 
 .terra-service-row[data-selected="true"] + .terra-service-row {
@@ -3642,6 +3851,13 @@ body.terra-page .popover .popover-body {
     border-radius: 1rem;
     background: #ffffff;
     cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.terra-service-choice:hover {
+    transform: translateY(-2px);
+    border-color: rgba(136, 185, 42, 0.26);
+    box-shadow: 0 12px 24px rgba(57, 66, 38, 0.08);
 }
 
 .terra-service-choice--accent {
@@ -3735,9 +3951,113 @@ body.terra-page .popover .popover-body {
 }
 
 .terra-process-shell {
+    position: relative;
+    overflow: hidden;
     border-radius: 1.4rem;
-    background: linear-gradient(135deg, #2d3922 0%, #36462b 100%);
+    background:
+        radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.06), transparent 24%),
+        radial-gradient(circle at 82% 14%, rgba(201, 234, 52, 0.09), transparent 28%),
+        linear-gradient(135deg, #2d3922 0%, #36462b 58%, #202919 100%);
     box-shadow: 0 24px 44px rgba(33, 44, 22, 0.22);
+}
+
+.terra-home-page .terra-process-shell {
+    animation: processShellGlow 7s ease-in-out infinite;
+}
+
+.terra-home-page .terra-service-picker__list,
+.terra-home-page .terra-process-shell,
+body.brief-form-page .brief-submit-panel,
+body.brief-form-page .brief-price-widget--brief,
+body.brief-form-page .brief-addon-card--forest {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+
+.terra-home-page .terra-service-picker__list::before,
+.terra-home-page .terra-process-shell::before,
+body.brief-form-page .brief-submit-panel::before,
+body.brief-form-page .brief-price-widget--brief::before {
+    content: "";
+    position: absolute;
+    inset: -12% auto auto 68%;
+    width: 14rem;
+    height: 14rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(201, 234, 52, 0.16) 0, rgba(136, 185, 42, 0.08) 38%, transparent 70%);
+    filter: blur(6px);
+    opacity: 0.9;
+    pointer-events: none;
+    z-index: 0;
+    animation: ambientBlobDrift 12s ease-in-out infinite;
+}
+
+.terra-home-page .terra-service-picker__list::after,
+.terra-home-page .terra-process-shell::after,
+body.brief-form-page .brief-submit-panel::after,
+body.brief-form-page .brief-price-widget--brief::after {
+    content: "";
+    position: absolute;
+    inset: auto auto -3.5rem -2rem;
+    width: 8rem;
+    height: 8rem;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 34% 34%, rgba(255, 255, 255, 0.14) 0 8%, transparent 9%),
+        radial-gradient(circle at 58% 24%, rgba(201, 234, 52, 0.14) 0 12%, transparent 13%),
+        radial-gradient(circle at 66% 62%, rgba(136, 185, 42, 0.12) 0 18%, transparent 19%),
+        radial-gradient(circle at 42% 68%, rgba(201, 234, 52, 0.08) 0 28%, transparent 29%);
+    opacity: 0.72;
+    pointer-events: none;
+    z-index: 0;
+    animation: bubbleClusterFloat 9s ease-in-out infinite;
+}
+
+.terra-home-page .terra-service-picker__list > *,
+.terra-home-page .terra-process-shell > *,
+body.brief-form-page .brief-submit-panel > *,
+body.brief-form-page .brief-price-widget--brief > * {
+    position: relative;
+    z-index: 1;
+}
+
+body.brief-form-page .brief-addon-card--forest::before {
+    content: "";
+    position: absolute;
+    top: -1.4rem;
+    right: -1.1rem;
+    width: 4.6rem;
+    height: 4.6rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(201, 234, 52, 0.14) 0, rgba(136, 185, 42, 0.08) 42%, transparent 72%);
+    opacity: 0.9;
+    pointer-events: none;
+    z-index: 0;
+    animation: ambientBlobDrift 8.5s ease-in-out infinite;
+}
+
+body.brief-form-page .brief-addon-card--forest::after {
+    content: "";
+    position: absolute;
+    left: 0.85rem;
+    bottom: 0.75rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 36% 34%, rgba(255, 255, 255, 0.12) 0 10%, transparent 11%),
+        radial-gradient(circle at 64% 28%, rgba(201, 234, 52, 0.12) 0 15%, transparent 16%),
+        radial-gradient(circle at 52% 58%, rgba(136, 185, 42, 0.08) 0 26%, transparent 27%);
+    opacity: 0.68;
+    pointer-events: none;
+    z-index: 0;
+    animation: bubbleClusterFloat 7.5s ease-in-out infinite;
+}
+
+body.brief-form-page .brief-addon-card--forest > * {
+    position: relative;
+    z-index: 1;
 }
 
 .terra-process-step {
@@ -3747,6 +4067,7 @@ body.terra-page .popover .popover-body {
     align-items: start;
     padding-top: 0.9rem;
     border-top: 1px solid rgba(255, 255, 255, 0.12);
+    transition: transform 0.18s ease, filter 0.18s ease;
 }
 
 .terra-process-step:first-child {
@@ -3766,6 +4087,8 @@ body.terra-page .popover .popover-body {
     font-family: "Manrope", sans-serif;
     font-size: 0.82rem;
     font-weight: 800;
+    box-shadow: 0 0 0 0 rgba(201, 234, 52, 0.18);
+    animation: processBeacon 3.8s ease-in-out infinite;
 }
 
 .terra-process-step p {
@@ -3778,6 +4101,38 @@ body.terra-page .popover .popover-body {
 
 .terra-cta {
     padding: 0;
+}
+
+.terra-home-page .terra-process-step:hover {
+    transform: translateX(4px);
+    filter: brightness(1.04);
+}
+
+.terra-home-page .process-highlight .card-body,
+.terra-home-page .terra-cta .card-body {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.terra-home-page .process-highlight .card-body:hover,
+.terra-home-page .terra-cta .card-body:hover {
+    transform: translateY(-4px);
+}
+
+.terra-home-page .process-highlight .card-body:hover {
+    box-shadow: inset 0 0 0 1px rgba(201, 234, 52, 0.12);
+}
+
+.terra-home-page .terra-cta .card-body:hover {
+    box-shadow: inset 0 0 0 1px rgba(201, 234, 52, 0.1);
+}
+
+.terra-home-page .terra-hover-section {
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+    will-change: transform;
+}
+
+.terra-home-page .terra-hover-section:hover {
+    transform: translateY(-8px);
 }
 
 @media (max-width: 991.98px) {
@@ -3805,6 +4160,12 @@ body.terra-page .popover .popover-body {
 @media (max-width: 767.98px) {
     .terra-hero-inner {
         padding-bottom: 1.4rem;
+    }
+
+    .terra-guide-floating-anchor {
+        top: 43%;
+        width: calc(100vw - 2.5rem);
+        height: 10rem;
     }
 
     .terra-telegram-gallery {
@@ -4023,7 +4384,11 @@ body.terra-page .popover .popover-body {
 }
 
 .terra-home-page .terra-hero {
-    background: var(--terra-hero-image, none) right center / cover no-repeat;
+    background:
+        radial-gradient(circle at 76% 24%, rgba(201, 234, 52, 0.14), transparent 18%),
+        radial-gradient(circle at 68% 58%, rgba(255, 255, 255, 0.06), transparent 22%),
+        linear-gradient(108deg, rgba(12, 16, 14, 0.92) 0%, rgba(12, 16, 14, 0.7) 34%, rgba(12, 16, 14, 0.26) 60%, rgba(12, 16, 14, 0.08) 100%),
+        var(--terra-hero-image, none) right center / cover no-repeat;
     background-color: #1b211d;
 }
 
@@ -4032,17 +4397,28 @@ body.terra-page .popover .popover-body {
 }
 
 .terra-home-page .terra-paper-section {
-    background: transparent;
+    background:
+        linear-gradient(180deg, rgba(17, 21, 18, 0.98), rgba(14, 18, 15, 0.99));
     border-top: 1px solid var(--terra-line);
     border-bottom: 1px solid var(--terra-line);
 }
 
 .terra-home-page .terra-paper-section::before {
-    display: none;
+    display: block;
+    background:
+        radial-gradient(circle at 14% 18%, rgba(201, 234, 52, 0.08), transparent 22%),
+        radial-gradient(circle at 84% 24%, rgba(255, 255, 255, 0.04), transparent 20%),
+        radial-gradient(circle at 58% 78%, rgba(136, 185, 42, 0.06), transparent 26%);
 }
 
 .terra-home-page .terra-paper-section::after {
-    display: none;
+    display: block;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+    background-size: 56px 56px;
+    opacity: 0.34;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.56), transparent 92%);
 }
 
 .terra-home-page .terra-side-card,
@@ -4157,26 +4533,72 @@ body.terra-page .popover .popover-body {
     box-shadow: none;
 }
 
+.terra-home-page #complex-sites .terra-complex-copy,
+.terra-home-page #complex-sites .terra-complex-case,
+.terra-home-page #complex-sites .terra-complex-case__media,
+.terra-home-page #complex-sites .terra-complex-case__image,
+.terra-home-page #complex-sites .terra-complex-case__link,
+.terra-home-page #complex-sites .terra-complex-tag {
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, color 0.22s ease, background-color 0.22s ease, filter 0.22s ease;
+}
+
+.terra-home-page #complex-sites .terra-complex-copy:hover {
+    color: #f1f8df;
+}
+
+.terra-home-page #complex-sites .terra-complex-case__media:hover {
+    transform: scale(1.02);
+    border-color: rgba(201, 234, 52, 0.22);
+    box-shadow: 0 18px 34px rgba(6, 8, 7, 0.18);
+}
+
+.terra-home-page #complex-sites .terra-complex-case__media:hover .terra-complex-case__image {
+    filter: brightness(1.04);
+}
+
+.terra-home-page #complex-sites .terra-complex-tag:hover {
+    transform: translateY(-3px);
+    background: rgba(201, 234, 52, 0.18);
+    border-color: rgba(201, 234, 52, 0.28);
+}
+
+.terra-home-page #complex-sites .terra-complex-case__link:hover {
+    color: #c5ea34;
+    transform: translateX(4px);
+}
+
 .terra-home-page .terra-benefit-index,
 .terra-home-page .terra-service-icon,
 .terra-home-page .terra-process-step span,
 .terra-home-page .project-card__plus,
 .terra-home-page .terra-btn-solid,
-.terra-home-page .btn-brand {
+.terra-home-page .btn-brand,
+.terra-home-page .site-header__button--primary,
+.terra-home-page .btn-accent,
+.terra-home-page .brief-success-actions .btn-download-pdf {
     background: var(--terra-accent);
     border-color: var(--terra-accent);
     color: #ffffff;
 }
 
 .terra-home-page .terra-btn-solid,
-.terra-home-page .btn-brand {
+.terra-home-page .btn-brand,
+.terra-home-page .site-header__button--primary,
+.terra-home-page .btn-accent,
+.terra-home-page .brief-success-actions .btn-download-pdf {
     box-shadow: 0 14px 28px rgba(201, 234, 52, 0.14);
 }
 
 .terra-home-page .terra-btn-solid:hover,
 .terra-home-page .terra-btn-solid:focus,
 .terra-home-page .btn-brand:hover,
-.terra-home-page .btn-brand:focus-visible {
+.terra-home-page .btn-brand:focus-visible,
+.terra-home-page .site-header__button--primary:hover,
+.terra-home-page .site-header__button--primary:focus-visible,
+.terra-home-page .btn-accent:hover,
+.terra-home-page .btn-accent:focus-visible,
+.terra-home-page .brief-success-actions .btn-download-pdf:hover,
+.terra-home-page .brief-success-actions .btn-download-pdf:focus-visible {
     background: var(--footer-accent-strong);
     border-color: var(--footer-accent-strong);
     color: #ffffff;
@@ -4184,7 +4606,9 @@ body.terra-page .popover .popover-body {
 
 .terra-home-page .terra-btn-outline,
 .terra-home-page .btn-outline-dark,
-.terra-home-page .btn-ghost {
+.terra-home-page .btn-light.border,
+.terra-home-page .btn-ghost,
+.terra-home-page .site-header__button:not(.site-header__button--primary) {
     background: rgba(28, 33, 29, 0.72);
     border-color: rgba(201, 234, 52, 0.22);
     color: var(--terra-text);
@@ -4194,8 +4618,12 @@ body.terra-page .popover .popover-body {
 .terra-home-page .terra-btn-outline:focus,
 .terra-home-page .btn-outline-dark:hover,
 .terra-home-page .btn-outline-dark:focus,
+.terra-home-page .btn-light.border:hover,
+.terra-home-page .btn-light.border:focus-visible,
 .terra-home-page .btn-ghost:hover,
-.terra-home-page .btn-ghost:focus-visible {
+.terra-home-page .btn-ghost:focus-visible,
+.terra-home-page .site-header__button:not(.site-header__button--primary):hover,
+.terra-home-page .site-header__button:not(.site-header__button--primary):focus-visible {
     background: rgba(201, 234, 52, 0.12);
     border-color: rgba(201, 234, 52, 0.34);
     color: #ffffff;
@@ -4221,7 +4649,13 @@ body.terra-page .popover .popover-body {
 }
 
 .terra-home-page .contact-shell {
-    background: var(--contact-shell-bg);
+    background:
+        radial-gradient(circle at 12% 18%, rgba(201, 234, 52, 0.08), transparent 24%),
+        radial-gradient(circle at 88% 16%, rgba(255, 255, 255, 0.04), transparent 20%),
+        linear-gradient(160deg, rgba(27, 32, 28, 0.98), rgba(19, 24, 20, 0.98)),
+        url("../img/textures/light-paper-fibers-tinted.png");
+    background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+    background-size: auto, auto, auto, 220px auto;
     border-color: var(--contact-card-border);
 }
 
@@ -4242,13 +4676,27 @@ body.terra-page .popover .popover-body {
 }
 
 .terra-home-page .terra-footer {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
     margin-top: 0.75rem;
     padding-top: 0.35rem;
-    background: var(--footer-bg);
+    background:
+        radial-gradient(circle at 16% 18%, rgba(201, 234, 52, 0.08), transparent 18%),
+        radial-gradient(circle at 82% 12%, rgba(255, 255, 255, 0.04), transparent 22%),
+        linear-gradient(180deg, rgba(10, 10, 10, 0.98), rgba(12, 14, 12, 1));
 }
 
 .terra-home-page .terra-footer::before {
-    display: none;
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+    background-size: 54px 54px;
+    opacity: 0.28;
+    pointer-events: none;
 }
 
 .terra-home-page .terra-footer .container {
@@ -4460,7 +4908,10 @@ body.terra-page:not(.terra-home-page) .btn-accent:hover,
 body.terra-page:not(.terra-home-page) .btn-accent:focus-visible,
 body.terra-page:not(.terra-home-page) .btn-brand,
 body.terra-page:not(.terra-home-page) .btn-brand:hover,
-body.terra-page:not(.terra-home-page) .btn-brand:focus-visible {
+body.terra-page:not(.terra-home-page) .btn-brand:focus-visible,
+body.terra-page:not(.terra-home-page) .brief-success-actions .btn-download-pdf,
+body.terra-page:not(.terra-home-page) .brief-success-actions .btn-download-pdf:hover,
+body.terra-page:not(.terra-home-page) .brief-success-actions .btn-download-pdf:focus-visible {
     background: var(--terra-accent);
     border-color: var(--terra-accent);
     color: #1a1f19;
@@ -4641,6 +5092,36 @@ body.terra-page .btn-ghost:focus-visible {
     background: rgba(255, 255, 255, 0.08);
 }
 
+body.terra-home-page h1:hover,
+body.terra-home-page h2:hover,
+body.terra-home-page h3:hover,
+body.terra-home-page h4:hover,
+body.terra-home-page h5:hover,
+body.terra-home-page h6:hover,
+body.terra-home-page .h1:hover,
+body.terra-home-page .h2:hover,
+body.terra-home-page .h3:hover,
+body.terra-home-page .h4:hover,
+body.terra-home-page .h5:hover,
+body.terra-home-page .h6:hover {
+    transform: scale(1.015);
+}
+
+body.terra-page:not(.terra-home-page) h1:hover,
+body.terra-page:not(.terra-home-page) h2:hover,
+body.terra-page:not(.terra-home-page) h3:hover,
+body.terra-page:not(.terra-home-page) h4:hover,
+body.terra-page:not(.terra-home-page) h5:hover,
+body.terra-page:not(.terra-home-page) h6:hover,
+body.terra-page:not(.terra-home-page) .h1:hover,
+body.terra-page:not(.terra-home-page) .h2:hover,
+body.terra-page:not(.terra-home-page) .h3:hover,
+body.terra-page:not(.terra-home-page) .h4:hover,
+body.terra-page:not(.terra-home-page) .h5:hover,
+body.terra-page:not(.terra-home-page) .h6:hover {
+    transform: scale(1.015);
+}
+
 .home-summary-empty {
     display: flex;
     align-items: flex-start;
@@ -4721,5 +5202,490 @@ body.terra-page.portfolio-demo-page .demo-stage__fallback {
 @media (max-width: 767.98px) {
     .home-summary-empty {
         padding: 0.9rem;
+    }
+}
+
+[data-guide-step] {
+    scroll-margin-top: 8rem;
+}
+
+.guide-focus-target {
+    position: relative;
+    z-index: 1044;
+}
+
+.guide-focus-target::after {
+    content: "";
+    position: absolute;
+    inset: -0.75rem;
+    border-radius: 1.6rem;
+    border: 1px solid rgba(201, 234, 52, 0.46);
+    box-shadow:
+        0 0 0 1px rgba(201, 234, 52, 0.16),
+        0 0 0 1.25rem rgba(201, 234, 52, 0.07);
+    pointer-events: none;
+    animation: guidePulse 1.8s ease-in-out infinite;
+}
+
+body.terra-page.guide-overlay-active::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 1040;
+    background: rgba(4, 6, 5, 0.78);
+    backdrop-filter: blur(2px);
+    pointer-events: none;
+}
+
+body.terra-page.guide-hero-intro-active::before {
+    background: rgba(4, 6, 5, 0.84);
+}
+
+.nova-guide-launcher {
+    position: fixed;
+    left: 1rem;
+    bottom: 1rem;
+    z-index: 1046;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.7rem 0.95rem;
+    border: 1px solid rgba(201, 234, 52, 0.22);
+    border-radius: 999px;
+    background: rgba(17, 20, 18, 0.9);
+    color: #ffffff;
+    box-shadow: 0 18px 36px rgba(6, 8, 7, 0.28);
+    backdrop-filter: blur(10px);
+    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.nova-guide-launcher:hover,
+.nova-guide-launcher:focus-visible {
+    transform: translateY(-2px);
+    border-color: rgba(201, 234, 52, 0.38);
+    background: rgba(22, 27, 23, 0.94);
+    color: #ffffff;
+    outline: none;
+}
+
+.nova-guide-launcher__emoji {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 999px;
+    background: rgba(201, 234, 52, 0.16);
+    box-shadow: inset 0 0 0 1px rgba(201, 234, 52, 0.18);
+    font-size: 1rem;
+    animation: guideLauncherFloat 2.4s ease-in-out infinite;
+}
+
+.nova-guide-launcher__label {
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.nova-guide {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 1047;
+    width: min(340px, calc(100vw - 1.5rem));
+    opacity: 0;
+    transform: translate3d(0, 12px, 0) scale(0.96);
+    transform-origin: 50% 100%;
+    transition: opacity 0.26s ease, transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+}
+
+.nova-guide.is-open {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+}
+
+.nova-guide__bubble {
+    position: relative;
+    overflow: hidden;
+    padding: 1rem;
+    border-radius: 1.6rem;
+    border: 1px solid rgba(201, 234, 52, 0.18);
+    background:
+        radial-gradient(circle at top right, rgba(201, 234, 52, 0.16), transparent 34%),
+        linear-gradient(145deg, rgba(16, 19, 17, 0.97), rgba(27, 31, 28, 0.98));
+    color: #ffffff;
+    box-shadow: 0 28px 56px rgba(4, 5, 5, 0.34);
+    pointer-events: auto;
+    animation: guideBubbleFloat 3.6s ease-in-out infinite;
+    transform-origin: 50% 100%;
+    will-change: transform;
+}
+
+.nova-guide__bubble::before {
+    content: "";
+    position: absolute;
+    inset: auto auto -2.2rem -1.4rem;
+    width: 7rem;
+    height: 7rem;
+    border-radius: 50%;
+    background: rgba(201, 234, 52, 0.08);
+    filter: blur(4px);
+    pointer-events: none;
+}
+
+.nova-guide__bubble::after {
+    content: "";
+    position: absolute;
+    width: 1rem;
+    height: 1rem;
+    background: rgba(16, 19, 17, 0.98);
+    border-left: 1px solid rgba(201, 234, 52, 0.18);
+    border-top: 1px solid rgba(201, 234, 52, 0.18);
+    transform: rotate(45deg);
+}
+
+.nova-guide[data-placement="top"] .nova-guide__bubble::after {
+    left: 2rem;
+    bottom: -0.55rem;
+}
+
+.nova-guide[data-placement="bottom"] .nova-guide__bubble::after {
+    left: 2rem;
+    top: -0.55rem;
+    transform: rotate(225deg);
+}
+
+.nova-guide[data-placement="left"] .nova-guide__bubble::after {
+    top: 2rem;
+    right: -0.55rem;
+    transform: rotate(135deg);
+}
+
+.nova-guide[data-placement="right"] .nova-guide__bubble::after {
+    top: 2rem;
+    left: -0.55rem;
+    transform: rotate(-45deg);
+}
+
+.nova-guide[data-mobile="true"] .nova-guide__bubble::after {
+    display: none;
+}
+
+.nova-guide[data-placement="center"] .nova-guide__bubble::after {
+    display: none;
+}
+
+.nova-guide__top {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.85rem;
+}
+
+.nova-guide__avatar {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    flex: 0 0 auto;
+    border-radius: 1rem;
+    background: rgba(201, 234, 52, 0.14);
+    box-shadow: inset 0 0 0 1px rgba(201, 234, 52, 0.18);
+    font-size: 1.4rem;
+}
+
+.nova-guide__avatar::after {
+    content: "";
+    position: absolute;
+    inset: -0.35rem;
+    border-radius: 1.2rem;
+    border: 1px dashed rgba(201, 234, 52, 0.22);
+    opacity: 0.8;
+}
+
+.nova-guide__copy {
+    min-width: 0;
+}
+
+.nova-guide__eyebrow {
+    display: inline-block;
+    margin-bottom: 0.3rem;
+    color: rgba(208, 221, 189, 0.92);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.nova-guide__title {
+    margin: 0;
+    font-family: "Manrope", sans-serif;
+    font-size: 1.05rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.nova-guide__text {
+    margin: 0.55rem 0 0;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.92rem;
+    line-height: 1.55;
+}
+
+.nova-guide__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 0.95rem;
+}
+
+.nova-guide__progress {
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.nova-guide__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nova-guide__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.5rem;
+    padding: 0.55rem 0.95rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+    font-size: 0.84rem;
+    font-weight: 700;
+    line-height: 1;
+    transition: transform 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+}
+
+.nova-guide__button:hover,
+.nova-guide__button:focus-visible {
+    transform: translateY(-1px);
+    border-color: rgba(201, 234, 52, 0.3);
+    background: rgba(201, 234, 52, 0.12);
+    color: #ffffff;
+    outline: none;
+}
+
+.nova-guide__button--primary {
+    border-color: rgba(201, 234, 52, 0.22);
+    background: var(--terra-accent, #88b92a);
+    color: #1a1f19;
+}
+
+.nova-guide__button--primary:hover,
+.nova-guide__button--primary:focus-visible {
+    background: #9dce39;
+    color: #1a1f19;
+}
+
+.nova-guide__close {
+    position: absolute;
+    top: 0.7rem;
+    right: 0.7rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.78);
+    transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.nova-guide__close:hover,
+.nova-guide__close:focus-visible {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    transform: rotate(90deg);
+    outline: none;
+}
+
+@keyframes guidePulse {
+    0%,
+    100% {
+        box-shadow:
+            0 0 0 1px rgba(201, 234, 52, 0.16),
+            0 0 0 0 rgba(201, 234, 52, 0.06);
+    }
+    50% {
+        box-shadow:
+            0 0 0 1px rgba(201, 234, 52, 0.28),
+            0 0 0 1.45rem rgba(201, 234, 52, 0.11);
+    }
+}
+
+@keyframes guideAvatarFloat {
+    0%,
+    100% {
+        transform: translateY(0) rotate(-2deg);
+    }
+    50% {
+        transform: translateY(-4px) rotate(2deg);
+    }
+}
+
+@keyframes guideLauncherFloat {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+@keyframes ambientBlobDrift {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+    33% {
+        transform: translate3d(-10px, 8px, 0) scale(1.06);
+    }
+    66% {
+        transform: translate3d(8px, -10px, 0) scale(0.96);
+    }
+}
+
+@keyframes bubbleClusterFloat {
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-8px) rotate(6deg);
+    }
+}
+
+@keyframes processShellGlow {
+    0%,
+    100% {
+        box-shadow: 0 24px 44px rgba(33, 44, 22, 0.22);
+    }
+    50% {
+        box-shadow: 0 28px 54px rgba(58, 87, 23, 0.28);
+    }
+}
+
+@keyframes processBeacon {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(201, 234, 52, 0.18);
+    }
+    50% {
+        box-shadow: 0 0 0 0.5rem rgba(201, 234, 52, 0.05);
+    }
+}
+
+@keyframes selectedIconPulse {
+    0%,
+    100% {
+        transform: translateY(0) scale(1);
+        box-shadow: 0 0 0 0 rgba(201, 234, 52, 0.16);
+    }
+    50% {
+        transform: translateY(-2px) scale(1.04);
+        box-shadow: 0 0 0 0.4rem rgba(201, 234, 52, 0.08);
+    }
+}
+
+@keyframes buttonSheen {
+    from {
+        transform: translateX(-160%) skewX(-20deg);
+    }
+    to {
+        transform: translateX(360%) skewX(-20deg);
+    }
+}
+
+@keyframes subtlePanelFloat {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+@keyframes guideBubbleFloat {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-3px);
+    }
+}
+
+@media (max-width: 767.98px) {
+    .nova-guide-launcher {
+        left: 0.75rem;
+        bottom: 0.75rem;
+        padding-inline: 0.85rem;
+    }
+
+    .nova-guide {
+        left: 0.75rem !important;
+        right: 0.75rem;
+        bottom: 4.85rem;
+        top: auto !important;
+        width: auto;
+    }
+
+    .guide-focus-target::after {
+        inset: -0.45rem;
+        border-radius: 1.2rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .terra-home-page .terra-hero-inner::before,
+    .terra-home-page .terra-hero-inner::after,
+    .terra-content-card::before,
+    .terra-home-page .terra-service-picker__list::before,
+    .terra-home-page .terra-service-picker__list::after,
+    .terra-home-page .terra-process-shell,
+    .terra-home-page .terra-process-shell::before,
+    .terra-home-page .terra-process-shell::after,
+    .terra-home-page .terra-service-row[data-selected="true"] .terra-service-row__icon,
+    .terra-process-step span,
+    body.brief-form-page .brief-submit-panel,
+    body.brief-form-page .brief-submit-panel::before,
+    body.brief-form-page .brief-submit-panel::after,
+    body.brief-form-page .brief-price-widget--brief::before,
+    body.brief-form-page .brief-price-widget--brief::after,
+    body.brief-form-page .brief-addon-card--forest::before,
+    body.brief-form-page .brief-addon-card--forest::after,
+    .guide-focus-target::after,
+    .nova-guide-launcher__emoji,
+    .nova-guide__bubble,
+    .nova-guide__avatar {
+        animation: none;
+    }
+
+    .nova-guide,
+    .nova-guide-launcher,
+    .nova-guide__button,
+    .nova-guide__close {
+        transition: none;
     }
 }

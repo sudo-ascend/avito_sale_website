@@ -12,6 +12,35 @@ from .pdf import build_brief_pdf, get_brief_pdf_filename
 logger = logging.getLogger(__name__)
 
 
+def normalize_notification_email(recipient: str, *fallbacks: str) -> str:
+    candidate = (recipient or "").strip()
+    if not candidate:
+        for fallback in fallbacks:
+            normalized = normalize_notification_email(fallback)
+            if normalized:
+                return normalized
+        return ""
+
+    if "@" in candidate:
+        return candidate
+
+    for fallback in fallbacks:
+        fallback = (fallback or "").strip()
+        if "@" in fallback:
+            return f"{candidate}@{fallback.split('@', 1)[1]}"
+
+    return candidate
+
+
+def get_brief_notification_recipient() -> str:
+    return normalize_notification_email(
+        getattr(settings, "BRIEF_NOTIFICATION_EMAIL", ""),
+        getattr(settings, "EMAIL_HOST_USER", ""),
+        getattr(settings, "DEFAULT_FROM_EMAIL", ""),
+        getattr(settings, "NOTIFICATION_EMAIL", ""),
+    )
+
+
 def build_order_title(brief) -> str:
     primary_service = brief.get_site_type_display() or "Заявка с сайта"
     title = f"{primary_service} - {brief.business_name}"
@@ -70,12 +99,20 @@ def build_brief_notification_message(brief, order) -> str:
 
 def send_brief_notification(brief, order) -> None:
     try:
+        recipient = get_brief_notification_recipient()
+        if not recipient:
+            logger.error(
+                "Brief notification recipient is not configured",
+                extra={"brief_id": brief.pk, "order_id": order.pk},
+            )
+            return
+
         subject = f"Новая заявка с сайта: {brief.business_name}"
         email = EmailMessage(
             subject=subject,
             body=build_brief_notification_message(brief, order),
             from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[settings.BRIEF_NOTIFICATION_EMAIL],
+            to=[recipient],
         )
         email.attach(
             get_brief_pdf_filename(brief),
