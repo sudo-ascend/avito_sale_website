@@ -209,7 +209,7 @@ class HomeViewTests(TestCase):
         self.assertNotRegex(content, r'id="home-service-domain"[^>]*checked')
         self.assertRegex(
             content,
-            r'<aside class="brief-price-widget brief-price-widget--idle card border-0 shadow-sm" data-home-summary-widget>',
+            r'<aside class="brief-price-widget card border-0 shadow-sm d-none"\s+data-home-summary-widget>',
         )
         self.assertContains(response, "Положите в корзину")
         self.assertContains(response, "data-home-summary-empty-close")

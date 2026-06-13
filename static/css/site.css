@@ -3283,6 +3283,63 @@ body.terra-home-page.guide-hero-intro-active .terra-hero::after {
     color: rgba(255, 255, 255, 0.78);
 }
 
+.terra-home-page .terra-hero .terra-nav-card,
+.terra-home-page .terra-hero .terra-side-card:not(.terra-side-card--chips),
+.terra-home-page .terra-hero .terra-metric-card,
+.terra-home-page .terra-hero .terra-feature-card {
+    transition:
+        transform 0.24s ease,
+        box-shadow 0.24s ease,
+        border-color 0.24s ease,
+        background-color 0.24s ease,
+        filter 0.24s ease;
+}
+
+.terra-home-page .terra-hero .terra-hero-badges .badge.rounded-pill.text-bg-light {
+    display: inline-flex;
+    align-items: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    will-change: transform;
+}
+
+.terra-home-page .terra-hero .terra-hero-badges .badge.rounded-pill.text-bg-light:hover,
+.terra-home-page .terra-hero .terra-hero-badges .badge.rounded-pill.text-bg-light:focus-visible {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 18px rgba(6, 8, 7, 0.18);
+}
+
+.terra-home-page .terra-hero .terra-nav-card:hover,
+.terra-home-page .terra-hero .terra-nav-card:focus-within,
+.terra-home-page .terra-hero .terra-side-card:not(.terra-side-card--chips):hover,
+.terra-home-page .terra-hero .terra-side-card:not(.terra-side-card--chips):focus-within,
+.terra-home-page .terra-hero .terra-metric-card:hover,
+.terra-home-page .terra-hero .terra-metric-card:focus-within,
+.terra-home-page .terra-hero .terra-feature-card:hover,
+.terra-home-page .terra-hero .terra-feature-card:focus-within {
+    transform: translateY(-6px);
+    box-shadow: 0 22px 42px rgba(6, 8, 7, 0.28);
+    border-color: rgba(201, 234, 52, 0.24);
+    filter: saturate(1.04);
+}
+
+.terra-home-page .terra-hero .terra-side-card--chips {
+    transition: border-color 0.24s ease, box-shadow 0.24s ease;
+}
+
+.terra-home-page .terra-hero .terra-side-card--chips .terra-chip {
+    transition:
+        transform 0.24s ease,
+        box-shadow 0.24s ease,
+        background-color 0.24s ease,
+        border-color 0.24s ease;
+}
+
+.terra-home-page .terra-hero .terra-side-card--chips .terra-chip:hover,
+.terra-home-page .terra-hero .terra-side-card--chips .terra-chip:focus-visible {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 24px rgba(6, 8, 7, 0.22);
+}
+
 .terra-project-card {
     position: relative;
     min-height: 100%;

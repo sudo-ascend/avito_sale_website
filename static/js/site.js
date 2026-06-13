@@ -1231,7 +1231,6 @@ document.addEventListener("DOMContentLoaded", () => {
         );
         const summaryWidget = homeServicePicker.querySelector("[data-home-summary-widget]");
         const summaryList = homeServicePicker.querySelector("[data-home-summary-list]");
-        const summaryEmpty = homeServicePicker.querySelector("[data-home-summary-empty]");
         const summaryTotal = homeServicePicker.querySelector("[data-home-summary-total]");
         const summaryLink = homeServicePicker.querySelector("[data-home-summary-link]");
         const summaryTotalBlock = summaryTotal?.closest(".brief-price-total");
@@ -1243,9 +1242,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 ...addonFields.map((field) => [field.dataset.homeSelect || "", field]),
             ].filter(([key, field]) => key && field)
         );
-        let summaryEmptyDismissed = false;
-
-        const summaryEmptyClose = summaryWidget?.querySelector("[data-home-summary-empty-close]");
         summaryTotalBlock?.classList.add("d-none");
         summaryAction?.classList.add("d-none");
 
@@ -1354,10 +1350,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     checked: true,
                 });
             });
-
-            if (summaryEmpty) {
-                summaryEmpty.classList.toggle("d-none", normalizedRows.length > 0);
-            }
 
             normalizedRows.forEach((row) => {
                 if (row.kind === "detail") {
@@ -1490,11 +1482,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             renderSummaryRows(rows);
             const hasRows = rows.length > 0;
-            const showEmptyPrompt = !hasRows && !summaryEmptyDismissed;
-
-            summaryWidget?.classList.toggle("d-none", !hasRows && !showEmptyPrompt);
-            summaryWidget?.classList.toggle("brief-price-widget--idle", showEmptyPrompt);
-            summaryEmpty?.classList.toggle("d-none", !showEmptyPrompt);
+            summaryWidget?.classList.toggle("d-none", !hasRows);
             summaryTotalBlock?.classList.toggle("d-none", !hasRows);
             summaryAction?.classList.toggle("d-none", !hasRows);
             if (summaryTotal) {
@@ -1504,11 +1492,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 summaryLink.href = hasRows && briefUrl ? `${briefUrl}?${params.toString()}` : briefUrl;
             }
         };
-
-        summaryEmptyClose?.addEventListener("click", () => {
-            summaryEmptyDismissed = true;
-            updateHomeServiceSummary();
-        });
 
         siteDevelopmentField?.addEventListener("change", updateHomeServiceSummary);
         siteTypeFields.forEach((field) => {
