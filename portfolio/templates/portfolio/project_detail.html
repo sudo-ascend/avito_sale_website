@@ -301,7 +301,7 @@
             {% else %}
                 <div class="demo-stage__fallback overflow-hidden">
                     {% if project.cover_image %}
-                        <img src="{{ project.cover_image.url }}" alt="{{ project.title }}" class="img-fluid w-100">
+                        <img src="{{ project.cover_image.url }}" alt="{{ project.cover_image_alt|default:project.title }}" class="img-fluid w-100">
                     {% else %}
                         <div class="demo-stage__cover">{{ project.title|slice:":1" }}</div>
                     {% endif %}

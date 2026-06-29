@@ -38,6 +38,8 @@ class BriefRequestForm(BaseStyledModelForm):
         "need_photo_selection",
         "need_email_form",
         "need_reviews_section",
+        "need_text_admin_panel",
+        "need_catalog_admin_panel",
         "estimated_price",
         "color_template_name",
     }
@@ -71,6 +73,8 @@ class BriefRequestForm(BaseStyledModelForm):
             "need_photo_selection",
             "need_email_form",
             "need_reviews_section",
+            "need_text_admin_panel",
+            "need_catalog_admin_panel",
             "contact_phone",
             "preferred_contact_app",
             "contact_email",
@@ -98,6 +102,8 @@ class BriefRequestForm(BaseStyledModelForm):
             "need_photo_selection": forms.CheckboxInput(),
             "need_email_form": forms.CheckboxInput(),
             "need_reviews_section": forms.CheckboxInput(),
+            "need_text_admin_panel": forms.CheckboxInput(),
+            "need_catalog_admin_panel": forms.CheckboxInput(),
         }
         labels = {
             "client_type": "Тип клиента",
@@ -120,6 +126,8 @@ class BriefRequestForm(BaseStyledModelForm):
             "need_photo_selection": "Подбор фото и картинок",
             "need_email_form": "Форма с отправкой писем",
             "need_reviews_section": "Секция с отзывами",
+            "need_text_admin_panel": "Админ панель для смены текстов сайта",
+            "need_catalog_admin_panel": "Админ панель для редактирования каталога товаров",
             "contact_phone": "Номер телефона",
             "preferred_contact_app": "Предпочитаемое приложение для связи",
             "client_comment": "Комментарий",
@@ -131,8 +139,6 @@ class BriefRequestForm(BaseStyledModelForm):
             field.help_text = ""
             field.required = name not in self.OPTIONAL_FIELDS
             if isinstance(field.widget, forms.HiddenInput):
-                # Hidden fields are validated server-side; do not let browser
-                # constraint validation block form submission on invisible inputs.
                 field.widget.attrs.pop("required", None)
             elif isinstance(field.widget, forms.CheckboxInput):
                 if field.required and name == "privacy_accepted":
@@ -164,6 +170,8 @@ class BriefRequestForm(BaseStyledModelForm):
         self.fields["need_photo_selection"].initial = False
         self.fields["need_email_form"].initial = False
         self.fields["need_reviews_section"].initial = False
+        self.fields["need_text_admin_panel"].initial = False
+        self.fields["need_catalog_admin_panel"].initial = False
         self.fields["color_mode"].initial = BriefRequest.ColorMode.TEMPLATE
         self.fields["color_preference"].initial = "#14344c"
         self.fields["color_accent"].initial = "#c96f3b"
@@ -205,6 +213,8 @@ class BriefRequestForm(BaseStyledModelForm):
         need_photo_selection = cleaned_data.get("need_photo_selection")
         need_email_form = cleaned_data.get("need_email_form")
         need_reviews_section = cleaned_data.get("need_reviews_section")
+        need_text_admin_panel = cleaned_data.get("need_text_admin_panel")
+        need_catalog_admin_panel = cleaned_data.get("need_catalog_admin_panel")
 
         color_mode = cleaned_data.get("color_mode") or BriefRequest.ColorMode.TEMPLATE
         if color_mode == BriefRequest.ColorMode.TEMPLATE and not cleaned_data.get("color_template_name"):
@@ -231,6 +241,8 @@ class BriefRequestForm(BaseStyledModelForm):
             need_photo_selection=need_photo_selection,
             need_email_form=need_email_form,
             need_reviews_section=need_reviews_section,
+            need_text_admin_panel=need_text_admin_panel,
+            need_catalog_admin_panel=need_catalog_admin_panel,
         )
         cleaned_data["estimated_price"] = total
         return cleaned_data
@@ -304,5 +316,7 @@ class BriefRequestForm(BaseStyledModelForm):
                 "need_photo_selection": "Подбор фото и картинок",
                 "need_email_form": "Форма с отправкой писем",
                 "need_reviews_section": "Секция с отзывами",
+                "need_text_admin_panel": "Админ панель для смены текстов сайта",
+                "need_catalog_admin_panel": "Админ панель для редактирования каталога товаров",
             },
         }

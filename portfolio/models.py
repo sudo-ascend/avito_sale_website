@@ -12,9 +12,10 @@ class Technology(TimeStampedModel):
     name = models.CharField("Название", max_length=100, unique=True)
     slug = models.SlugField("Слаг", unique=True, blank=True)
     color = models.CharField("Цвет", max_length=7, default="#14344C")
+    order = models.PositiveIntegerField("Порядок", default=0)
 
     class Meta:
-        ordering = ("name",)
+        ordering = ("order", "name")
         verbose_name = "Технология"
         verbose_name_plural = "Технологии"
 
@@ -36,7 +37,9 @@ class Project(TimeStampedModel):
     stack_notes = models.CharField("Кратко о стеке", max_length=255, blank=True)
     external_url = models.URLField("Ссылка", blank=True)
     cover_image = models.ImageField("Обложка", upload_to="portfolio/covers/", blank=True, null=True)
+    cover_image_alt = models.CharField("Alt обложки", max_length=255, blank=True)
     color_palette = models.CharField("Палитра проекта", max_length=255, blank=True)
+    catalog_order = models.PositiveIntegerField("Порядок в каталоге", default=0)
     technologies = models.ManyToManyField(
         Technology,
         verbose_name="Технологии",
@@ -47,7 +50,7 @@ class Project(TimeStampedModel):
     is_published = models.BooleanField("Опубликован", default=True)
 
     class Meta:
-        ordering = ("-completion_date", "-created_at")
+        ordering = ("catalog_order", "-completion_date", "-created_at")
         verbose_name = "Проект портфолио"
         verbose_name_plural = "Проекты портфолио"
 
@@ -63,6 +66,8 @@ class Project(TimeStampedModel):
                 counter += 1
                 slug = f"{base_slug}-{counter}"
             self.slug = slug
+        if not self.cover_image_alt:
+            self.cover_image_alt = self.title
         super().save(*args, **kwargs)
 
     def get_absolute_url(self):
@@ -99,6 +104,7 @@ class ProjectImage(TimeStampedModel):
     )
     image = models.ImageField("Изображение", upload_to="portfolio/gallery/")
     caption = models.CharField("Подпись", max_length=255, blank=True)
+    alt_text = models.CharField("Alt изображения", max_length=255, blank=True)
     order = models.PositiveIntegerField("Порядок", default=0)
 
     class Meta:
@@ -108,3 +114,8 @@ class ProjectImage(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"{self.project.title} #{self.order}"
+
+    def save(self, *args, **kwargs):
+        if not self.alt_text:
+            self.alt_text = self.caption or self.project.title
+        super().save(*args, **kwargs)

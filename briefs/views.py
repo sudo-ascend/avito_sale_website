@@ -1,4 +1,3 @@
-from django.db import transaction
 from django.http import Http404, HttpResponse
 from django.urls import reverse_lazy
 from django.views import View
@@ -9,7 +8,7 @@ from portfolio.models import Project
 from .forms import BriefRequestForm
 from .models import BriefRequest
 from .pdf import build_brief_pdf, get_brief_pdf_filename
-from .services import send_brief_notification, sync_brief_to_crm
+from .services import send_brief_notification
 
 
 class BriefCreateView(CreateView):
@@ -21,6 +20,8 @@ class BriefCreateView(CreateView):
         "need_photo_selection",
         "need_email_form",
         "need_reviews_section",
+        "need_text_admin_panel",
+        "need_catalog_admin_panel",
     )
     SERVICE_QUERY_FIELDS = ("site_type", "extra_pages", "hosting_plan", *BOOLEAN_QUERY_FIELDS)
     TRUTHY_QUERY_VALUES = {"1", "true", "True", "on", "yes"}
@@ -93,7 +94,7 @@ class BriefCreateView(CreateView):
         projects = list(
             Project.objects.filter(is_published=True)
             .prefetch_related("technologies")
-            .order_by("-is_featured", "-completion_date", "-created_at")
+            .order_by("catalog_order", "-completion_date", "-created_at")
         )
         if projects:
             context["brief_project_examples"] = [
@@ -128,12 +129,10 @@ class BriefCreateView(CreateView):
         return context
 
     def form_valid(self, form):
-        with transaction.atomic():
-            response = super().form_valid(form)
-            order = sync_brief_to_crm(self.object)
+        response = super().form_valid(form)
         self.request.session["latest_brief_id"] = self.object.pk
         self.request.session.modified = True
-        send_brief_notification(self.object, order)
+        send_brief_notification(self.object)
         return response
 
 
@@ -144,11 +143,7 @@ class BriefSuccessView(TemplateView):
         brief_id = self.request.session.get("latest_brief_id")
         if not brief_id:
             return None
-        return (
-            BriefRequest.objects.filter(pk=brief_id)
-            .prefetch_related("attachments")
-            .first()
-        )
+        return BriefRequest.objects.filter(pk=brief_id).prefetch_related("attachments").first()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -163,11 +158,7 @@ class BriefPdfDownloadView(View):
         brief_id = request.session.get("latest_brief_id")
         if not brief_id:
             raise Http404("Заявка не найдена.")
-        brief = (
-            BriefRequest.objects.filter(pk=brief_id)
-            .prefetch_related("attachments")
-            .first()
-        )
+        brief = BriefRequest.objects.filter(pk=brief_id).prefetch_related("attachments").first()
         if brief is None:
             raise Http404("Заявка не найдена.")
         return brief

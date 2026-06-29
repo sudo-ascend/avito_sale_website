@@ -22,6 +22,8 @@ OPTIONAL_SERVICE_PRICES = {
     "need_photo_selection": Decimal("2000.00"),
     "need_email_form": Decimal("1500.00"),
     "need_reviews_section": Decimal("250.00"),
+    "need_text_admin_panel": Decimal("2000.00"),
+    "need_catalog_admin_panel": Decimal("2000.00"),
 }
 
 OPTIONAL_SERVICE_LABELS = {
@@ -31,6 +33,8 @@ OPTIONAL_SERVICE_LABELS = {
     "need_photo_selection": "Подбор фото и картинок 2 000 ₽",
     "need_email_form": "Форма с отправкой писем на почту 1 500 ₽",
     "need_reviews_section": "Секция с отзывами 250 ₽",
+    "need_text_admin_panel": "Админ панель для смены текстов сайта 2 000 ₽",
+    "need_catalog_admin_panel": "Админ панель для редактирования каталога товаров 2 000 ₽",
 }
 
 HOSTING_PLAN_SUMMARIES = {
@@ -139,6 +143,30 @@ HOME_SERVICE_BUNDLES = [
         "cta_target": "",
         "cta_label": "",
     },
+    {
+        "key": "text_admin_panel",
+        "field_name": "need_text_admin_panel",
+        "icon": "bi-card-text",
+        "title": "Админ панель для смены текстов сайта",
+        "price": "2 000 ₽",
+        "short_description": "Чтобы менять тексты и важные блоки без разработчика.",
+        "description": "Добавим админку для редактирования текстов, контактов и других контентных блоков сайта.",
+        "details": [],
+        "cta_target": "",
+        "cta_label": "",
+    },
+    {
+        "key": "catalog_admin_panel",
+        "field_name": "need_catalog_admin_panel",
+        "icon": "bi-grid-3x3-gap",
+        "title": "Админ панель для редактирования каталога товаров",
+        "price": "2 000 ₽",
+        "short_description": "Чтобы самостоятельно обновлять каталог и карточки товаров.",
+        "description": "Настроим админку, через которую можно добавлять, менять и актуализировать товары без правок в коде.",
+        "details": [],
+        "cta_target": "",
+        "cta_label": "",
+    },
 ]
 
 HOME_COMMON_BUNDLE_KEYS = (
@@ -171,6 +199,8 @@ def get_selected_extra_services(
     need_photo_selection=False,
     need_email_form=False,
     need_reviews_section=False,
+    need_text_admin_panel=False,
+    need_catalog_admin_panel=False,
 ) -> list[str]:
     services = []
     extra_pages = normalize_extra_pages(extra_pages)
@@ -187,6 +217,8 @@ def get_selected_extra_services(
         ("need_photo_selection", need_photo_selection),
         ("need_email_form", need_email_form),
         ("need_reviews_section", need_reviews_section),
+        ("need_text_admin_panel", need_text_admin_panel),
+        ("need_catalog_admin_panel", need_catalog_admin_panel),
     ):
         if is_selected:
             services.append(OPTIONAL_SERVICE_LABELS[field_name])
@@ -206,6 +238,8 @@ def calculate_estimated_price(
     need_photo_selection=False,
     need_email_form=False,
     need_reviews_section=False,
+    need_text_admin_panel=False,
+    need_catalog_admin_panel=False,
 ) -> Decimal:
     total = SITE_TYPE_PRICES.get(site_type or "", Decimal("0.00"))
     total += EXTRA_PAGE_PRICE * normalize_extra_pages(extra_pages)
@@ -220,6 +254,8 @@ def calculate_estimated_price(
         ("need_photo_selection", need_photo_selection),
         ("need_email_form", need_email_form),
         ("need_reviews_section", need_reviews_section),
+        ("need_text_admin_panel", need_text_admin_panel),
+        ("need_catalog_admin_panel", need_catalog_admin_panel),
     ):
         if is_selected:
             total += OPTIONAL_SERVICE_PRICES[field_name]

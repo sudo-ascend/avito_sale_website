@@ -8,7 +8,7 @@ from .models import Project, ProjectImage, Technology
 class TechnologyForm(BaseStyledModelForm):
     class Meta:
         model = Technology
-        fields = ("name", "slug", "color")
+        fields = ("name", "slug", "color", "order")
         widgets = {
             "color": forms.TextInput(attrs={"type": "color", "class": "form-control form-control-color"}),
         }
@@ -26,7 +26,9 @@ class ProjectForm(BaseStyledModelForm):
             "stack_notes",
             "external_url",
             "cover_image",
+            "cover_image_alt",
             "color_palette",
+            "catalog_order",
             "technologies",
             "is_featured",
             "is_published",
@@ -44,4 +46,4 @@ class ProjectForm(BaseStyledModelForm):
 class ProjectImageForm(BaseStyledModelForm):
     class Meta:
         model = ProjectImage
-        fields = ("image", "caption", "order")
+        fields = ("image", "caption", "alt_text", "order")

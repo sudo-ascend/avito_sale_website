@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import ContactInfo, Service
+from .models import ContactInfo, HomePageCaseSection, Service
 
 
 @admin.register(Service)
@@ -16,3 +16,10 @@ class ContactInfoAdmin(admin.ModelAdmin):
     list_display = ("company_name", "email", "phone", "is_primary", "updated_at")
     list_filter = ("is_primary",)
     search_fields = ("company_name", "email", "phone")
+
+
+@admin.register(HomePageCaseSection)
+class HomePageCaseSectionAdmin(admin.ModelAdmin):
+    list_display = ("title", "is_active", "updated_at")
+    list_filter = ("is_active",)
+    search_fields = ("title", "body")

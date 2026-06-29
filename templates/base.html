@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
     <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
     <link href="{% static 'vendor/bootstrap-icons/font/bootstrap-icons.min.css' %}" rel="stylesheet">
-    <link href="{% static 'css/site.css' %}?v=20260613-guide-overlay-strong" rel="stylesheet">
+    <link href="{% static 'css/site.css' %}?v=20260629-public-site" rel="stylesheet">
     {% block extra_css %}{% endblock %}
 </head>
 <body class="terra-page {% block body_class %}{% endblock %}">
@@ -44,10 +44,7 @@
                         </nav>
                         <div class="site-header__actions">
                             {% if user.is_authenticated and user.is_staff %}
-                                <a class="site-header__button" href="{% url 'crm_order_list' %}">CRM</a>
-                                <a class="site-header__button site-header__button--primary" href="{% url 'logout' %}">Выйти</a>
-                            {% else %}
-                                <a class="site-header__button site-header__button--primary" href="{% url 'login' %}">Войти</a>
+                                <a class="site-header__button site-header__button--primary" href="/admin/">Админка</a>
                             {% endif %}
                         </div>
                     </div>
@@ -69,7 +66,7 @@
                     <div class="col-lg-4">
                         <p class="footer-kicker">Web Studio</p>
                         <img src="{% static 'img/custom-websites-logo.webp' %}" alt="{{ site_brand_name }}" class="site-footer__logo mb-3" width="256" height="256">
-                        <p class="mb-0 text-secondary">Разрабатываем сайты, личные кабинеты и внутренние системы с понятной архитектурой и поддержкой после запуска.</p>
+                        <p class="mb-0 text-secondary">Разрабатываем сайты с удобной админкой, понятной структурой и поддержкой после запуска.</p>
                     </div>
                     <div class="col-sm-6 col-lg-4">
                         <h3 class="h6 text-uppercase text-secondary mb-3">Навигация</h3>
@@ -78,9 +75,6 @@
                             <li><a href="{% url 'portfolio_list' %}">Портфолио</a></li>
                             <li><a href="{% url 'brief_create' %}">Форма ТЗ</a></li>
                             <li><a href="{% url 'contact' %}">Контакты</a></li>
-                            {% if user.is_authenticated and user.is_staff %}
-                                <li><a href="{% url 'crm_order_list' %}">CRM</a></li>
-                            {% endif %}
                         </ul>
                     </div>
                     <div class="col-sm-6 col-lg-4">
@@ -98,7 +92,7 @@
     {% endblock %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script src="{% static 'js/site.js' %}?v=20260411-terra-pages-cart"></script>
+    <script src="{% static 'js/site.js' %}?v=20260629-public-site"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

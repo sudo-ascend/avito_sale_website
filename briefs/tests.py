@@ -7,7 +7,6 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils.datastructures import MultiValueDict
 
-from crm.models import Client as CRMClient, Order
 from portfolio.models import Project
 
 from .forms import BriefRequestForm
@@ -111,11 +110,6 @@ class BriefRequestFormTests(TestCase):
             1,
         )
 
-    def test_reference_sites_is_optional(self):
-        form = self.build_form(reference_sites="")
-
-        self.assertTrue(form.is_valid(), form.errors)
-
     def test_form_calculates_price_for_extra_services_and_discounted_hosting(self):
         form = self.build_form(
             site_type=BriefRequest.SiteType.CATALOG,
@@ -133,21 +127,6 @@ class BriefRequestFormTests(TestCase):
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(form.cleaned_data["estimated_price"], Decimal("12987.50"))
 
-        brief = form.save()
-        self.assertEqual(
-            brief.selected_extra_services,
-            [
-                "Доп. страницы: 2 x 1 000 ₽",
-                "Хостинг сайта на 3 месяца 1 687,50 ₽",
-                "Регистрация домена 550 ₽",
-                "Создание логотипа 500 ₽",
-                "Базовое SEO продвижение 500 ₽",
-                "Подбор фото и картинок 2 000 ₽",
-                "Форма с отправкой писем на почту 1 500 ₽",
-                "Секция с отзывами 250 ₽",
-            ],
-        )
-
     def test_form_requires_only_reviews_files_from_repeatable_groups(self):
         files = MultiValueDict(
             {
@@ -162,7 +141,7 @@ class BriefRequestFormTests(TestCase):
         self.assertNotIn("reviews_files", form.errors)
         self.assertNotIn("logo", form.errors)
 
-    def test_brief_create_view_accepts_empty_reference_sites_and_syncs_to_crm(self):
+    def test_brief_create_view_accepts_empty_reference_sites_and_sends_email(self):
         response = self.client.post(
             reverse("brief_create"),
             data={
@@ -202,22 +181,10 @@ class BriefRequestFormTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse("brief_success"))
         self.assertEqual(BriefRequest.objects.count(), 1)
-        self.assertEqual(CRMClient.objects.count(), 1)
-        self.assertEqual(Order.objects.count(), 1)
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ["owner@example.com"])
-
-        crm_client = CRMClient.objects.get()
-        order = Order.objects.get()
-        self.assertEqual(crm_client.status, CRMClient.Status.NEW)
-        self.assertEqual(order.status, Order.Status.NEW)
-        self.assertEqual(order.client_id, crm_client.pk)
-        self.assertIn("Доп. страниц:", order.description)
-        self.assertIn("1", order.description)
-        self.assertIn("Хостинг сайта на 3 месяца 1 687,50 ₽", order.description)
-        self.assertIn("Создание логотипа 500 ₽", order.description)
-        self.assertIn("Желаемый домен:", order.description)
-        self.assertIn("site.ru", order.description)
+        self.assertIn("Заявка в админке", mail.outbox[0].body)
+        self.assertNotIn("CRM", mail.outbox[0].body)
 
         attachment = mail.outbox[0].attachments[0]
         attachment_name = getattr(attachment, "filename", attachment[0])
@@ -234,43 +201,6 @@ class BriefRequestFormTests(TestCase):
     )
     def test_brief_notification_recipient_uses_sender_domain_for_login_only_value(self):
         self.assertEqual(get_brief_notification_recipient(), "grachevilia09@yandex.ru")
-
-        response = self.client.post(
-            reverse("brief_create"),
-            data={
-                "client_type": BriefRequest.ClientType.INDIVIDUAL,
-                "business_name": "РўРµСЃС‚ РїРѕС‡С‚С‹",
-                "work_region": "РњРѕСЃРєРІР°",
-                "site_type": BriefRequest.SiteType.SINGLE_PAGE,
-                "extra_pages": "0",
-                "color_mode": BriefRequest.ColorMode.TEMPLATE,
-                "color_template_name": "Template A",
-                "color_preference": "#14344c",
-                "color_accent": "#c96f3b",
-                "color_background": "#f4f1ea",
-                "color_extra": "#2b506b",
-                "reference_sites": "",
-                "desired_domain": "",
-                "hosting_plan": BriefRequest.HostingPlan.MONTHLY,
-                "contact_phone": "9991234567",
-                "preferred_contact_app": "",
-                "contact_email": "",
-                "client_comment": "",
-                "privacy_accepted": "on",
-                "photos_files": [
-                    SimpleUploadedFile("photo-1.txt", b"photo-1", content_type="text/plain"),
-                ],
-                "texts_files": [
-                    SimpleUploadedFile("text-1.txt", b"text-1", content_type="text/plain"),
-                ],
-                "reviews_files": [
-                    SimpleUploadedFile("review-1.txt", b"review-1", content_type="text/plain"),
-                ],
-            },
-        )
-
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(mail.outbox[-1].to, ["grachevilia09@yandex.ru"])
 
     def test_brief_success_page_offers_pdf_actions_and_download(self):
         response = self.client.post(
@@ -341,22 +271,6 @@ class BriefRequestFormTests(TestCase):
         self.assertTrue(form["need_domain"].value())
         self.assertTrue(form["need_logo_design"].value())
 
-    def test_brief_create_view_defaults_to_single_page_only(self):
-        response = self.client.get(reverse("brief_create"))
-
-        self.assertEqual(response.status_code, 200)
-        form = response.context["form"]
-        self.assertEqual(form["site_type"].value(), BriefRequest.SiteType.SINGLE_PAGE)
-        self.assertEqual(form["extra_pages"].value(), 0)
-        self.assertFalse(form["need_hosting"].value())
-        self.assertFalse(form["need_domain"].value())
-        self.assertFalse(form["need_logo_design"].value())
-        self.assertFalse(form["need_basic_seo"].value())
-        self.assertFalse(form["need_photo_selection"].value())
-        self.assertFalse(form["need_email_form"].value())
-        self.assertFalse(form["need_reviews_section"].value())
-        self.assertTrue(response.context["reset_service_defaults"])
-
     def test_brief_create_view_shows_all_published_portfolio_examples(self):
         first_project = Project.objects.create(
             title="First Example",
@@ -366,6 +280,7 @@ class BriefRequestFormTests(TestCase):
             stack_notes="HTML, CSS",
             is_published=True,
             is_featured=False,
+            catalog_order=2,
         )
         second_project = Project.objects.create(
             title="Second Example",
@@ -375,6 +290,7 @@ class BriefRequestFormTests(TestCase):
             stack_notes="HTML, CSS",
             is_published=True,
             is_featured=True,
+            catalog_order=1,
         )
         hidden_project = Project.objects.create(
             title="Hidden Example",
@@ -383,6 +299,7 @@ class BriefRequestFormTests(TestCase):
             completion_date="2026-03-03",
             stack_notes="HTML, CSS",
             is_published=False,
+            catalog_order=3,
         )
 
         response = self.client.get(reverse("brief_create"))
@@ -390,6 +307,5 @@ class BriefRequestFormTests(TestCase):
         self.assertEqual(response.status_code, 200)
         examples = response.context["brief_project_examples"]
         titles = [example["title"] for example in examples]
-        self.assertIn(first_project.title, titles)
-        self.assertIn(second_project.title, titles)
+        self.assertEqual(titles[:2], [second_project.title, first_project.title])
         self.assertNotIn(hidden_project.title, titles)

@@ -23,7 +23,7 @@ class ContactSnapshot:
 def get_fallback_contact() -> ContactSnapshot:
     return ContactSnapshot(
         company_name=settings.SITE_BRAND_NAME,
-        tagline="Сайты, CRM и сопровождение цифровых продуктов",
+        tagline="Сайты с понятной админкой и поддержкой после запуска",
         email="grachevilia09@yandex.ru",
         phone="79167950225",
     )

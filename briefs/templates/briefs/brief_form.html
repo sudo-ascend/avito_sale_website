@@ -404,6 +404,32 @@
                                         <div class="invalid-feedback d-block">{{ form.need_reviews_section.errors|join:", " }}</div>
                                     {% endif %}
                                 </div>
+                                <div class="col-md-6">
+                                    <label class="brief-addon-card brief-addon-card--forest" for="{{ form.need_text_admin_panel.id_for_label }}">
+                                        {{ form.need_text_admin_panel }}
+                                        <span class="brief-addon-card__body">
+                                            <span class="brief-addon-card__title">Админ панель для смены текстов сайта</span>
+                                            <span class="brief-addon-card__price">2 000 ₽</span>
+                                            <span class="brief-addon-card__copy">Чтобы самостоятельно менять тексты, контакты и важные блоки сайта.</span>
+                                        </span>
+                                    </label>
+                                    {% if form.need_text_admin_panel.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.need_text_admin_panel.errors|join:", " }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="brief-addon-card brief-addon-card--forest" for="{{ form.need_catalog_admin_panel.id_for_label }}">
+                                        {{ form.need_catalog_admin_panel }}
+                                        <span class="brief-addon-card__body">
+                                            <span class="brief-addon-card__title">Админ панель для редактирования каталога товаров</span>
+                                            <span class="brief-addon-card__price">2 000 ₽</span>
+                                            <span class="brief-addon-card__copy">Чтобы добавлять и обновлять позиции каталога без правок в коде.</span>
+                                        </span>
+                                    </label>
+                                    {% if form.need_catalog_admin_panel.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.need_catalog_admin_panel.errors|join:", " }}</div>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>

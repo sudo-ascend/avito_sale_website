@@ -17,7 +17,7 @@ class ProjectListView(ListView):
         queryset = (
             Project.objects.filter(is_published=True)
             .prefetch_related("technologies", "images")
-            .order_by("-completion_date")
+            .order_by("catalog_order", "-completion_date", "-created_at")
         )
         title_query = self.request.GET.get("title", "").strip()
         if title_query:

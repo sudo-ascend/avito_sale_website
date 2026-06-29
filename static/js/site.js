@@ -952,6 +952,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const photoSelectionField = document.getElementById("id_need_photo_selection");
         const emailFormField = document.getElementById("id_need_email_form");
         const reviewsSectionField = document.getElementById("id_need_reviews_section");
+        const textAdminPanelField = document.getElementById("id_need_text_admin_panel");
+        const catalogAdminPanelField = document.getElementById("id_need_catalog_admin_panel");
         const estimatedPriceField = document.getElementById("id_estimated_price");
         const summaryService = document.querySelector("[data-summary-service]");
         const summaryBase = document.querySelector("[data-summary-base]");
@@ -966,6 +968,8 @@ document.addEventListener("DOMContentLoaded", () => {
             { element: photoSelectionField, key: "need_photo_selection" },
             { element: emailFormField, key: "need_email_form" },
             { element: reviewsSectionField, key: "need_reviews_section" },
+            { element: textAdminPanelField, key: "need_text_admin_panel" },
+            { element: catalogAdminPanelField, key: "need_catalog_admin_panel" },
         ];
         const summaryToggleMap = new Map(
             [

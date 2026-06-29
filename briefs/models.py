@@ -5,6 +5,7 @@ from django.db import models
 from django.utils.functional import cached_property
 
 from core.models import TimeStampedModel
+
 from .pricing import get_selected_extra_services
 
 
@@ -37,7 +38,7 @@ class BriefRequest(TimeStampedModel):
 
     class HostingPlan(models.TextChoices):
         MONTHLY = "monthly", "1 месяц"
-        QUARTERLY = "quarterly", "3 месяца"
+        QUARTERLY = "quarterly", "3 месяца (-25%)"
 
     class ColorMode(models.TextChoices):
         TEMPLATE = "template", "По шаблону"
@@ -56,24 +57,9 @@ class BriefRequest(TimeStampedModel):
         choices=SiteType.choices,
         default=SiteType.SINGLE_PAGE,
     )
-    photos_file = models.FileField(
-        "Фотографии",
-        upload_to="briefs/photos/",
-        blank=True,
-        null=True,
-    )
-    texts_file = models.FileField(
-        "Тексты",
-        upload_to="briefs/texts/",
-        blank=True,
-        null=True,
-    )
-    reviews_file = models.FileField(
-        "Скрины отзывов",
-        upload_to="briefs/reviews/",
-        blank=True,
-        null=True,
-    )
+    photos_file = models.FileField("Фотографии", upload_to="briefs/photos/", blank=True, null=True)
+    texts_file = models.FileField("Тексты", upload_to="briefs/texts/", blank=True, null=True)
+    reviews_file = models.FileField("Скрины отзывов", upload_to="briefs/reviews/", blank=True, null=True)
     contact_phone = models.CharField("Телефон", max_length=50, default="")
     preferred_contact_app = models.CharField(
         "Предпочитаемое приложение для связи",
@@ -131,6 +117,11 @@ class BriefRequest(TimeStampedModel):
     need_photo_selection = models.BooleanField("Подбор фото и картинок", default=False)
     need_email_form = models.BooleanField("Форма с отправкой писем на почту", default=False)
     need_reviews_section = models.BooleanField("Секция с отзывами", default=False)
+    need_text_admin_panel = models.BooleanField("Админ панель для смены текстов сайта", default=False)
+    need_catalog_admin_panel = models.BooleanField(
+        "Админ панель для редактирования каталога товаров",
+        default=False,
+    )
     client_comment = models.TextField("Комментарий клиента", blank=True, default="")
     estimated_price = models.DecimalField("Ориентировочная стоимость", max_digits=10, decimal_places=2, default=0)
     privacy_accepted = models.BooleanField("Согласие на обработку данных", default=False)
@@ -173,6 +164,8 @@ class BriefRequest(TimeStampedModel):
             need_photo_selection=self.need_photo_selection,
             need_email_form=self.need_email_form,
             need_reviews_section=self.need_reviews_section,
+            need_text_admin_panel=self.need_text_admin_panel,
+            need_catalog_admin_panel=self.need_catalog_admin_panel,
         )
 
     @property
@@ -206,6 +199,39 @@ class BriefRequest(TimeStampedModel):
     @property
     def review_attachments(self):
         return self.attachments_by_category.get(BriefAttachment.Category.REVIEWS, [])
+
+
+class PricingSettings(TimeStampedModel):
+    site_single_page_price = models.DecimalField("Одностраничный сайт", max_digits=10, decimal_places=2, default=3000)
+    site_catalog_price = models.DecimalField("Сайт-каталог", max_digits=10, decimal_places=2, default=4000)
+    extra_page_price = models.DecimalField("Дополнительная страница", max_digits=10, decimal_places=2, default=1000)
+    hosting_monthly_price = models.DecimalField("Хостинг на 1 месяц", max_digits=10, decimal_places=2, default=750)
+    hosting_quarterly_price = models.DecimalField("Хостинг на 3 месяца", max_digits=10, decimal_places=2, default=1687.50)
+    domain_price = models.DecimalField("Регистрация домена", max_digits=10, decimal_places=2, default=550)
+    logo_design_price = models.DecimalField("Создание логотипа", max_digits=10, decimal_places=2, default=500)
+    basic_seo_price = models.DecimalField("Базовое SEO", max_digits=10, decimal_places=2, default=500)
+    photo_selection_price = models.DecimalField("Подбор фото и картинок", max_digits=10, decimal_places=2, default=2000)
+    email_form_price = models.DecimalField("Форма с отправкой писем", max_digits=10, decimal_places=2, default=1500)
+    reviews_section_price = models.DecimalField("Секция с отзывами", max_digits=10, decimal_places=2, default=250)
+    text_admin_panel_price = models.DecimalField(
+        "Админ панель для смены текстов сайта",
+        max_digits=10,
+        decimal_places=2,
+        default=2000,
+    )
+    catalog_admin_panel_price = models.DecimalField(
+        "Админ панель для редактирования каталога товаров",
+        max_digits=10,
+        decimal_places=2,
+        default=2000,
+    )
+
+    class Meta:
+        verbose_name = "Настройки цен"
+        verbose_name_plural = "Настройки цен"
+
+    def __str__(self) -> str:
+        return "Настройки цен"
 
 
 class BriefAttachment(TimeStampedModel):

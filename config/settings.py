@@ -30,14 +30,9 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "rest_framework",
     "core",
     "portfolio",
     "briefs",
-    "crm",
-    "accounting",
-    "dns_monitor",
-    "notifications",
 ]
 
 MIDDLEWARE = [
@@ -104,13 +99,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-LOGIN_URL = "login"
-LOGIN_REDIRECT_URL = "crm_order_list"
-LOGOUT_REDIRECT_URL = "home"
-
 SITE_BRAND_NAME = os.getenv("SITE_BRAND_NAME", "Grachev Studio")
-APP_BASE_URL = os.getenv("APP_BASE_URL", "http://127.0.0.1:8000")
-INTERNAL_API_TOKEN = os.getenv("INTERNAL_API_TOKEN", "change-me")
 
 EMAIL_BACKEND = os.getenv(
     "EMAIL_BACKEND",
@@ -133,16 +122,3 @@ FIELD_ENCRYPTION_KEY = (
     if raw_fernet_key
     else base64.urlsafe_b64encode(hashlib.sha256(SECRET_KEY.encode()).digest())
 )
-
-REST_FRAMEWORK = {
-    "DEFAULT_RENDERER_CLASSES": [
-        "rest_framework.renderers.JSONRenderer",
-        *(
-            ["rest_framework.renderers.BrowsableAPIRenderer"]
-            if DEBUG
-            else []
-        ),
-    ],
-    "DEFAULT_AUTHENTICATION_CLASSES": [],
-    "UNAUTHENTICATED_USER": None,
-}

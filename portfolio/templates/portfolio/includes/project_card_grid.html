@@ -13,12 +13,12 @@
                         <div class="project-card__slider-track" data-slider-track>
                             {% if project.cover_image %}
                                 <div class="project-card__slide" data-slider-slide>
-                                    <img src="{{ project.cover_image.url }}" alt="{{ project.title }}" class="img-fluid w-100 h-100 object-fit-cover">
+                                    <img src="{{ project.cover_image.url }}" alt="{{ project.cover_image_alt|default:project.title }}" class="img-fluid w-100 h-100 object-fit-cover">
                                 </div>
                             {% endif %}
                             {% for image in project.images.all %}
                                 <div class="project-card__slide" data-slider-slide>
-                                    <img src="{{ image.image.url }}" alt="{{ image.caption|default:project.title }}" class="img-fluid w-100 h-100 object-fit-cover">
+                                    <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:image.caption|default:project.title }}" class="img-fluid w-100 h-100 object-fit-cover">
                                 </div>
                             {% empty %}
                                 {% if not project.cover_image %}

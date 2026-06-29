@@ -36,6 +36,24 @@ class Service(TimeStampedModel):
         return reverse("home")
 
 
+class HomePageCaseSection(TimeStampedModel):
+    kicker = models.CharField("Кикер секции", max_length=120, default="Опыт с админкой")
+    title = models.CharField("Заголовок", max_length=255)
+    body = models.TextField("Текст секции")
+    image_primary = models.ImageField("Первая картинка", upload_to="home/case/", blank=True, null=True)
+    image_primary_alt = models.CharField("Alt первой картинки", max_length=255, blank=True)
+    image_secondary = models.ImageField("Вторая картинка", upload_to="home/case/", blank=True, null=True)
+    image_secondary_alt = models.CharField("Alt второй картинки", max_length=255, blank=True)
+    is_active = models.BooleanField("Показывать на главной", default=True)
+
+    class Meta:
+        verbose_name = "Секция кейса на главной"
+        verbose_name_plural = "Секция кейса на главной"
+
+    def __str__(self) -> str:
+        return self.title
+
+
 class ContactInfo(TimeStampedModel):
     company_name = models.CharField("Название компании", max_length=150)
     tagline = models.CharField("Подзаголовок", max_length=255, blank=True)

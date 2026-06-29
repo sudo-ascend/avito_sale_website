@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import BriefAttachment, BriefRequest
+from .models import BriefAttachment, BriefRequest, PricingSettings
 
 
 class BriefAttachmentInline(admin.TabularInline):
@@ -24,3 +24,8 @@ class BriefRequestAdmin(admin.ModelAdmin):
     search_fields = ("business_name", "contact_email", "contact_phone", "work_region")
     readonly_fields = ("created_at", "updated_at")
     inlines = (BriefAttachmentInline,)
+
+
+@admin.register(PricingSettings)
+class PricingSettingsAdmin(admin.ModelAdmin):
+    list_display = ("id", "updated_at")
