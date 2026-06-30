@@ -253,11 +253,9 @@
                             <p class="section-kicker mb-2 text-white-50">Портфолио</p>
                             <h1 class="demo-toolbar__title">{{ project.title }}</h1>
                             <p class="demo-toolbar__copy">{{ project.short_description }}</p>
-                            {% if project.technologies.all %}
+                            {% if project.stack_notes %}
                                 <div class="demo-toolbar__tech">
-                                    {% for technology in project.technologies.all %}
-                                        <span>{{ technology.name }}</span>
-                                    {% endfor %}
+                                    <span>{{ project.stack_notes }}</span>
                                 </div>
                             {% endif %}
                         </div>

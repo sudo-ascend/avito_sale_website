@@ -2,16 +2,7 @@ from django import forms
 
 from core.forms import BaseStyledModelForm
 
-from .models import Project, ProjectImage, Technology
-
-
-class TechnologyForm(BaseStyledModelForm):
-    class Meta:
-        model = Technology
-        fields = ("name", "slug", "color", "order")
-        widgets = {
-            "color": forms.TextInput(attrs={"type": "color", "class": "form-control form-control-color"}),
-        }
+from .models import Project, ProjectImage
 
 
 class ProjectForm(BaseStyledModelForm):
@@ -29,7 +20,6 @@ class ProjectForm(BaseStyledModelForm):
             "cover_image_alt",
             "color_palette",
             "catalog_order",
-            "technologies",
             "is_featured",
             "is_published",
         )
@@ -39,7 +29,6 @@ class ProjectForm(BaseStyledModelForm):
             "color_palette": forms.TextInput(
                 attrs={"placeholder": "#14344c, #c96f3b, #f4f1ea, #2b506b"}
             ),
-            "technologies": forms.SelectMultiple(attrs={"size": 6}),
         }
 
 

@@ -16,7 +16,7 @@ class ProjectListView(ListView):
     def get_queryset(self):
         queryset = (
             Project.objects.filter(is_published=True)
-            .prefetch_related("technologies", "images")
+            .prefetch_related("images")
             .order_by("catalog_order", "-completion_date", "-created_at")
         )
         title_query = self.request.GET.get("title", "").strip()
@@ -38,7 +38,7 @@ class ProjectDetailView(DetailView):
     slug_url_kwarg = "slug"
 
     def get_queryset(self):
-        return Project.objects.filter(is_published=True).prefetch_related("technologies", "images")
+        return Project.objects.filter(is_published=True).prefetch_related("images")
 
 
 def serve_portfolio_site(request, slug, asset_path="index.html"):

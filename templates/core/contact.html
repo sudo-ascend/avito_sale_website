@@ -8,18 +8,18 @@
     <div class="container">
         <div class="row g-4">
             <div class="col-lg-5">
-                <p class="section-kicker mb-2">Контакты</p>
-                <h1 class="mb-4">Свяжись с нами удобным способом</h1>
+                <p class="section-kicker mb-2">{{ site_content.contact_page_kicker }}</p>
+                <h1 class="mb-4">{{ site_content.contact_page_title }}</h1>
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-4">
                         <h2 class="h4">{{ contact_info.company_name }}</h2>
-                        {% if contact_info.tagline %}<p class="text-secondary">{{ contact_info.tagline }}</p>{% endif %}
+                        {% if contact_info.company_tagline %}<p class="text-secondary">{{ contact_info.company_tagline }}</p>{% endif %}
                         <ul class="list-unstyled contact-list mb-0">
                             <li><strong>Email:</strong> <a href="mailto:{{ contact_info.email }}">{{ contact_info.email }}</a></li>
-                            <li><strong>Менеджер:</strong> Илья</li>
-                            <li><strong>Телефон Ильи:</strong> <a href="tel:{{ contact_info.phone|phone_href }}">{{ contact_info.phone }}</a></li>
-                            <li><strong>Второй менеджер:</strong> Алексей</li>
-                            <li><strong>Телефон Алексея:</strong> <a href="tel:+79261879852">+7 926 187 9852</a></li>
+                            <li><strong>Менеджер:</strong> {{ contact_info.primary_manager_name }}</li>
+                            <li><strong>Телефон {{ contact_info.primary_manager_name }}:</strong> <a href="tel:{{ contact_info.phone|phone_href }}">{{ contact_info.phone }}</a></li>
+                            <li><strong>Второй менеджер:</strong> {{ contact_info.secondary_manager_name }}</li>
+                            <li><strong>Телефон {{ contact_info.secondary_manager_name }}:</strong> <a href="tel:{{ contact_info.secondary_manager_phone|phone_href }}">{{ contact_info.secondary_manager_phone }}</a></li>
                             {% if contact_info.telegram %}<li><strong>Telegram:</strong> {{ contact_info.telegram }}</li>{% endif %}
                             {% if contact_info.whatsapp %}<li><strong>WhatsApp:</strong> {{ contact_info.whatsapp }}</li>{% endif %}
                             {% if contact_info.address %}<li><strong>Адрес:</strong> {{ contact_info.address }}</li>{% endif %}
@@ -31,10 +31,10 @@
             <div class="col-lg-7">
                 <div class="card border-0 shadow-sm h-100">
                     <div class="card-body p-4 p-lg-5">
-                        <p class="section-kicker mb-2">Новый проект</p>
-                        <h2 class="mb-3">Сразу перейти к структуре задачи</h2>
-                        <p class="text-secondary mb-4">Чтобы не терять детали на старте, мы просим клиентов заполнять бриф. Так проект быстрее переходит в оценку и разработку.</p>
-                        <a href="{% url 'brief_create' %}" class="btn btn-accent rounded-pill px-4">Заполнить форму ТЗ</a>
+                        <p class="section-kicker mb-2">{{ site_content.contact_page_cta_kicker }}</p>
+                        <h2 class="mb-3">{{ site_content.contact_page_cta_title }}</h2>
+                        <p class="text-secondary mb-4">{{ site_content.contact_page_cta_body }}</p>
+                        <a href="{% url 'brief_create' %}" class="btn btn-accent rounded-pill px-4">{{ site_content.contact_page_cta_button }}</a>
                     </div>
                 </div>
             </div>

@@ -1,4 +1,3 @@
-from django.db.models import Count
 from django.views.generic import TemplateView
 
 from briefs.pricing import (
@@ -9,53 +8,30 @@ from briefs.pricing import (
     OPTIONAL_SERVICE_PRICES,
     SITE_TYPE_PRICES,
 )
-from portfolio.models import Project, Technology
+from portfolio.models import Project
 
 from .contact_data import get_primary_contact
-from .models import HomePageCaseSection, Service
 
 
 class HomeView(TemplateView):
     template_name = "core/home.html"
-    DEFAULT_HOME_CASE_SECTION = {
-        "kicker": "Опыт с админкой",
-        "title": "Aquaklon.ru: сайт, которым владелец управляет сам",
-        "body": (
-            "На сайте Aquaklon реализована удобная админ-панель на Django, которая "
-            "позволяет владельцу самостоятельно управлять контентом без программиста. "
-            "Через админку можно менять тексты, контакты, SEO-данные, изображения, "
-            "отзывы, FAQ, прайс и информацию о доставке. Это делает сайт не статичной "
-            "страницей, а полноценным управляемым инструментом для бизнеса. Благодаря "
-            "админке заказчик получил возможность быстро обновлять каталог растений, "
-            "редактировать важные блоки сайта и поддерживать актуальность информации "
-            "без обращения к разработчику."
-        ),
-        "image_primary": None,
-        "image_primary_alt": "",
-        "image_secondary": None,
-        "image_secondary_alt": "",
-    }
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         projects = list(
             Project.objects.filter(is_published=True)
-            .prefetch_related("technologies", "images")
+            .prefetch_related("images")
             .order_by("catalog_order", "-completion_date", "-created_at")
         )
-        services = Service.objects.filter(is_active=True)
+        site_content = get_primary_contact()
 
         context["featured_projects"] = projects[:9]
         context["hero_project"] = projects[0] if projects else None
         context["popular_projects"] = projects[:6]
         context["suggested_projects"] = projects[3:6] or projects[:3]
         context["catalog_projects"] = projects[:6]
-        context["contact_info"] = get_primary_contact()
-        context["services"] = services
-        context["home_case_section"] = (
-            HomePageCaseSection.objects.filter(is_active=True).order_by("-updated_at").first()
-            or self.DEFAULT_HOME_CASE_SECTION
-        )
+        context["contact_info"] = site_content
+        context["site_content"] = site_content
         context["bundle_services"] = [
             service for service in HOME_SERVICE_BUNDLES if service["key"] in HOME_COMMON_BUNDLE_KEYS
         ]
@@ -70,9 +46,14 @@ class HomeView(TemplateView):
         }
         context["project_metrics"] = {
             "project_count": Project.objects.filter(is_published=True).count(),
-            "technology_count": Technology.objects.annotate(project_total=Count("projects"))
-            .filter(project_total__gt=0)
-            .count(),
+            "technology_count": len(
+                {
+                    item.strip()
+                    for project in projects
+                    for item in (project.stack_notes or "").split(",")
+                    if item.strip()
+                }
+            ),
         }
         return context
 
@@ -82,7 +63,9 @@ class ContactView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["contact_info"] = get_primary_contact()
+        site_content = get_primary_contact()
+        context["contact_info"] = site_content
+        context["site_content"] = site_content
         return context
 
 

@@ -18,7 +18,7 @@ django.setup()
 from django.conf import settings
 from django.core.files.base import ContentFile
 
-from portfolio.models import Project, ProjectImage, Technology
+from portfolio.models import Project, ProjectImage
 
 
 def normalized_name(raw_name: str) -> str:
@@ -34,22 +34,6 @@ def find_archive() -> Path:
     if not candidates:
         raise FileNotFoundError("Не найден архив с сайтами на рабочем столе.")
     return candidates[0]
-
-
-def ensure_technologies() -> dict[str, Technology]:
-    specs = {
-        "HTML": "#e34f26",
-        "CSS": "#1572b6",
-        "JavaScript": "#f7df1e",
-    }
-    result = {}
-    for name, color in specs.items():
-        technology, _ = Technology.objects.get_or_create(name=name, defaults={"color": color})
-        if technology.color != color:
-            technology.color = color
-            technology.save(update_fields=["color"])
-        result[name] = technology
-    return result
 
 
 def cleanup_project_media_files(media_root: Path, slug: str) -> None:
@@ -143,7 +127,6 @@ def import_projects() -> None:
     media_root = Path(settings.MEDIA_ROOT)
     site_root = media_root / "portfolio" / "sites"
     site_root.mkdir(parents=True, exist_ok=True)
-    technologies = ensure_technologies()
 
     with zipfile.ZipFile(zip_path) as archive:
         name_map = {normalized_name(info.filename): info.filename for info in archive.infolist()}
@@ -177,13 +160,6 @@ def import_projects() -> None:
                     "is_featured": True,
                     "is_published": True,
                 },
-            )
-            project.technologies.set(
-                [
-                    technologies["HTML"],
-                    technologies["CSS"],
-                    technologies["JavaScript"],
-                ]
             )
 
             cover_fixed = f"{prefix}{item['cover']}"

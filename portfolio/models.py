@@ -8,26 +8,6 @@ from django.urls import reverse
 from core.models import TimeStampedModel
 
 
-class Technology(TimeStampedModel):
-    name = models.CharField("Название", max_length=100, unique=True)
-    slug = models.SlugField("Слаг", unique=True, blank=True)
-    color = models.CharField("Цвет", max_length=7, default="#14344C")
-    order = models.PositiveIntegerField("Порядок", default=0)
-
-    class Meta:
-        ordering = ("order", "name")
-        verbose_name = "Технология"
-        verbose_name_plural = "Технологии"
-
-    def __str__(self) -> str:
-        return self.name
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-
-
 class Project(TimeStampedModel):
     title = models.CharField("Название", max_length=200)
     slug = models.SlugField("Слаг", unique=True, blank=True)
@@ -40,12 +20,6 @@ class Project(TimeStampedModel):
     cover_image_alt = models.CharField("Alt обложки", max_length=255, blank=True)
     color_palette = models.CharField("Палитра проекта", max_length=255, blank=True)
     catalog_order = models.PositiveIntegerField("Порядок в каталоге", default=0)
-    technologies = models.ManyToManyField(
-        Technology,
-        verbose_name="Технологии",
-        blank=True,
-        related_name="projects",
-    )
     is_featured = models.BooleanField("Показывать на главной", default=False)
     is_published = models.BooleanField("Опубликован", default=True)
 
@@ -91,8 +65,7 @@ class Project(TimeStampedModel):
             colors = [item.strip() for item in self.color_palette.split(",") if item.strip()]
             if colors:
                 return colors
-        technology_colors = [technology.color for technology in self.technologies.all()[:4] if technology.color]
-        return technology_colors
+        return []
 
 
 class ProjectImage(TimeStampedModel):

@@ -93,7 +93,6 @@ class BriefCreateView(CreateView):
         context = super().get_context_data(**kwargs)
         projects = list(
             Project.objects.filter(is_published=True)
-            .prefetch_related("technologies")
             .order_by("catalog_order", "-completion_date", "-created_at")
         )
         if projects:

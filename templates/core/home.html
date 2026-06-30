@@ -117,37 +117,148 @@
                         </section>
 
                         <section id="aquaklon-case">
-                            <div class="card border-0 terra-content-card">
+                            <div class="card border-0 terra-complex-card">
                                 <div class="card-body p-4 p-lg-5">
                                     <div class="row g-4 align-items-start">
                                         <div class="col-lg-5">
-                                            <p class="terra-section__kicker mb-2">{{ home_case_section.kicker }}</p>
-                                            <h2 class="mb-3">{{ home_case_section.title }}</h2>
-                                            <p class="mb-0 text-secondary">{{ home_case_section.body }}</p>
-                                        </div>
-                                        <div class="col-lg-7">
-                                            <div class="row g-3">
-                                                <div class="col-md-6">
-                                                    {% if home_case_section.image_primary %}
-                                                        <div class="ratio ratio-16x9 overflow-hidden rounded-4">
-                                                            <img src="{{ home_case_section.image_primary.url }}" alt="{{ home_case_section.image_primary_alt|default:home_case_section.title }}" class="w-100 h-100 object-fit-cover">
-                                                        </div>
-                                                    {% else %}
-                                                        <div class="ratio ratio-16x9 bg-body-tertiary rounded-4">
-                                                            <div class="d-flex align-items-center justify-content-center text-secondary small">Место для изображения 16:9</div>
-                                                        </div>
-                                                    {% endif %}
+                                            <p class="terra-section__kicker mb-2">{{ site_content.home_case_kicker }}</p>
+                                            <h2 class="mb-3">{{ site_content.home_case_title }}</h2>
+                                            <p class="terra-complex-copy mb-0">{{ site_content.home_case_body }}</p>
+
+                                            <div class="terra-complex-tags">
+                                                <span class="terra-complex-tag">Каталог растений</span>
+                                                <span class="terra-complex-tag">Django admin</span>
+                                                <span class="terra-complex-tag">Контент без программиста</span>
+                                                <span class="terra-complex-tag">Карточки товаров</span>
+                                            </div>
+
+                                            {% if site_content.home_case_image_primary %}
+                                                <figure class="terra-complex-case__media terra-complex-case__media--offset">
+                                                    <img
+                                                        class="terra-complex-case__image"
+                                                        src="{{ site_content.home_case_image_primary.url }}"
+                                                        alt="{{ site_content.home_case_image_primary_alt|default:site_content.home_case_title }}">
+                                                    <figcaption class="terra-complex-case__caption">
+                                                        Главный экран и подача каталога Aquaklon в живом интерфейсе сайта.
+                                                    </figcaption>
+                                                </figure>
+                                            {% else %}
+                                                <div class="ratio ratio-16x9 bg-body-tertiary rounded-4">
+                                                    <div class="d-flex align-items-center justify-content-center text-secondary small">Место для изображения 16:9</div>
                                                 </div>
-                                                <div class="col-md-6">
-                                                    {% if home_case_section.image_secondary %}
-                                                        <div class="ratio ratio-16x9 overflow-hidden rounded-4">
-                                                            <img src="{{ home_case_section.image_secondary.url }}" alt="{{ home_case_section.image_secondary_alt|default:home_case_section.title }}" class="w-100 h-100 object-fit-cover">
-                                                        </div>
-                                                    {% else %}
-                                                        <div class="ratio ratio-16x9 bg-body-tertiary rounded-4">
-                                                            <div class="d-flex align-items-center justify-content-center text-secondary small">Место для изображения 16:9</div>
-                                                        </div>
-                                                    {% endif %}
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="col-lg-7">
+                                            <div class="terra-complex-case">
+                                                <div class="terra-complex-case__top">
+                                                    <div>
+                                                        <p class="terra-complex-case__eyebrow">Интернет-магазин аквариумных растений</p>
+                                                        <h3 class="h4 mb-1">aquaklon.ru</h3>
+                                                        <p class="mb-0 text-secondary">Сайт с каталогом, карточками позиций и админкой, через которую владелец сам обновляет ассортимент и тексты.</p>
+                                                    </div>
+                                                    <a href="https://aquaklon.ru" target="_blank" rel="noopener" class="terra-complex-case__link">
+                                                        Открыть пример
+                                                    </a>
+                                                </div>
+
+                                                <p class="terra-complex-case__summary">
+                                                    Для Aquaklon собрали понятный сайт под ассортимент меристемных растений: с акцентом на удобную подачу каталога, аккуратные карточки и простое управление контентом через Django.
+                                                </p>
+
+                                                {% if site_content.home_case_image_secondary %}
+                                                    <figure class="terra-complex-case__media terra-complex-case__media--offset">
+                                                        <img
+                                                            class="terra-complex-case__image"
+                                                            src="{{ site_content.home_case_image_secondary.url }}"
+                                                            alt="{{ site_content.home_case_image_secondary_alt|default:site_content.home_case_title }}">
+                                                        <figcaption class="terra-complex-case__caption">
+                                                            Внутренние страницы и сетка каталога, которые легко поддерживать из админки.
+                                                        </figcaption>
+                                                    </figure>
+                                                {% else %}
+                                                    <div class="ratio ratio-16x9 bg-body-tertiary rounded-4">
+                                                        <div class="d-flex align-items-center justify-content-center text-secondary small">Место для изображения 16:9</div>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section id="complex-sites">
+                            <div class="card border-0 terra-complex-card">
+                                <div class="card-body p-4 p-lg-5">
+                                    <div class="row g-4 align-items-start">
+                                        <div class="col-lg-5">
+                                            <p class="terra-section__kicker mb-2">Системы под бизнес</p>
+                                            <h2 class="mb-3">gas-spec.ru: внутренняя система под реальные процессы компании</h2>
+                                            <p class="terra-complex-copy mb-0">
+                                                Для ООО «Специалист» была собрана отдельная рабочая система вместо перегруженных типовых решений.
+                                                Она закрывает документооборот, ведение заказов, роли сотрудников и контроль сроков в одном месте.
+                                            </p>
+
+                                            <div class="terra-complex-tags">
+                                                <span class="terra-complex-tag">Роли и доступы</span>
+                                                <span class="terra-complex-tag">Реестры</span>
+                                                <span class="terra-complex-tag">WebDAV</span>
+                                                <span class="terra-complex-tag">Контроль сроков</span>
+                                            </div>
+
+                                            <figure class="terra-complex-case__media terra-complex-case__media--offset">
+                                                <img
+                                                    class="terra-complex-case__image"
+                                                    src="{% static 'img/home/gas-system-presentation-order-edit.png' %}"
+                                                    alt="Экран редактирования заказа в системе gas-spec.ru">
+                                                <figcaption class="terra-complex-case__caption">
+                                                    Форма редактирования заказа и связанных сущностей без лишних переходов между экранами.
+                                                </figcaption>
+                                            </figure>
+                                        </div>
+
+                                        <div class="col-lg-7">
+                                            <div class="terra-complex-case">
+                                                <div class="terra-complex-case__top">
+                                                    <div>
+                                                        <p class="terra-complex-case__eyebrow">ООО «Специалист»</p>
+                                                        <h3 class="h4 mb-1">gas-spec.ru</h3>
+                                                        <p class="mb-0 text-secondary">Система для автоматизации документооборота, заказов, ролей сотрудников и дедлайнов.</p>
+                                                    </div>
+                                                    <a href="https://gas-spec.ru" target="_blank" rel="noopener" class="terra-complex-case__link">
+                                                        Открыть пример
+                                                    </a>
+                                                </div>
+
+                                                <p class="terra-complex-case__summary">
+                                                    Готовые решения оказались слишком сложными для нужного сценария, поэтому для компании собрали отдельную рабочую систему под реальные процессы.
+                                                </p>
+
+                                                <figure class="terra-complex-case__media terra-complex-case__media--offset">
+                                                    <img
+                                                        class="terra-complex-case__image"
+                                                        src="{% static 'img/home/gas-system-presentation-shot.png' %}"
+                                                        alt="Главный экран системы gas-spec.ru">
+                                                    <figcaption class="terra-complex-case__caption">
+                                                        Главная рабочая зона проекта с быстрым доступом к разделам, заказам и связанным действиям.
+                                                    </figcaption>
+                                                </figure>
+
+                                                <div class="terra-complex-case__details">
+                                                    <div>
+                                                        <strong class="d-block mb-2">Что сделано</strong>
+                                                        <ul class="terra-complex-list mb-0">
+                                                            <li>Реестры заказов, договоров и проектов с понятной структурой данных.</li>
+                                                            <li>Разделение сотрудников по ролям и доступам внутри системы.</li>
+                                                            <li>Работа с файлами и документами через интеграцию WebDAV.</li>
+                                                            <li>Контроль сроков, статусов и просрочек без ручного ведения таблиц.</li>
+                                                        </ul>
+                                                    </div>
+
+                                                    <p class="terra-complex-case__excerpt mb-0">
+                                                        Технологии: Django, Python, SQLite, HTML, CSS, Bootstrap, JavaScript, WebDAV и Git.
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
@@ -309,35 +420,35 @@
                             <div class="card-body p-3 p-lg-4">
                                 <div class="row g-4">
                                     <div class="col-lg-7">
-                                        <p class="terra-section__kicker terra-section__kicker--light mb-2">Как работаем</p>
-                                        <h2 class="text-white mb-4">Как идёт работа по проекту</h2>
+                                        <p class="terra-section__kicker terra-section__kicker--light mb-2">{{ site_content.process_section_kicker }}</p>
+                                        <h2 class="text-white mb-4">{{ site_content.process_section_title }}</h2>
                                         <div class="d-grid gap-3">
                                             <article class="terra-process-step">
                                                 <span>01</span>
                                                 <div>
-                                                    <h3 class="h6 text-white mb-2">Составление ТЗ</h3>
-                                                    <p class="mb-0">Собираем вводные, структуру сайта, блоки и пожелания по стилю, чтобы на старте зафиксировать задачу без потерь.</p>
+                                                    <h3 class="h6 text-white mb-2">{{ site_content.process_step_1_title }}</h3>
+                                                    <p class="mb-0">{{ site_content.process_step_1_body }}</p>
                                                 </div>
                                             </article>
                                             <article class="terra-process-step">
                                                 <span>02</span>
                                                 <div>
-                                                    <h3 class="h6 text-white mb-2">Сборка сайта</h3>
-                                                    <p class="mb-0">Показываем рабочий макет и собираем страницы так, чтобы ими можно было пользоваться сразу после запуска.</p>
+                                                    <h3 class="h6 text-white mb-2">{{ site_content.process_step_2_title }}</h3>
+                                                    <p class="mb-0">{{ site_content.process_step_2_body }}</p>
                                                 </div>
                                             </article>
                                             <article class="terra-process-step">
                                                 <span>03</span>
                                                 <div>
-                                                    <h3 class="h6 text-white mb-2">Правки и наполнение</h3>
-                                                    <p class="mb-0">Доводим тексты, изображения, каталог и другие блоки до финального состояния перед публикацией.</p>
+                                                    <h3 class="h6 text-white mb-2">{{ site_content.process_step_3_title }}</h3>
+                                                    <p class="mb-0">{{ site_content.process_step_3_body }}</p>
                                                 </div>
                                             </article>
                                             <article class="terra-process-step">
                                                 <span>04</span>
                                                 <div>
-                                                    <h3 class="h6 text-white mb-2">Публикация</h3>
-                                                    <p class="mb-0">Подключаем домен, хостинг, почтовые формы и передаём сайт с удобной админкой для дальнейшей работы.</p>
+                                                    <h3 class="h6 text-white mb-2">{{ site_content.process_step_4_title }}</h3>
+                                                    <p class="mb-0">{{ site_content.process_step_4_body }}</p>
                                                 </div>
                                             </article>
                                         </div>
@@ -346,17 +457,17 @@
                                         <div class="d-grid gap-3 h-100">
                                             <div class="card border-0 process-highlight">
                                                 <div class="card-body p-4">
-                                                    <span class="process-highlight__label">Фокус проекта</span>
-                                                    <div class="process-highlight__value">Сайт + админка</div>
-                                                    <p class="process-highlight__copy mb-0">Оставляем только то, что нужно клиенту: публичные страницы, портфолио, заявки и удобное администрирование.</p>
+                                                    <span class="process-highlight__label">СРЕДНИЙ СРОК</span>
+                                                    <div class="process-highlight__value">2 дня</div>
+                                                    <p class="process-highlight__copy mb-0">{{ site_content.process_highlight_body }}</p>
                                                 </div>
                                             </div>
                                             <aside class="card border-0 terra-cta h-100">
                                                 <div class="card-body p-4">
-                                                    <p class="terra-section__kicker mb-2">Составление ТЗ</p>
-                                                    <h3 class="h4">Сначала фиксируем задачу в ТЗ</h3>
+                                                    <p class="terra-section__kicker mb-2">{{ site_content.process_cta_kicker }}</p>
+                                                    <h3 class="h4">{{ site_content.process_cta_title }}</h3>
                                                     <a href="{% url 'brief_create' %}" class="btn terra-btn-solid rounded-pill px-4">Перейти к составлению ТЗ</a>
-                                                    <p class="process-brief-contact mt-3 mb-0">Или <a href="#contacts">напишите нам</a>, если удобнее обсудить задачу в чате.</p>
+                                                    <p class="process-brief-contact mt-3 mb-0">{{ site_content.process_cta_body|safe }}</p>
                                                 </div>
                                             </aside>
                                         </div>
@@ -386,7 +497,7 @@
                             <span>Веб студия</span>
                         </div>
                     </div>
-                    <p>Разрабатываем сайты с удобной админкой, понятной структурой и поддержкой после запуска.</p>
+                    <p>{{ site_content.footer_description }}</p>
                     {% if contact_info and contact_info.telegram or contact_info and contact_info.whatsapp or contact_info and contact_info.email %}
                         <div class="footer-messenger-list" aria-label="Мессенджеры и быстрые контакты">
                             {% if contact_info and contact_info.telegram %}

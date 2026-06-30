@@ -25,6 +25,7 @@ class HomeViewTests(TestCase):
         self.assertNotContains(response, "Telegram-боты")
 
     def test_homepage_shows_first_six_projects_from_catalog_order(self):
+        Project.objects.all().delete()
         for index in range(8):
             Project.objects.create(
                 title=f"Project {index}",
@@ -58,6 +59,16 @@ class HomeViewTests(TestCase):
         self.assertContains(response, "data-home-summary-widget")
         self.assertContains(response, "Админ панель для смены текстов сайта")
         self.assertContains(response, "Админ панель для редактирования каталога товаров")
+
+    def test_homepage_keeps_gas_spec_case_section(self):
+        response = self.client.get(reverse("home"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "gas-spec.ru")
+        self.assertContains(response, "/static/img/home/gas-system-presentation-shot.png")
+        self.assertContains(response, "/static/img/home/gas-system-presentation-order-edit.png")
+        self.assertContains(response, "ООО «Специалист»")
+        self.assertContains(response, "WebDAV")
 
     def test_homepage_project_cards_use_cover_and_gallery_images(self):
         project = Project.objects.create(
